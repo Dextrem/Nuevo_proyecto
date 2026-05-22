@@ -6,6 +6,7 @@ frontend/dist/
 data/
 logs/
 backups/
+.backups/
 *.log
 .env
 .env.*
@@ -19,9 +20,7 @@ __pycache__/
 *.pyo
 scratch/
 temp/
-uploads/products/*.jpg
-uploads/products/*.png
-uploads/products/*.jpeg
+backend/uploads/
 installer/
 INSTALL/
 _standalone_archive/
