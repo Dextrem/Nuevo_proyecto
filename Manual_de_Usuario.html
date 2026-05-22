@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Usuario - Dextremix Finance</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 40px 20px; background-color: #f9fafb; }
+        .page { background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h1 { color: #4F46E5; border-bottom: 2px solid #E5E7EB; padding-bottom: 10px; font-size: 2.2rem; }
+        h2 { color: #111827; margin-top: 30px; font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
+        h3 { color: #4B5563; font-size: 1.2rem; }
+        p, li { font-size: 1.05rem; color: #4B5563; }
+        ul { margin-bottom: 20px; }
+        .note { background-color: #FEF3C7; border-left: 4px solid #F59E0B; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .footer { text-align: center; margin-top: 50px; color: #9CA3AF; font-size: 0.9rem; }
+        @media print {
+            body { background: #fff; padding: 0; max-width: 100%; }
+            .page { box-shadow: none; padding: 0; }
+            .no-print { display: none; }
+            @page { margin: 2cm; }
+            h2 { page-break-after: avoid; }
+            p, ul { page-break-inside: avoid; }
+        }
+        .btn-print { background: #4F46E5; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-size: 1rem; cursor: pointer; float: right; margin-bottom: 20px; }
+        .btn-print:hover { background: #4338CA; }
+        .step { font-weight: bold; color: #4F46E5; }
+    </style>
+</head>
+<body>
+    <button class="btn-print no-print" onclick="window.print()">🖨️ Guardar como PDF</button>
+    <div class="page">
+        <h1>Manual de Usuario - Dextremix Finance</h1>
+        <p>Bienvenido al manual oficial de uso de su Sistema de Gestión Financiera. Aquí encontrará el paso a paso para utilizar las opciones principales del sistema de forma correcta.</p>
+
+        <h2>1. Gestión de Caja (Apertura y Cierre)</h2>
+        <p>Para poder facturar y realizar ventas, <strong>es obligatorio</strong> tener una caja abierta.</p>
+        <ul>
+            <li><span class="step">Apertura:</span> Diríjase al módulo de <strong>Caja</strong>. Haga clic en "Abrir Caja". Ingrese el monto inicial con el que comienza el día (fondo de caja) y autorice con las credenciales de un administrador.</li>
+            <li><span class="step">Flujo del Día:</span> Todas las ventas al contado, así como los ingresos y retiros manuales que realice, se sumarán o restarán automáticamente de esta caja física.</li>
+            <li><span class="step">Cierre:</span> Al finalizar la jornada, haga clic en "Cerrar Caja". El sistema le pedirá que ingrese el <strong>Monto Físico Real</strong> que hay en la gaveta y calculará si existe alguna diferencia (sobrante o faltante) según lo registrado en el sistema.</li>
+        </ul>
+
+        <h2>2. Inventario y Productos</h2>
+        <p>Antes de vender, debe registrar sus productos.</p>
+        <ul>
+            <li>Diríjase a <strong>Inventario</strong> > <strong>Productos</strong>.</li>
+            <li>Haga clic en "Nuevo Producto".</li>
+            <li>Complete los datos básicos: Nombre, SKU (Código interno), Categoría, Costo de compra y Precio de venta.</li>
+            <li>Ingrese la cantidad en <strong>Stock Inicial</strong>. El sistema descontará automáticamente 1 unidad por cada venta realizada.</li>
+        </ul>
+
+        <h2>3. Ventas y Facturación (POS)</h2>
+        <p>Módulo principal para registrar transacciones con clientes.</p>
+        <ul>
+            <li>Diríjase a <strong>Punto de Venta (POS)</strong>.</li>
+            <li>Busque los productos por nombre o código y agréguelos a la factura.</li>
+            <li>Seleccione al cliente o déjelo como "Público General".</li>
+            <li>Haga clic en <strong>Cobrar</strong>.</li>
+            <li>Elija el Método de Pago:
+                <ul>
+                    <li><strong>Efectivo / Tarjeta:</strong> La venta se completa, ingresa el dinero a la caja y se descuenta el stock.</li>
+                    <li><strong>Crédito:</strong> La venta queda registrada pero <strong>no ingresa dinero a la caja</strong>. La deuda se transfiere automáticamente a <em>Cuentas por Cobrar</em>.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h2>4. Cotizaciones</h2>
+        <p>Permite enviar presupuestos sin descontar inventario ni mover dinero de caja.</p>
+        <ul>
+            <li>Diríjase a <strong>Cotizaciones</strong> y cree una nueva.</li>
+            <li>Agregue productos, el cliente y la validez (ej. 30 días).</li>
+            <li>Puede imprimir o enviar la cotización directamente por WhatsApp/Correo.</li>
+            <li><span class="step">Convertir a Venta:</span> Cuando el cliente acepte, abra la cotización y haga clic en <strong>Convertir a Venta</strong>. Seleccione si la pagará al contado o a crédito. En este paso el sistema sí descontará el inventario.</li>
+        </ul>
+
+        <h2>5. Cuentas por Cobrar (CxC)</h2>
+        <p>Control de clientes que deben dinero.</p>
+        <ul>
+            <li>Aquí aparecerán todas las ventas realizadas a <strong>Crédito</strong>.</li>
+            <li>Puede ver el saldo pendiente de cada cliente y enviarles recordatorios de pago por WhatsApp o Correo.</li>
+            <li><span class="step">Registrar Pago (Abono):</span> Haga clic en el botón de "Registrar Pago" al lado de una factura pendiente, ingrese el monto que el cliente está abonando y el sistema reducirá su deuda automáticamente, sumando dicho abono a la caja.</li>
+        </ul>
+
+        <div class="note">
+            <strong>Nota Importante sobre Contabilidad y Presupuesto:</strong><br>
+            Toda venta (Ingreso) y todo movimiento manual en caja (Gasto) se refleja en el módulo de <strong>Contabilidad</strong> y afecta directamente la barra de ejecución del <strong>Presupuesto</strong>. Asegúrese de clasificar correctamente los gastos manuales (ej. "Sueldos", "Alquiler") para que los reportes visuales coincidan con la realidad.
+        </div>
+
+        <h2>6. Reportes</h2>
+        <p>Visualización del rendimiento del negocio.</p>
+        <ul>
+            <li>Diríjase a <strong>Reportes</strong>. Seleccione las fechas que desea analizar.</li>
+            <li>Navegue por las pestañas superiores para ver el desglose de: Ventas, Créditos, Inventario y Balance Contable.</li>
+            <li>Puede usar el botón <strong>Imprimir</strong> (seleccionando hoja Carta, A4 o Ticket Térmico) o exportar toda la información a Excel para un análisis más profundo.</li>
+        </ul>
+
+        <div class="footer">
+            Generado automáticamente por Dextremix Finance &copy; 2026.
+        </div>
+    </div>
+</body>
+</html>

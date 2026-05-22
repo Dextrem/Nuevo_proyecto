@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: dextremix_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_secure_pass
+      POSTGRES_DB: finandex
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d finandex"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: ..
+      dockerfile: Dextremix Linux/Dockerfile
+    container_name: dextremix_app
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    environment:
+      - PORT=80
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:postgres_secure_pass@db:5432/finandex?schema=public
+      - JWT_SECRET=dextremix_super_secret_jwt_key_123!
+      - JWT_REFRESH_SECRET=dextremix_super_secret_refresh_jwt_key_456!
+      - CORS_ORIGIN=http://dextremix.local,http://localhost
+    volumes:
+      - ../logs:/app/logs
+      - ../backend/uploads:/app/backend/uploads
+
+volumes:
+  pgdata:

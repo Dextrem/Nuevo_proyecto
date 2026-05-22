@@ -1,0 +1,164 @@
+=================================================================
+  DEXTREMIX FINANCE - SISTEMA DE GESTION FINANCIERA
+  GUIA DE INSTALACION, ARRANQUE Y ACCESO RED LOCAL / SMARTPHONE
+=================================================================
+
+  Version: 2.1 (Actualizada con soporte móvil y bloqueo de doble envío)
+  Tecnologías: Node.js 20 + PostgreSQL 16 + React + Express
+
+=================================================================
+  1. REQUISITOS MINIMOS DEL SISTEMA
+=================================================================
+
+  - Windows 10 u 11 (64 bits)
+  - 4 GB de RAM mínimo
+  - 500 MB de espacio en disco
+  - No requiere instalación previa de Node.js ni PostgreSQL
+    (todo viene incluido portátil en la carpeta bin/)
+
+  IMPORTANTE: La carpeta completa debe copiarse a la otra PC
+  con el nombre "financial_app" y en una ruta SIN ESPACIOS
+  (ej: C:\financial_app\  o  D:\Programas\financial_app\)
+
+  Ruta recomendada: C:\financial_app\
+
+=================================================================
+  2. PASOS DE INSTALACION
+=================================================================
+
+  PASO 1: COPIAR LA CARPETA
+  ──────────────────────────
+  Copia toda la carpeta financial_app a la PC destino.
+  Asegúrate de incluir la carpeta bin/ (contiene Node.js y
+  PostgreSQL portátil).
+
+  PASO 2: EJECUTAR INSTALADOR
+  ──────────────────────────
+  Haz doble clic en INSTALAR.bat
+  (Si Windows muestra advertencia de seguridad, haz clic en
+  "Ejecutar de todas formas")
+
+  El instalador hará automáticamente:
+   [1/7] Verificar requisitos
+   [2/4] Configurar PostgreSQL (inicia el portátil incluido)
+   [3/4] Crear base de datos finandex
+   [4/7] Generar archivo .env
+   [5/7] Instalar backend y crear tablas
+   [6/7] Instalar frontend y compilar
+   [7/7] Crear acceso directo en el escritorio
+
+  PASO 3: INICIAR EL SISTEMA
+  ──────────────────────────
+  - Usa el acceso directo "Finandex" en el escritorio, O
+  - Haz doble clic en INICIAR.bat
+
+  PASO 4: ACCEDER Y CONECTARSE DESDE RED LOCAL / SMARTPHONES
+  ──────────────────────────────────────────────────────────
+  Al iniciar el sistema mediante INICIAR.bat, la consola mostrará
+  automáticamente las direcciones IP de acceso local y de red:
+
+  * Acceso Local (En la misma PC):
+    - Abre el navegador y ve a: http://dextremix.local (si usa puerto 80)
+      o bien http://localhost:PORT (ej. http://localhost:3002)
+
+  * Acceso desde Smartphones y Tabletas (En la misma red Wi-Fi):
+    - Conecta tu smartphone al mismo Wi-Fi de la PC.
+    - Usa una de las direcciones IP numéricas que te muestra la consola al iniciar:
+      Ejemplo: http://192.168.x.x  o  http://192.168.x.x:PORT
+    - Nota: El sistema tiene habilitado CORS dinámico y validación de host seguro
+      para aceptar conexiones directas desde IPs de red local privada de forma segura.
+
+  Credenciales de acceso por defecto:
+  - Usuario: admin
+  - Clave:   admin
+  - NOTA: El sistema te obligará a cambiar esta contraseña en tu primer inicio por seguridad.
+
+  PASO 5: APAGAR EL SISTEMA
+  ─────────────────────────
+  - En la ventana negra del terminal (INICIAR.bat) presiona cualquier tecla.
+  - El sistema cerrará ordenadamente los procesos del backend y la base de datos PostgreSQL.
+
+=================================================================
+  3. CORRECCIONES RECIENTES IMPLEMENTADAS
+=================================================================
+
+  1. Acceso Móvil Simplificado y Seguro:
+     - Se modificó la validación de host y CORS en el backend (`backend/src/server.js`)
+       para aceptar de forma dinámica peticiones provenientes de rangos de IPs locales
+       (192.168.x.x, 10.x.x.x, 172.16.x.x-172.31.x.x, etc.).
+     - `INICIAR.bat` ahora ejecuta una consulta de red para identificar y desplegar en 
+       pantalla tus direcciones de red locales numéricas listas para copiar en el móvil.
+
+  2. Prevención de Duplicados en Formularios (Barcode / Crear):
+     - Se añadió un estado de bloqueo de doble envío en los formularios del frontend.
+     - Al hacer clic en "Crear", "Actualizar" o "Registrar Pago", los botones se deshabilitan
+       instantáneamente y muestran textos de carga ("Guardando...", "Procesando...").
+     - Esto evita que los lectores de códigos de barras (que envían un "Enter" al final) o
+       dobles clics accidentales disparen peticiones HTTP simultáneas, previniendo errores
+       falsos de "Código de barras o SKU ya existente" y duplicados de ventas en caja.
+
+=================================================================
+  4. ESTRUCTURA DE CARPETAS
+=================================================================
+
+  financial_app/
+  ├── INSTALAR.bat          <-- Instalador (ejecutar una vez)
+  ├── INICIAR.bat           <-- Arranque diario
+  ├── DETENER.bat           <-- Apagar servicios manualmente
+  ├── INSTRUCCIONES.txt     <-- Este archivo
+  ├── icon.ico              <-- Icono de la app
+  │
+  ├── bin/                  <-- Programas portátiles
+  │   ├── node.exe          <-- Node.js 20
+  │   ├── npm.cmd           <-- NPM
+  │   ├── npx.cmd           <-- NPX
+  │   └── pgsql/            <-- PostgreSQL 16 portátil
+  │       └── bin/
+  │           ├── postgres.exe
+  │           ├── psql.exe
+  │           ├── initdb.exe
+  │           └── pg_isready.exe
+  │
+  ├── backend/              <-- Servidor backend (API y servicio estático de frontend)
+  ├── frontend/             <-- Código de la interfaz React
+  ├── data/pg_data/         <-- Datos persistentes de PostgreSQL
+  └── logs/                 <-- Registros de actividad (app.log y postgres.log)
+
+=================================================================
+  5. POSIBLES ERRORES Y SOLUCIONES
+=================================================================
+
+  ERROR: "PostgreSQL no arrancó"
+  ─────────────────────────────────
+  CAUSA: El puerto 5432 está ocupado por otro programa.
+  SOLUCION:
+  1. Abre CMD como administrador
+  2. Ejecuta: netstat -ano | findstr ":5432"
+  3. Si ves un proceso LISTENING, anota el PID (última columna)
+  4. Ejecuta: taskkill /f /pid NUMERO_DEL_PID
+  5. Vuelve a iniciar el sistema.
+
+  Si el puerto lo ocupa PostgreSQL del sistema (instalado aparte):
+  1. Abre CMD como administrador
+  2. Ejecuta: net stop postgresql-x64-16
+  3. Vuelve a ejecutar el script.
+
+  ERROR: "Acceso denegado" al ejecutar INSTALAR.bat o INICIAR.bat
+  ─────────────────────────────────────────────────────────────
+  CAUSA: Windows bloquea la ejecución de scripts .bat
+  SOLUCION:
+  - Haz clic derecho sobre el .bat
+  - Selecciona "Ejecutar como administrador"
+  - O haz clic en "Ejecutar de todas formas" si aparece advertencia de SmartScreen.
+
+  ERROR: El navegador móvil no puede conectar a la IP de la PC
+  ───────────────────────────────────────────────────────────
+  CAUSA: El Firewall de Windows bloquea las conexiones entrantes al puerto de la app (ej. 80 o 3002).
+  SOLUCION:
+  - Abre el Firewall de Windows en la PC servidor.
+  - Añade una Regla de Entrada para permitir el puerto correspondiente (TCP 80 o TCP 3002).
+  - O ejecuta el script `REPARAR_RED.bat` que configura el Firewall automáticamente.
+
+=================================================================
+  FIN DE LA GUIA
+=================================================================

@@ -1,0 +1,68 @@
+const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
+
+const prisma = new PrismaClient();
+
+async function initAdmin() {
+  console.log('--- Inicializando Usuario administrador ---');
+  try {
+    const username = 'admin';
+    const email = 'admin@finandex.com';
+    const password = 'admin'; // Contraseña inicial por defecto
+    const passwordHash = await bcrypt.hash(password, 12);
+
+    const existingUser = await prisma.user.findUnique({
+      where: { username }
+    });
+
+    if (existingUser) {
+      console.log(`El usuario '${username}' ya existe. Reseteando contraseña y desbloqueando...`);
+      await prisma.user.update({
+        where: { username },
+        data: {
+          password: passwordHash,
+          failedLoginAttempts: 0,
+          lockUntil: null,
+          active: true
+        }
+      });
+    } else {
+      console.log(`Creando nuevo usuario '${username}'...`);
+      await prisma.user.create({
+        data: {
+          username,
+          email,
+          password: passwordHash,
+          name: 'Administrador del Sistema',
+          role: 'ADMIN',
+          active: true,
+          permissions: {
+            manage_users: true,
+            manage_products: true,
+            manage_categories: true,
+            manage_clients: true,
+            manage_suppliers: true,
+            manage_accounting: true,
+            manage_inventory: true,
+            process_sales: true,
+            record_payments: true,
+            view_reports: true,
+            manage_settings: true,
+          }
+        }
+      });
+    }
+    console.log('-----------------------------------------');
+    console.log('✓ CONFIGURACION EXITOSA');
+    console.log(`Usuario: ${username}`);
+    console.log(`Contraseña: ${password}`);
+    console.log('-----------------------------------------');
+  } catch (error) {
+    console.error('CRITICAL ERROR:', error.message);
+    process.exit(1);
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+initAdmin();

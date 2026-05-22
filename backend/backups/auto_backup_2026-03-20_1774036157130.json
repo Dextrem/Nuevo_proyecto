@@ -1,0 +1,257 @@
+{
+  "version": "1.0",
+  "createdAt": "2026-03-20T19:49:17.130Z",
+  "data": {
+    "users": [
+      {
+        "id": "2c1edad9-6596-4e45-af8a-ac3e080d21f5",
+        "username": "admin",
+        "email": "admin@finandex.com",
+        "name": "Administrador",
+        "role": "ADMIN",
+        "permissions": {
+          "manage_users": true,
+          "view_reports": true,
+          "process_sales": true,
+          "manage_clients": true,
+          "manage_products": true,
+          "manage_settings": true,
+          "record_payments": true,
+          "manage_inventory": true,
+          "manage_suppliers": true,
+          "manage_accounting": true,
+          "manage_categories": true
+        },
+        "active": true,
+        "createdAt": "2026-03-20T18:50:57.169Z"
+      }
+    ],
+    "categories": [
+      {
+        "id": "e313038f-1dbd-4a5c-9833-c0eaf5e54a70",
+        "name": "General",
+        "description": "Productos generales",
+        "createdAt": "2026-03-20T18:50:57.181Z",
+        "updatedAt": "2026-03-20T18:50:57.181Z"
+      },
+      {
+        "id": "2fe65764-ec6d-48d7-84e9-50e93372d2ef",
+        "name": "Bebidas",
+        "description": "Bebidas y líquidos",
+        "createdAt": "2026-03-20T18:50:57.186Z",
+        "updatedAt": "2026-03-20T18:50:57.186Z"
+      },
+      {
+        "id": "490d57cc-a76b-4f18-96fc-6ad3c2e7e6ad",
+        "name": "Alimentos",
+        "description": "Alimentos y snacks",
+        "createdAt": "2026-03-20T18:50:57.188Z",
+        "updatedAt": "2026-03-20T18:50:57.188Z"
+      },
+      {
+        "id": "2923d8b5-de39-4a1d-bd79-73f6e3d89a17",
+        "name": "Limpieza",
+        "description": "Productos de limpieza",
+        "createdAt": "2026-03-20T18:50:57.189Z",
+        "updatedAt": "2026-03-20T18:50:57.189Z"
+      }
+    ],
+    "products": [
+      {
+        "id": "e23b1301-1660-41a1-9165-7b66d04a33b6",
+        "name": "laptop",
+        "description": "dddd",
+        "sku": "SKU-MMZA18QU",
+        "barcode": "",
+        "price": 15000,
+        "cost": 12000,
+        "stock": 3,
+        "minStock": 2,
+        "categoryId": "e313038f-1dbd-4a5c-9833-c0eaf5e54a70",
+        "active": true,
+        "createdAt": "2026-03-20T19:13:59.910Z",
+        "updatedAt": "2026-03-20T19:41:04.572Z",
+        "category": {
+          "name": "General"
+        }
+      }
+    ],
+    "clients": [],
+    "suppliers": [],
+    "sales": [
+      {
+        "id": "69597447-fb37-4ad7-b673-f370ef87cdad",
+        "invoiceNumber": "INV-20260320-0001",
+        "subtotal": 15000,
+        "tax": 2700,
+        "discount": 0,
+        "interest": 0,
+        "total": 17700,
+        "paidAmount": 17700,
+        "change": 0,
+        "paymentMethod": "CASH",
+        "status": "COMPLETED",
+        "clientId": null,
+        "userId": "2c1edad9-6596-4e45-af8a-ac3e080d21f5",
+        "createdAt": "2026-03-20T19:14:44.204Z",
+        "updatedAt": "2026-03-20T19:14:44.204Z",
+        "items": [
+          {
+            "id": "1732f1fe-888f-461f-869c-f67aa05e18b2",
+            "quantity": 1,
+            "price": 15000,
+            "tax": 2700,
+            "discount": 0,
+            "total": 17700,
+            "saleId": "69597447-fb37-4ad7-b673-f370ef87cdad",
+            "productId": "e23b1301-1660-41a1-9165-7b66d04a33b6"
+          }
+        ],
+        "client": null,
+        "user": {
+          "name": "Administrador"
+        }
+      },
+      {
+        "id": "45e4adcc-527b-43f3-91bc-f9546a301879",
+        "invoiceNumber": "INV-20260320-0002",
+        "subtotal": 60000,
+        "tax": 10800,
+        "discount": 9000,
+        "interest": 0,
+        "total": 61800,
+        "paidAmount": 61800,
+        "change": 0,
+        "paymentMethod": "CASH",
+        "status": "COMPLETED",
+        "clientId": null,
+        "userId": "2c1edad9-6596-4e45-af8a-ac3e080d21f5",
+        "createdAt": "2026-03-20T19:36:43.268Z",
+        "updatedAt": "2026-03-20T19:36:43.268Z",
+        "items": [
+          {
+            "id": "24281863-4ded-4bfd-9a8f-c3a73ed42efe",
+            "quantity": 4,
+            "price": 15000,
+            "tax": 2700,
+            "discount": 0,
+            "total": 70800,
+            "saleId": "45e4adcc-527b-43f3-91bc-f9546a301879",
+            "productId": "e23b1301-1660-41a1-9165-7b66d04a33b6"
+          }
+        ],
+        "client": null,
+        "user": {
+          "name": "Administrador"
+        }
+      },
+      {
+        "id": "1ab76486-f08b-482b-9a55-82500f7dcb60",
+        "invoiceNumber": "INV-20260320-0003",
+        "subtotal": 30000,
+        "tax": 5400,
+        "discount": 0,
+        "interest": 0,
+        "total": 35400,
+        "paidAmount": 35400,
+        "change": 0,
+        "paymentMethod": "CASH",
+        "status": "COMPLETED",
+        "clientId": null,
+        "userId": "2c1edad9-6596-4e45-af8a-ac3e080d21f5",
+        "createdAt": "2026-03-20T19:41:04.561Z",
+        "updatedAt": "2026-03-20T19:41:04.561Z",
+        "items": [
+          {
+            "id": "252a69e0-218e-4e44-9126-58a96d45b5d5",
+            "quantity": 2,
+            "price": 15000,
+            "tax": 2700,
+            "discount": 0,
+            "total": 35400,
+            "saleId": "1ab76486-f08b-482b-9a55-82500f7dcb60",
+            "productId": "e23b1301-1660-41a1-9165-7b66d04a33b6"
+          }
+        ],
+        "client": null,
+        "user": {
+          "name": "Administrador"
+        }
+      }
+    ],
+    "transactions": [
+      {
+        "id": "f8c271e2-d033-49d4-a77f-183aff845993",
+        "type": "INCOME",
+        "amount": 17700,
+        "description": "Venta #INV-20260320-0001",
+        "reference": "INV-20260320-0001",
+        "date": "2026-03-20T19:14:44.212Z",
+        "userId": "2c1edad9-6596-4e45-af8a-ac3e080d21f5",
+        "createdAt": "2026-03-20T19:14:44.212Z",
+        "updatedAt": "2026-03-20T19:14:44.212Z",
+        "user": {
+          "name": "Administrador"
+        }
+      },
+      {
+        "id": "122ae75f-8b13-40e7-8d62-891f3a74b578",
+        "type": "EXPENSE",
+        "amount": 2000,
+        "description": "compra de Papel",
+        "reference": "",
+        "date": "2026-03-20T19:16:42.304Z",
+        "userId": "2c1edad9-6596-4e45-af8a-ac3e080d21f5",
+        "createdAt": "2026-03-20T19:16:42.304Z",
+        "updatedAt": "2026-03-20T19:16:42.304Z",
+        "user": {
+          "name": "Administrador"
+        }
+      },
+      {
+        "id": "3c602ef4-577d-4fd9-98d3-923f492ec916",
+        "type": "INCOME",
+        "amount": 61800,
+        "description": "Venta #INV-20260320-0002",
+        "reference": "INV-20260320-0002",
+        "date": "2026-03-20T19:36:43.281Z",
+        "userId": "2c1edad9-6596-4e45-af8a-ac3e080d21f5",
+        "createdAt": "2026-03-20T19:36:43.281Z",
+        "updatedAt": "2026-03-20T19:36:43.281Z",
+        "user": {
+          "name": "Administrador"
+        }
+      },
+      {
+        "id": "d59d2980-b933-4832-ae1e-f9a630e4a2d4",
+        "type": "INCOME",
+        "amount": 35400,
+        "description": "Venta #INV-20260320-0003",
+        "reference": "INV-20260320-0003",
+        "date": "2026-03-20T19:41:04.573Z",
+        "userId": "2c1edad9-6596-4e45-af8a-ac3e080d21f5",
+        "createdAt": "2026-03-20T19:41:04.573Z",
+        "updatedAt": "2026-03-20T19:41:04.573Z",
+        "user": {
+          "name": "Administrador"
+        }
+      }
+    ],
+    "settings": {
+      "id": "default-settings",
+      "companyName": "FINANDEX",
+      "companyRnc": "202320211",
+      "companyAddress": "Calle Centro olimpico #8",
+      "companyPhone": "809-258-8528",
+      "companyEmail": null,
+      "logo": null,
+      "currency": "DOP",
+      "currencySymbol": "RD$",
+      "taxRate": 0.18,
+      "interestRate": 0.02,
+      "theme": "dark",
+      "primaryColor": "#03919b",
+      "updatedAt": "2026-03-20T19:07:49.388Z"
+    }
+  }
+}

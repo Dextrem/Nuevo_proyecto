@@ -1,0 +1,73 @@
+======================================================================
+         MANUAL DE INSTALACIÓN Y USO EN LINUX - DEXTREMIX FINANCE
+======================================================================
+
+Este directorio contiene todo lo necesario para ejecutar Dextremix Finance
+en cualquier distribución de Linux (Debian, Ubuntu, CentOS, Fedora, etc.).
+
+Tienes dos métodos de instalación disponibles:
+
+----------------------------------------------------------------------
+MÉTODO 1: INSTALACIÓN CON DOCKER (Recomendado para servidores/producción)
+----------------------------------------------------------------------
+Docker empaqueta la base de datos PostgreSQL y la aplicación de Node.js
+en contenedores aislados. Es el método más limpio y profesional.
+
+Requisitos previos:
+- Tener instalados Docker y Docker Compose en tu sistema Linux.
+
+Instrucciones:
+1. Abre una terminal de Linux en esta carpeta ("Dextremix Linux").
+2. Ejecuta el siguiente comando para compilar e iniciar todo el sistema:
+   docker-compose up -d --build
+3. El comando descargará PostgreSQL, compilará tu código Frontend y Backend,
+   creará la base de datos automáticamente y levantará el sistema.
+4. Para detener el sistema:
+   docker-compose down
+
+Acceso: http://dextremix.local o http://localhost
+
+----------------------------------------------------------------------
+MÉTODO 2: INSTALACIÓN NATIVA (Para PC de escritorio o desarrollo)
+----------------------------------------------------------------------
+Este método ejecuta la app directamente en el sistema operativo Linux.
+
+Requisitos previos:
+- Node.js (versión 18 o superior) y npm instalados.
+- PostgreSQL (versión 14 o superior) instalado y en ejecución.
+
+Instrucciones:
+1. Abre una terminal en esta carpeta.
+2. Dale permisos de ejecución a los scripts:
+   chmod +x *.sh
+3. Ejecuta el script de instalación:
+   ./instalar.sh
+   (El script te pedirá los datos de conexión a tu PostgreSQL local,
+    creará la base de datos, compilará la app y configurará hosts).
+4. Para iniciar el sistema cuando quieras:
+   ./iniciar.sh
+   (Nota: Si la app está configurada en el puerto 80, el script te
+    solicitará la contraseña de administrador 'sudo' para poder arrancar).
+
+----------------------------------------------------------------------
+RESPALDOS Y RESTAURACIÓN EN LINUX (Para Instalación Nativa)
+----------------------------------------------------------------------
+- Para generar un respaldo completo de tu base de datos:
+  ./crear_backup.sh
+
+- Para restaurar un respaldo anterior:
+  ./restaurar_backup.sh
+  (ADVERTENCIA: Este comando limpiará y reemplazará los datos actuales).
+
+----------------------------------------------------------------------
+ACCESO DESDE OTRAS PC DE LA RED EN LINUX
+----------------------------------------------------------------------
+Para que otras computadoras de la red local puedan ingresar usando
+http://dextremix.local:
+1. Asegúrate de abrir el puerto correspondiente en el firewall de tu Linux
+   (ejemplo en Ubuntu usando UFW):
+   sudo ufw allow 80/tcp
+2. En las otras PC que vayan a conectarse, debes agregar la dirección IP
+   de este servidor de Linux en sus respectivos archivos de hosts:
+   [IP_DEL_SERVIDOR_LINUX] dextremix.local
+======================================================================

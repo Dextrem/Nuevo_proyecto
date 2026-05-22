@@ -1,0 +1,61 @@
+=========================================================
+GUÍA DE INSTALACIÓN, INICIO Y MANTENIMIENTO DEL SISTEMA
+=========================================================
+
+1. REQUISITOS DEL SISTEMA
+---------------------------------------------------------
+Para que el sistema funcione en cualquier computadora nueva, debes instalar previamente:
+- Node.js (Versión 18 o superior). Se descarga desde: https://nodejs.org/
+- PostgreSQL (Versión 14 o superior). Se descarga desde: https://www.postgresql.org/download/
+
+2. CONFIGURACIÓN INICIAL (Base de Datos)
+---------------------------------------------------------
+Asegúrate de que PostgreSQL esté corriendo y que tengas la siguiente base de datos creada:
+- Nombre de la base de datos: finance_db
+- Usuario: postgres
+- Contraseña: (tu contraseña configurada)
+
+En la carpeta "backend", existe un archivo oculto llamado ".env" que contiene la conexión a la base de datos:
+DATABASE_URL="postgresql://postgres:tu_contraseña@localhost:5432/finance_db?schema=public"
+
+3. INSTALACIÓN POR PRIMERA VEZ
+---------------------------------------------------------
+Si mueves el sistema a otra computadora, debes abrir una terminal (CMD o PowerShell) en la carpeta principal y hacer lo siguiente:
+
+A) Instalar dependencias del servidor:
+   cd backend
+   npm install
+   npx prisma generate
+   npx prisma db push
+
+B) Instalar dependencias visuales:
+   cd ../frontend
+   npm install
+   npm run build
+
+4. COMO INICIAR EL SISTEMA DIARIAMENTE
+---------------------------------------------------------
+Hemos creado un script automático para que no tengas que escribir comandos cada día:
+
+Simplemente haz doble clic en el archivo "INICIAR.bat" que está en la carpeta principal ("c:\Programa de Finanzas\financial_app").
+- Esto arrancará el servidor en segundo plano.
+- Esto servirá las pantallas visuales.
+- Podrás acceder al sistema desde el navegador en la computadora principal usando: http://localhost:3000
+- Podrás acceder desde tu smartphone conectado a la misma red WiFi usando la IP local de tu PC: http://[TU_IP_LOCAL]:3000
+
+5. RESPALDOS DE SEGURIDAD (BACKUPS)
+---------------------------------------------------------
+Hemos configurado respaldos automáticos diarios.
+Existe un archivo llamado "PROGRAMAR_RESPALDO_DIARIO.bat" en la carpeta principal. Al darle doble clic la primera vez, programará a Windows para que guarde un respaldo de tu base de datos y tus archivos todos los días. 
+Tus respaldos se guardan en la carpeta: backend/backups/
+
+6. NOTAS SOBRE LAS ÚLTIMAS CORRECCIONES REALIZADAS
+---------------------------------------------------------
+- PRESUPUESTOS Y CONTABILIDAD: El sistema ha sido unificado para que todas las ventas y gastos dependan del Libro General (Transacciones), evitando el conteo doble de ventas.
+- CUENTAS POR COBRAR Y PAGAR: Se ajustó la verificación de cajas. Ahora, si el administrador abre la caja, los cajeros pueden registrar abonos de clientes y pagos a proveedores sin que el sistema bloquee la transacción, enlazándose automáticamente a la caja general que esté abierta.
+- REPORTES: El problema de las deudas estancadas en "Pendiente" por problemas de decimales fue corregido agregando una tolerancia de cálculo.
+- MARCA DE AGUA: El sistema cuenta con tu identidad "DEXTREMIX FINANCE" instalada de fondo de pantalla en todas las áreas.
+
+=========================================================
+SISTEMA FINANCIERO OPTIMIZADO - RESPALDO ACTIVO
+=========================================================

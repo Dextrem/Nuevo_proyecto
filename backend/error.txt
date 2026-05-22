@@ -1,0 +1,17 @@
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+
+Error: Prisma schema validation - (validate wasm)
+Error code: P1012
+[1;91merror[0m: [1mError validating field `supplier` in model `PurchaseOrder`: The relation field `supplier` on model `PurchaseOrder` is missing an opposite relation field on the model `Supplier`. Either run `prisma format` or add it manually.[0m
+  [1;94m-->[0m  [4mprisma\schema.prisma:506[0m
+[1;94m   | [0m
+[1;94m505 | [0m
+[1;94m506 | [0m  [1;91msupplier      Supplier  @relation(fields: [supplierId], references: [id])[0m
+[1;94m507 | [0m  user          User      @relation(fields: [userId], references: [id])
+[1;94m   | [0m
+
+Validation Error Count: 1
+[Context: validate]
+
+Prisma CLI Version : 5.22.0

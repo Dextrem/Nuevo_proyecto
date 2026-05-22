@@ -1,0 +1,517 @@
+================================================================================
+  DEXTREMIX FINANCE - GUIA DE CAMBIOS Y MANUAL DE INSTALACION
+  Sistema de Gestion Financiera para Windows 10 / Windows 11
+================================================================================
+
+FECHA: 2026-05-21
+VERSION: 1.0.0
+
+
+================================================================================
+PARTE 1 - CAMBIOS REALIZADOS (DIAGNOSTICO Y CORRECCIONES)
+================================================================================
+
+A continuacion se detallan todos los cambios aplicados para corregir
+problemas de instalacion y funcionamiento en Windows 11.
+
+
+1.1  Archivo: backend\.env
+──────────────────────────────────────────────────────────────────────────
+
+  PROBLEMA DETECTADO:
+  - DATABASE_URL tenia "YOUR_POSTGRES_PASSWORD" como placeholder, no una
+    contraseña real. El servidor fallaba al autenticarse contra PostgreSQL.
+  - JWT_SECRET y JWT_REFRESH_SECRET estaban vacios.
+  - SMTP_FROM tenia caracteres de escape (^< y ^>) que no corresponden en
+    un archivo .env (solo son necesarios en archivos .bat).
+  - Puerto configurado en 80 (requiere permisos de administrador en Win11).
+
+  CORRECCION APLICADA:
+  - DATABASE_URL cambiado a: "postgresql://postgres:postgres@127.0.0.1:5432/
+    finandex?schema=public"  (usando la contraseña real "postgres")
+  - JWT_SECRET generado: 64 caracteres hexadecimales aleatorios
+  - JWT_REFRESH_SECRET generado: 64 caracteres hexadecimales aleatorios
+  - SMTP_FORM corregido: sin caracteres de escape (^< > -> < >)
+  - PORT cambiado de 80 a 3000 (evita necesidad de admin en Win10/11)
+
+  VALORES ACTUALES DEL .env:
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │ PORT=3000                                                          │
+  │ NODE_ENV=production                                                │
+  │ DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:5432/       │
+  │              finandex?schema=public"                                │
+  │ JWT_SECRET=[generado automaticamente]                              │
+  │ JWT_REFRESH_SECRET=[generado automaticamente]                      │
+  │ JWT_EXPIRES_IN=15m                                                 │
+  │ JWT_REFRESH_EXPIRES_IN=7d                                          │
+  │ CORS_ORIGIN=http://dextremix.local,http://localhost                │
+  │ SMTP_HOST=smtp.example.com                                         │
+  │ SMTP_PORT=587                                                      │
+  │ SMTP_USER=correo@ejemplo.com                                       │
+  │ SMTP_PASS=password                                                 │
+  │ SMTP_FROM="Finandex <noreply@finandex.local>"                      │
+  │ NOTIFICATION_EMAILS=admin@finandex.local                           │
+  │ RATE_LIMIT_WINDOW_MS=900000                                        │
+  │ RATE_LIMIT_MAX_REQUESTS=1000                                       │
+  │ RATE_LIMIT_LOGIN_MAX=5                                             │
+  └─────────────────────────────────────────────────────────────────────┘
+
+
+1.2  Archivo: INSTALAR.bat
+──────────────────────────────────────────────────────────────────────────
+
+  PROBLEMA DETECTADO:
+  - La linea SMTP_FROM tenia los caracteres < y > sin escapar con ^.
+    En un archivo .bat, < y > son operadores de redireccion, por lo que
+    al ejecutar el instalador se corrompia la generacion completa del .env.
+  - El mensaje de exito mostraba puerto 3002, pero el .env ahora usa 3000.
+
+  CORRECCION APLICADA (Linea 167):
+  - ANTES:  echo SMTP_FROM="Finandex <noreply@finandex.local>"
+  - DESPUES: echo SMTP_FROM="Finandex ^<noreply@finandex.local^>"
+  - Los caracteres ^ escapan < y > para que el interprete de comandos
+    no los trate como operadores de redireccion.
+
+  CORRECCION APLICADA (Linea 264):
+  - ANTES:  http://localhost:3002
+  - DESPUES: http://localhost:3000
+
+  NUEVA FUNCIONALIDAD AGREGADA:
+  - Ahora solicita al usuario la contraseña de PostgreSQL durante la
+    instalacion (set /p PG_PASSWORD=...).
+  - Usa esa contraseña para crear la BD y configurar el archivo .env.
+  - El instalador genera JWT secrets aleatorios con Node.js crypto.
+
+
+1.3  Archivo: INICIAR.bat
+──────────────────────────────────────────────────────────────────────────
+
+  PROBLEMA DETECTADO:
+  - Cuando se cerraba la ventana de INICIAR.BAT sin presionar una tecla
+    (o si fallaba antes del apagado), el proceso Node.js del backend
+    quedaba vivo en segundo plano con el archivo app.log bloqueado.
+  - Al re-ejecutar INICIAR.BAT, el nuevo proceso no podia escribir al
+    log porque estaba bloqueado por el proceso zombie.
+  - El mensaje de error era: "El proceso no tiene acceso al archivo
+    porque esta siendo utilizado por otro proceso".
+
+  CORRECCION APLICADA (Lineas 101-113):
+  Se agrego bloque de limpieza de procesos zombies ANTES de iniciar
+  el backend:
+
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │ :: Matar proceso zombie del backend de ejecucion anterior por PID  │
+  │ if exist "%TEMP%\finandex_backend.pid" (                           │
+  │     set /p BACKEND_PID=<"%TEMP%\finandex_backend.pid"              │
+  │     if defined BACKEND_PID (                                       │
+  │         taskkill /f /pid !BACKEND_PID! >nul 2>&1                   │
+  │     )                                                              │
+  │     del "%TEMP%\finandex_backend.pid" >nul 2>&1                    │
+  │ )                                                                  │
+  │ :: Limpiar archivos temporales y logs de ejecuciones previas       │
+  │ del "%TEMP%\finandex_port.txt" >nul 2>&1                           │
+  │ if exist "%APP_LOG%" del "%APP_LOG%" >nul 2>&1                     │
+  │ ping -n 2 127.0.0.1 >nul                                           │
+  └─────────────────────────────────────────────────────────────────────┘
+
+  Esto asegura que:
+  1. Se mata cualquier proceso Node.js zombie por su PID almacenado
+  2. Se elimina el archivo de log bloqueado
+  3. Se espera ~1 segundo para que Windows libere los handles
+
+
+1.4  Base de Datos - Seed de Admin
+──────────────────────────────────────────────────────────────────────────
+
+  PROBLEMA DETECTADO:
+  - El seed de la BD (prisma/seed.js) fallo durante la instalacion
+    inicial o no se ejecuto correctamente.
+  - Esto dejo al usuario admin con un hash de contrasena incorrecto.
+  - Al intentar login con admin/admin, el servidor respondia
+    "Credenciales invalidas. Intentos restantes: 4"
+
+  CORRECCION APLICADA:
+  - Se re-ejecuto manualmente el seed: node prisma/seed.js
+  - Resultado: "Usuario admin actualizado: admin"
+  - El seed actualiza el hash de contrasena usando bcrypt con costo 12.
+  - El servidor.js tambien tiene funcion ensureAdminUser() que crea el
+    admin automaticamente si no existe al iniciar el servidor.
+
+  CREDENCIALES DE ACCESO:
+  - Usuario: admin
+  - Contrasena: admin
+  - (Debe cambiarse en el primer inicio por seguridad)
+
+
+1.5  Archivo: Prisma Schema (backend\prisma\schema.prisma)
+──────────────────────────────────────────────────────────────────────────
+
+  (Sin cambios - ya era correcto)
+
+  El esquema de la base de datos incluye todas las tablas necesarias:
+
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │ Tablas creadas por Prisma:                                         │
+  │ - users (usuarios del sistema)                                     │
+  │ - categories (categorias de productos)                             │
+  │ - products (productos/inventario)                                  │
+  │ - clients (clientes)                                               │
+  │ - suppliers (proveedores)                                          │
+  │ - supplier_invoices (facturas de proveedores)                      │
+  │ - sales (ventas)                                                   │
+  │ - fiscal_sequences (secuencias NCF)                                │
+  │ - sale_items (detalle de ventas)                                   │
+  │ - quotations (cotizaciones)                                        │
+  │ - quotation_items (detalle de cotizaciones)                        │
+  │ - transactions (transacciones financieras)                         │
+  │ - settings (configuracion del sistema)                             │
+  │ - cash_registers (cajas registradoras)                             │
+  │ - cash_transactions (movimientos de caja)                          │
+  │ - budgets (presupuestos)                                           │
+  │ - transactions_history (historial de transacciones)                │
+  │ - accounts_receivable (cuentas por cobrar)                         │
+  │ - accounts_payable (cuentas por pagar)                             │
+  │ - cost_analysis (analisis de costos)                               │
+  │ - monthly_closings (cierres mensuales)                             │
+  │ - commissions (comisiones)                                         │
+  │ - purchase_orders (ordenes de compra)                              │
+  │ - purchase_order_items (detalle de ordenes)                        │
+  │ - inventory_movements (movimientos de inventario)                  │
+  │ - pending_payments (pagos pendientes)                              │
+  └─────────────────────────────────────────────────────────────────────┘
+
+
+================================================================================
+PARTE 2 - MANUAL DE INSTALACION PARA WINDOWS 10 / 11
+================================================================================
+
+REQUISITOS DEL SISTEMA:
+  - Windows 10 (cualquier version) o Windows 11 (cualquier version)
+  - 4 GB de RAM minimo (8 GB recomendado)
+  - 500 MB de espacio en disco
+  - No requiere instalacion previa de Node.js ni PostgreSQL
+    (el instalador incluye versiones portables)
+
+ARCHIVOS DEL INSTALADOR:
+  El sistema se entrega en la carpeta:
+    C:\Programa de Finanzas\financial_app\
+
+  Archivos principales:
+  - INSTALAR.bat    : Instalador principal (ejecutar UNA SOLA VEZ)
+  - INICIAR.bat     : Inicia el sistema (ejecutar cada vez que se use)
+  - DETENER.bat     : Detiene el sistema manualmente
+  - bin\            : Node.js y PostgreSQL portables
+  - backend\        : Codigo del servidor (API)
+  - frontend\       : Codigo del cliente (interfaz de usuario)
+
+
+PASO 1: INSTALACION
+──────────────────────────────────────────────────────────────────────────
+
+  1. Abrir la carpeta:
+     C:\Programa de Finanzas\financial_app\
+
+  2. Hacer clic DERECHO sobre INSTALAR.bat y seleccionar
+     "Ejecutar como administrador"
+
+     IMPORTANTE: Es necesario ejecutar como administrador para que el
+     instalador pueda configurar el archivo hosts de Windows (dominio
+     dextremix.local) y acceder a todos los recursos del sistema.
+
+  3. El instalador mostrara un asistente por pasos:
+
+     [1/7] Verificando requisitos
+       - Confirma que Node.js y PostgreSQL esten presentes
+
+     [1.5/7] Configurando contrasena de PostgreSQL
+       - INGRESE LA CONTRASENA: escriba la contrasena que desea usar
+         para el usuario 'postgres' de la base de datos.
+       - Ejemplo: postgres, admin123, o cualquier otra.
+       - RECOMENDACION: Use una contrasena simple para pruebas locales,
+         como "postgres". Si cambia la contrasena, recuerde cual es.
+
+     [2/4] Configurando PostgreSQL
+       - Si ya hay PostgreSQL instalado en el sistema, lo detecta y usa
+       - Si no, inicializa el PostgreSQL portable incluido
+       - Crea la base de datos 'finandex' con la contrasena que ingreso
+
+     [4/7] Generando .env
+       - Crea el archivo backend\.env con:
+         * Puerto: 3000 (no requiere admin)
+         * URL de BD con la contrasena que ingreso
+         * JWT secrets generados aleatoriamente
+         * Configuracion de correo (placeholder)
+         * Rate limiting
+
+     [5/7] Instalando backend
+       - Instala dependencias de Node.js (npm install)
+       - Genera el cliente Prisma
+       - Crea las tablas en la base de datos
+       - Carga datos iniciales (usuario admin, categorias, config)
+
+     [6/7] Instalando frontend
+       - Instala dependencias de Node.js
+       - Compila la interfaz de usuario para produccion
+
+     [7/7] Creando acceso en escritorio
+       - Crea acceso directo "Dextremix Finance" en el escritorio
+
+  4. Cuando vea el mensaje "INSTALACION COMPLETADA", ya puede usar el
+     sistema. Presione cualquier tecla para cerrar el instalador.
+
+
+PASO 2: INICIAR EL SISTEMA
+──────────────────────────────────────────────────────────────────────────
+
+  Hay dos formas de iniciar el sistema:
+
+  Opcion A (Recomendada): Acceso directo en el escritorio
+    - Haga doble clic en "Dextremix Finance" en el escritorio
+
+  Opcion B: Manual
+    - Abra la carpeta C:\Programa de Finanzas\financial_app\
+    - Haga doble clic en INICIAR.bat
+
+  El sistema iniciara automaticamente:
+  1. PostgreSQL (si no estaba corriendo)
+  2. El servidor backend (API en puerto 3000)
+  3. Abrira el navegador en la direccion del sistema
+
+  Cuando vea el mensaje "SISTEMA LISTO - DEXTREMIX FINANCE", puede
+  empezar a usar la aplicacion.
+
+
+PASO 3: PRIMER ACCESO
+──────────────────────────────────────────────────────────────────────────
+
+  1. El navegador se abrira automaticamente en:
+     http://dextremix.local:3000
+     - O manualmente: http://localhost:3000
+
+  2. Ingrese con las credenciales por defecto:
+     - Usuario: admin
+     - Contrasena: admin
+
+  3. El sistema le pedira CAMBIAR LA CONTRASENA obligatoriamente.
+     - Use una contrasena segura (min. 8 caracteres, 3 de 4:
+       mayuscula, minuscula, numero, caracter especial)
+     - Esta nueva contrasena es la que usara de ahora en adelante
+
+  IMPORTANTE: Cambie la contrasena en el primer inicio por seguridad.
+
+
+PASO 4: USO DIARIO
+──────────────────────────────────────────────────────────────────────────
+
+  Cada vez que quiera usar el sistema:
+  1. Ejecute INICIAR.bat (o el acceso directo del escritorio)
+  2. Espere a que el servidor este listo (~5-10 segundos)
+  3. El navegador se abrira automaticamente
+
+  Cuando termine de usar el sistema:
+  1. Presione cualquier tecla en la ventana de INICIAR.bat
+  2. El sistema se apagara automaticamente
+     (PostgreSQL + servidor backend)
+
+  NOTA: No cierre la ventana de INICIAR.bat con la X. Siempre presione
+  una tecla para apagar correctamente. Si cierra con la X, el proceso
+  Node.js puede quedar en segundo plano. Para solucionarlo:
+  - Abra el Administrador de Tareas (Ctrl+Shift+Esc)
+  - Busque procesos "node.exe" y finaliceolos
+  - O simplemente ejecute INICIAR.bat de nuevo (la nueva version ya
+    limpia procesos zombies automaticamente)
+
+
+================================================================================
+PARTE 3 - SOLUCION DE PROBLEMAS COMUNES
+================================================================================
+
+
+3.1  "Authentication failed against database server at 127.0.0.1"
+──────────────────────────────────────────────────────────────────────────
+
+  CAUSA: La contrasena en backend\.env no coincide con la contrasena
+  configurada en PostgreSQL.
+
+  SOLUCION:
+  1. Abrir backend\.env con el Bloc de Notas
+  2. Verificar la linea DATABASE_URL="postgresql://postgres:TU_CLAVE@..."
+     - Reemplace TU_CLAVE con la contrasena real que uso al instalar
+  3. Guardar el archivo y reiniciar INICIAR.bat
+
+
+3.2  "El proceso no tiene acceso al archivo porque esta siendo utilizado"
+──────────────────────────────────────────────────────────────────────────
+
+  CAUSA: Un proceso anterior de INICIAR.BAT quedo en segundo plano con
+  el archivo de log bloqueado.
+
+  SOLUCION (automatica en la nueva version):
+  - Simplemente ejecute INICIAR.bat de nuevo
+  - La nueva version (con la correccion) mata procesos zombies
+    automaticamente
+
+  SOLUCION MANUAL:
+  1. Abrir Administrador de Tareas (Ctrl+Shift+Esc)
+  2. Buscar procesos "node.exe" y finalizarolos
+  3. Buscar procesos "postgres.exe" que no deban estar
+  4. Eliminar el archivo: logs\app.log
+  5. Ejecutar INICIAR.bat de nuevo
+
+
+3.3  "Credenciales invalidas" al iniciar sesion
+──────────────────────────────────────────────────────────────────────────
+
+  CAUSA: La contrasena hash almacenada en la base de datos no coincide
+  con "admin". Puede ocurrir si el seed de datos fallo durante la
+  instalacion.
+
+  SOLUCION:
+  1. Asegurese de que PostgreSQL este corriendo
+  2. Abra una terminal (CMD) en la carpeta backend\
+  3. Ejecute: ..\bin\node.exe prisma\seed.js
+  4. Esto actualizara la contrasena del admin a "admin"
+  5. Reinicie INICIAR.bat
+
+  Si el problema persiste:
+  - Verifique que el .env tenga JWT_SECRET y JWT_REFRESH_SECRET con
+    valores (no vacios)
+
+
+3.4  "Puerto 5432 en uso" o "PostgreSQL no arranca"
+──────────────────────────────────────────────────────────────────────────
+
+  CAUSA: Otro servicio de PostgreSQL ya esta usando el puerto 5432.
+
+  SOLUCION:
+  1. Detener cualquier servicio PostgreSQL del sistema:
+     - Abrir Servicios (services.msc)
+     - Buscar "postgresql-*"
+     - Detener el servicio
+  2. O cambiar el puerto en backend\.env y en postgresql.conf
+
+  Si usa el PostgreSQL portable incluido:
+  - Asegurese de que la carpeta data\pg_data este inicializada
+  - Si no, ejecute INSTALAR.bat de nuevo
+
+
+3.5  "dextremix.local" no funciona en el navegador
+──────────────────────────────────────────────────────────────────────────
+
+  CAUSA: El archivo hosts de Windows no tiene la entrada para
+  dextremix.local, o el DNS cache no se ha actualizado.
+
+  SOLUCION:
+  1. Verificar el archivo hosts:
+     - Abrir Bloc de Notas COMO ADMINISTRADOR
+     - Abrir: C:\Windows\System32\drivers\etc\hosts
+     - Agregar al final: 127.0.0.1 dextremix.local
+     - Guardar
+
+  2. Limpiar cache DNS:
+     - Abrir CMD como administrador
+     - Ejecutar: ipconfig /flushdns
+
+  3. Alternativa: Use http://localhost:3000 directamente
+
+
+3.6  El navegador no se abre automaticamente
+──────────────────────────────────────────────────────────────────────────
+
+  CAUSA: Puede ser un bloqueo de seguridad del navegador o del sistema.
+
+  SOLUCION:
+  - Abra manualmente: http://localhost:3000
+  - O: http://dextremix.local:3000
+
+
+3.7  Error de compilacion del frontend
+──────────────────────────────────────────────────────────────────────────
+
+  CAUSA: Faltan dependencias o hay un error en el codigo del frontend.
+
+  SOLUCION:
+  1. Navegar a la carpeta frontend\
+  2. Ejecutar: ..\bin\npm.cmd install
+  3. Ejecutar: ..\bin\npm.cmd run build
+  4. Si persiste, revisar la consola de errores
+
+
+================================================================================
+PARTE 4 - REFERENCIA DE ARCHIVOS IMPORTANTES
+================================================================================
+
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │ Archivo                    │ Descripcion                          │
+  ├────────────────────────────┼───────────────────────────────────────┤
+  │ INSTALAR.bat               │ Instalador (ejecutar una vez)        │
+  │ INICIAR.bat                │ Iniciar el sistema                   │
+  │ DETENER.bat                │ Detener el sistema manualmente       │
+  │ RESTAURAR_BACKUP.bat       │ Restaurar respaldo                   │
+  │ CREA_BACKUP.bat            │ Crear respaldo manual                │
+  │ backend\.env               │ Configuracion del sistema            │
+  │ backend\prisma\seed.js     │ Datos iniciales (admin, categorias)  │
+  │ backend\prisma\schema.prisma│ Esquema de base de datos            │
+  │ logs\app.log               │ Log del servidor backend             │
+  │ logs\postgres.log          │ Log de PostgreSQL                    │
+  │ data\pg_data\              │ Datos de PostgreSQL (portable)       │
+  └─────────────────────────────────────────────────────────────────────┘
+
+
+================================================================================
+PARTE 5 - CONFIGURACION AVANZADA (OPCIONAL)
+================================================================================
+
+5.1  Cambiar el tiempo de sesion JWT
+──────────────────────────────────────────────────────────────────────────
+
+  Si los usuarios se quejan de que la sesion se cierra muy rapido
+  (por defecto 15 minutos), puede aumentar el tiempo en backend\.env:
+
+  JWT_EXPIRES_IN=2h       (2 horas)
+  JWT_REFRESH_EXPIRES_IN=30d  (30 dias)
+
+  Valores recomendados para aplicaciones empresariales:
+  - JWT_EXPIRES_IN=2h a 4h
+  - JWT_REFRESH_EXPIRES_IN=7d a 30d
+
+
+5.2  Configurar correo electronico (SMTP)
+──────────────────────────────────────────────────────────────────────────
+
+  En backend\.env, reemplace los valores de ejemplo con su servidor
+  de correo real:
+
+  SMTP_HOST=smtp.gmail.com
+  SMTP_PORT=587
+  SMTP_USER=su.correo@gmail.com
+  SMTP_PASS=su-contrasena-de-aplicacion
+  SMTP_FROM="Su Empresa <noreply@suempresa.com>"
+  NOTIFICATION_EMAILS=admin@suempresa.com
+
+
+5.3  Configurar respaldos automaticos
+──────────────────────────────────────────────────────────────────────────
+
+  - Use PROGRAMAR_RESPALDO_DIARIO.bat para programar respaldos
+  - Los respaldos se guardan en la carpeta backups/
+  - Use RESTAURAR_BACKUP.bat para restaurar un respaldo
+
+
+================================================================================
+PARTE 6 - HISTORIAL DE VERSIONES
+================================================================================
+
+  Version 1.0.0 (2026-05-21)
+  ──────────────────────────────────────────────────────────────────────
+  - Correccion de .env: contrasena de BD, JWT secrets, SMTP_FROM, puerto
+  - Correccion de INSTALAR.bat: escapes en SMTP_FROM, puerto en mensaje
+  - Correccion de INICIAR.bat: limpieza de procesos zombies y logs
+  - Seed de admin re-ejecutado (contrasena admin/admin funcional)
+  - Puerto cambiado de 80 a 3000 (compatibilidad Win10/Win11)
+  - Esta documentacion de cambios y manual de instalacion
+
+
+================================================================================
+  FIN DEL DOCUMENTO
+================================================================================
