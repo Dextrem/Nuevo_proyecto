@@ -253,7 +253,7 @@ if exist "!EXTRACTED_ROOT!\frontend\" (
 
 :: 3. Actualizar scripts batch (.bat)
 echo %A%  Actualizando scripts...%N%
-for %%S in (INSTALAR.bat INICIAR.bat DETENER.bat CONFIGURA_ARRANQUE_AUTOMATICO.bat CREA_BACKUP.bat RESTAURAR_BACKUP.bAT PROGRAMAR_RESPALDO_DIARIO.bat REPARAR_RED.bat) do (
+for %%S in (INSTALAR.bat INICIAR.bat DETENER.bat ACTUALIZAR.bat ACTUALIZAR_PRIMERA_VEZ.bat CONFIGURA_ARRANQUE_AUTOMATICO.bat CREA_BACKUP.bat RESTAURAR_BACKUP.bAT PROGRAMAR_RESPALDO_DIARIO.bat REPARAR_RED.bat) do (
     if exist "!EXTRACTED_ROOT!\%%S" (
         copy /Y "!EXTRACTED_ROOT!\%%S" "%CD%\%%S" >nul 2>&1
     )
