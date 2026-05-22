@@ -1,0 +1,109 @@
+========================================================
+  FINANDEX - GUIA DE ACTUALIZACION EN PC REMOTA
+========================================================
+
+Esta guia describe como actualizar Finandex en otra PC
+usando el script ACTUALIZAR.bat.
+
+--------------------------------------------------------
+  REQUISITOS
+--------------------------------------------------------
+
+1. La PC debe tener instalado Finandex (Node.js + PostgreSQL)
+2. Conexion a Internet activa
+3. Windows 10 u 11 (cualquier edicion)
+4. No necesita Git, ni PowerShell skills, ni claves SSH
+
+--------------------------------------------------------
+  PASO A PASO
+--------------------------------------------------------
+
+PASO 1: CERRAR EL SISTEMA
+  - Si Finandex esta abierto en el navegador, cerrarlo
+  - Ejecutar DETENER.bat para apagar el servidor
+  - Esperar 5 segundos
+
+PASO 2: ABRIR POWERSHELL COMO ADMINISTRADOR
+  Click derecho > "Windows PowerShell (Administrador)" O:
+  - Presionar Windows + X
+  - Seleccionar "Windows PowerShell (Administrador)"
+  - Si pregunta "Permitir cambios", hacer clic en "Si"
+
+PASO 3: NAVEGAR A LA CARPETA DE FINANDEX
+  Escribir en PowerShell:
+    cd "C:\Programa de Finanzas\financial_app"
+  (Ajustar la ruta si se instalo en otro lado)
+
+PASO 4: EJECUTAR EL ACTUALIZADOR
+  Escribir:
+    .\ACTUALIZAR.bat
+  - El script verificara: Node.js, Internet, directorio
+  - Preguntara confirmacion: escribir S y Enter
+  - Descargara automaticamente la ultima version desde GitHub
+  - Instalara dependencias, migrara base de datos,
+    compilara el frontend, y limpiara temporales
+
+PASO 5: REINICIAR EL SISTEMA
+  - Ejecutar INICIAR.bat
+  - Esperar a que cargue el servidor
+  - Abrir navegador en http://localhost:3000
+  - Iniciar sesion con admin y su clave actual
+    (la clave NO se resetea durante la actualizacion)
+
+--------------------------------------------------------
+  LO QUE SE ACTUALIZA
+--------------------------------------------------------
+
+  [SI] Codigo del backend (nuevas funciones, correcciones)
+  [SI] Codigo del frontend (nuevas funciones, correcciones)
+  [SI] Scripts batch (INICIAR.bat, INSTALAR.bat, etc.)
+  [SI] Documentacion (GUIAs, README)
+
+--------------------------------------------------------
+  LO QUE SE PRESERVA (NO SE TOCA)
+--------------------------------------------------------
+
+  [NO] data/             - Base de datos local
+  [NO] bin/              - Node.js y PostgreSQL portables
+  [NO] backend/.env      - Configuracion local (puerto, BD, JWT)
+  [NO] backups/          - Respaldos existentes
+  [NO] logs/             - Historial de errores
+  [NO] uploads/          - Imagenes de productos
+  [NO] Clave del admin   - No se resetea
+
+--------------------------------------------------------
+  MEJORAS INCLUIDAS (v1.1)
+--------------------------------------------------------
+
+- Sesion activa por 4 horas (antes 15 min)
+- Sin cierre automatico de sesion (el usuario decide cuando salir)
+- Lector de codigo de barras funciona desde cualquier parte del POS
+- Carrito de compras mas ancho en el POS
+- Actualizacion automatica via ACTUALIZAR.bat
+- El repositorio Git ahora solo contiene codigo fuente (sin bin/ data/)
+
+--------------------------------------------------------
+  SOLUCION DE PROBLEMAS
+--------------------------------------------------------
+
+PROBLEMA: "No se reconoce ACTUALIZAR.bat"
+  SOLUCION: Navegar a la carpeta correcta con:
+    cd "C:\Programa de Finanzas\financial_app"
+
+PROBLEMA: "ExecutionPolicy error en PowerShell"
+  SOLUCION: El script ya incluye -ExecutionPolicy Bypass
+  Si falla, ejecutar primero:
+    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+PROBLEMA: "Error al descargar el ZIP"
+  SOLUCION: Verificar conexion a Internet
+  Desactivar firewall/antivirus temporalmente si bloquea
+
+PROBLEMA: "La pagina no carga despues de actualizar"
+  SOLUCION: Abrir PowerShell como Admin y ejecutar:
+    cd "C:\Programa de Finanzas\financial_app"
+    .\DETENER.bat
+    .\INICIAR.bat
+  Esperar 10 segundos y recargar http://localhost:3000
+
+========================================================

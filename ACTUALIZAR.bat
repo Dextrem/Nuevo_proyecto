@@ -262,7 +262,7 @@ echo %V%    [OK] Scripts actualizados%N%
 
 :: 4. Actualizar documentacion
 echo %A%  Actualizando documentacion...%N%
-for %%D in (GUIA_CAMBIOS_Y_MANUAL_INSTALACION.txt GUIA_DE_INSTALACION_Y_USO.txt README.md) do (
+for %%D in (GUIA_CAMBIOS_Y_MANUAL_INSTALACION.txt GUIA_DE_INSTALACION_Y_USO.txt GUIA_ACTUALIZACION_PC_REMOTA.txt README.md) do (
     if exist "!EXTRACTED_ROOT!\%%D" (
         copy /Y "!EXTRACTED_ROOT!\%%D" "%CD%\%%D" >nul 2>&1
     )
@@ -339,17 +339,7 @@ if !errorlevel! neq 0 (
     exit /b 1
 )
 echo %V%  [OK] Base de datos migrada%N%
-
-:: Actualizar seed de admin
-echo %A%Actualizando usuario administrador...%N%
-call node prisma/seed.js >nul 2>&1
-if !errorlevel! neq 0 (
-    echo %R%  [ERROR] seed.js fallo%N%
-    popd
-    pause
-    exit /b 1
-)
-echo %V%  [OK] Usuario admin actualizado%N%
+echo %A%  [NOTA] Usuario admin conserva su clave actual (no se resetea)%N%
 popd
 
 :: ========================================
