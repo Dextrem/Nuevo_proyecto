@@ -206,12 +206,13 @@ const Reports = () => {
     switch (type) {
       case 'sales':
         title = 'Reporte de Ventas';
-        data.push(['Fecha', 'N° Factura', 'Cliente', 'Método', 'Subtotal', 'ITBIS', 'Descuento', 'Total', 'Estado']);
+        data.push(['Fecha', 'N° Factura', 'Cliente', 'Productos', 'Método', 'Subtotal', 'ITBIS', 'Descuento', 'Total', 'Estado']);
         salesDetail.forEach(sale => {
           data.push([
             new Date(sale.createdAt).toLocaleDateString(),
             sale.invoiceNumber,
             sale.client?.name || 'General',
+            sale.items?.map(i => i.product?.name).join(', ') || '-',
             sale.paymentMethod === 'CASH' ? 'Efectivo' : sale.paymentMethod === 'CARD' ? 'Tarjeta' : 'Crédito',
             { t: 'n', v: sale.subtotal || 0, z: '"RD$"#,##0.00' },
             { t: 'n', v: sale.tax || 0, z: '"RD$"#,##0.00' },
@@ -222,7 +223,7 @@ const Reports = () => {
         });
         if (salesDetail.length > 0) {
           const total = salesDetail.reduce((sum, s) => sum + (s.total || 0), 0);
-          data.push(['', '', '', 'TOTAL', '', '', '', { t: 'n', v: total, z: '"RD$"#,##0.00' }, '']);
+          data.push(['', '', '', '', 'TOTAL', '', '', '', { t: 'n', v: total, z: '"RD$"#,##0.00' }, '']);
         }
         break;
 
@@ -790,16 +791,17 @@ const Reports = () => {
           </div>
           <table className="data-table">
             <thead>
-              <tr><th>Fecha</th><th>Factura</th><th>Cliente</th><th>Método</th><th>Subtotal</th><th>ITBIS</th><th>Total</th><th>Estado</th></tr>
+              <tr><th>Fecha</th><th>Factura</th><th>Cliente</th><th>Productos</th><th>Método</th><th>Subtotal</th><th>ITBIS</th><th>Total</th><th>Estado</th></tr>
             </thead>
             <tbody>
               {salesDetail.length === 0 ? (
-                <tr><td colSpan="8" style={{ textAlign: 'center', padding: '40px' }}>No hay ventas en este período</td></tr>
+                <tr><td colSpan="9" style={{ textAlign: 'center', padding: '40px' }}>No hay ventas en este período</td></tr>
               ) : salesDetail.map(sale => (
                 <tr key={sale.id}>
                   <td>{new Date(sale.createdAt).toLocaleDateString()}</td>
                   <td><strong>{sale.invoiceNumber}</strong></td>
                   <td>{sale.client?.name || 'General'}</td>
+                  <td>{sale.items?.map(i => i.product?.name).join(', ') || '-'}</td>
                   <td><span className="badge badge-success">{sale.paymentMethod === 'CASH' ? 'Efectivo' : sale.paymentMethod === 'CARD' ? 'Tarjeta' : 'Crédito'}</span></td>
                   <td>{formatCurrency(sale.subtotal)}</td>
                   <td>{formatCurrency(sale.tax)}</td>
@@ -810,7 +812,7 @@ const Reports = () => {
             </tbody>
             <tfoot>
               <tr style={{ background: 'var(--bg-surface-hover)', fontWeight: '700' }}>
-                <td colSpan="6" style={{ textAlign: 'right' }}>TOTAL:</td>
+                <td colSpan="7" style={{ textAlign: 'right' }}>TOTAL:</td>
                 <td>{formatCurrency(totalSales)}</td>
                 <td></td>
               </tr>

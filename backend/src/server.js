@@ -140,7 +140,7 @@ app.use((req, res, next) => {
     next();
   } else {
     logger.warn(`⚠️ Intento de acceso no autorizado al host: ${host} desde IP: ${req.ip}`);
-    res.status(403).send('Acceso denegado: Este sistema solo permite acceso mediante dextremix.local, la dirección IP local o el nombre de red del equipo.');
+    res.status(403).json({ error: 'Acceso denegado: use http://localhost:3000 o http://dextremix.local para acceder.' });
   }
 });
 

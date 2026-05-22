@@ -1122,7 +1122,7 @@ body {
 /* POS Layout */
 .pos-container { 
     display:grid; 
-    grid-template-columns: 1fr 520px; 
+    grid-template-columns: 1fr 1.3fr; 
     gap:20px; 
     flex:1; 
     min-height: 0; 
@@ -1132,7 +1132,7 @@ body {
 
 @media (max-width: 1024px) {
     .pos-container {
-        grid-template-columns: 1fr 1.5fr;
+        grid-template-columns: 1fr 1.8fr;
     }
 }
 

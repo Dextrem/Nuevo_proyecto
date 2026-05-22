@@ -40,8 +40,14 @@ api.interceptors.response.use(
     // Handle 401 Unauthorized errors
     if (error.response?.status === 401 && !originalRequest._retry) {
       const refreshToken = sessionStorage.getItem('refreshToken');
+      const isLoginRoute = originalRequest.url?.includes('/auth/login');
       const isLoginPage = window.location.pathname === '/login';
       const isAuthRoute = originalRequest.url?.includes('/auth');
+
+      // On login attempts, don't redirect — let the error reach the login form
+      if (isLoginRoute) {
+        return Promise.reject(error);
+      }
 
       // If we cannot refresh, force logout with feedback
       if (!refreshToken || isLoginPage || isAuthRoute) {
