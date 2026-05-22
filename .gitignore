@@ -21,6 +21,8 @@ __pycache__/
 scratch/
 temp/
 backend/uploads/
+*.rar
+*.zip
 installer/
 INSTALL/
 _standalone_archive/
