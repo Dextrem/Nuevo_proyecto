@@ -173,18 +173,17 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use((err, req, res, next) => {
+  logger.error('Error no manejado por el controlador:', { message: err.message, stack: err.stack?.split('\n')[0], url: req.originalUrl, method: req.method });
   if (err.code === 'P2002') {
     return res.status(400).json({ 
       error: 'Ya existe un registro con estos datos únicos' 
     });
   }
-  
   if (err.code === 'P2025') {
     return res.status(404).json({ 
       error: 'Registro no encontrado' 
     });
   }
-
   res.status(500).json({ 
     error: 'Error interno del servidor',
     message: process.env.NODE_ENV === 'development' ? err.message : undefined

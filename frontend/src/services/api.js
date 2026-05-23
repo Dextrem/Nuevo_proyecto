@@ -51,14 +51,20 @@ api.interceptors.response.use(
 
       // If we cannot refresh, force logout with feedback
       if (!refreshToken || isLoginPage || isAuthRoute) {
-        sessionStorage.clear();
-        if (typeof window.showToast === 'function') {
-          window.showToast('Sesión expiró, por favor inicie sesión nuevamente.', 'error');
-        } else {
-          alert('Sesión expiró, por favor inicie sesión nuevamente.');
+        // Already on login page — just return error silently (no redirect loop)
+        if (isLoginPage) {
+          return Promise.reject(error);
         }
-        window.location.replace('/login');
-        return Promise.reject(error);
+        // Auth routes — let the error propagate normally
+        if (isAuthRoute) {
+          return Promise.reject(error);
+        }
+        // No refresh token — redirect to login without misleading "session expired" alert
+        if (!refreshToken) {
+          sessionStorage.clear();
+          window.location.replace('/login');
+          return Promise.reject(error);
+        }
       }
 
       // Mark request to avoid infinite loops
