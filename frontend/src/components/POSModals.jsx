@@ -417,14 +417,14 @@ const ThermalReceipt80 = memo(({ sale, settings, formatCurrency }) => (
         <span>Producto</span><span>Cant</span><span>Total</span>
       </div>
     </div>
-    {sale.items.map((item, index) => (
-      <div key={index} style={{ marginBottom: '2px' }}>
-        <div>{item.product?.name || 'Producto'}</div>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <span>x{item.quantity}</span><span>{formatCurrency(item.total)}</span>
+      {sale.items.map((item, index) => (
+        <div key={index} style={{ marginBottom: '2px' }}>
+          <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.product?.name || 'Producto'}</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span>x{item.quantity}</span><span>{formatCurrency(item.total)}</span>
+          </div>
         </div>
-      </div>
-    ))}
+      ))}
     <div style={{ marginTop: '8px', borderTop: '1px dashed #000', paddingTop: '4px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Subtotal:</span><span>{formatCurrency(sale.subtotal)}</span></div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>ITBIS:</span><span>{formatCurrency(sale.tax)}</span></div>

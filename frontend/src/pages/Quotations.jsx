@@ -788,8 +788,8 @@ const Quotations = () => {
       pdf.text(cName, infoX, y + 11);
       pdf.text(`RNC/Céd: ${cRnc}`, infoX, y + 16);
       pdf.text(`Tel: ${cPhone}`, infoX + 80, y + 11);
-      pdf.text(cAddr, infoX + 80, y + 16);
-      pdf.text(`Email: ${cEmail}`, infoX, y + 21);
+      pdf.text(cAddr.length > 35 ? cAddr.substring(0, 34) + '...' : cAddr, infoX + 80, y + 16);
+      pdf.text(cEmail.length > 28 ? cEmail.substring(0, 27) + '...' : cEmail, infoX, y + 21);
 
       const issueDate = q.createdAt ? new Date(q.createdAt) : new Date();
       const expiryDate = new Date(issueDate);
@@ -812,7 +812,7 @@ const Quotations = () => {
       bold(8);
       const headers = ['#', 'Código', 'Descripción', 'Cant.', 'P. Unit.', 'Total'];
       for (let i = 0; i < headers.length; i++) {
-        pdf.text(headers[i], colX[i] + (i >= 3 ? colW[i] - 2 : 2), y + 5.5, { align: i >= 3 ? 'right' : 'left' });
+        pdf.text(headers[i], colX[i] + (i >= 3 ? colW[i] - 3 : 2), y + 5.5, { align: i >= 3 ? 'right' : 'left' });
         pdf.rect(colX[i], y, colW[i], headerH, 'F');
       }
 
@@ -839,10 +839,10 @@ const Quotations = () => {
         pdf.text(String(i + 1), colX[0] + 3, y + 4.5);
         pdf.text(sku, colX[1] + 2, y + 4.5);
         pdf.text(name.length > 35 ? name.substring(0, 34) + '...' : name, colX[2] + 2, y + 4.5);
-        pdf.text(String(qty), colX[3] + colW[3] - 2, y + 4.5, { align: 'right' });
-        pdf.text(formatCurrency(price), colX[4] + colW[4] - 2, y + 4.5, { align: 'right' });
+        pdf.text(String(qty), colX[3] + colW[3] - 3, y + 4.5, { align: 'right' });
+        pdf.text(formatCurrency(price), colX[4] + colW[4] - 3, y + 4.5, { align: 'right' });
         bold(8);
-        pdf.text(formatCurrency(total), colX[5] + colW[5] - 2, y + 4.5, { align: 'right' });
+        pdf.text(formatCurrency(total), colX[5] + colW[5] - 3, y + 4.5, { align: 'right' });
         line(y + rowH - 0.5);
         y += rowH;
       }
@@ -895,9 +895,15 @@ const Quotations = () => {
       if (q.deliveryTime) { pdf.text(`Tiempo de Entrega: ${q.deliveryTime}`, ml + 5, condY); condY += 5.5; }
       if (q.warranty) { pdf.text(`Garantía: ${q.warranty}`, ml + 5, condY); condY += 5.5; }
       if (q.notes) {
+        const noteLines = pdf.splitTextToSize(`Notas: ${q.notes}`, contentW - 10);
+        const noteHeight = noteLines.length * 4.5;
+        if (condY + noteHeight > y + 38) {
+          pdf.rect(ml, y, contentW, condY + noteHeight - y + 6, 'F');
+        }
         condY = Math.max(condY + 2, y + 28);
         line(condY - 0.5);
-        pdf.text(`Notas: ${q.notes}`, ml + 5, condY + 1);
+        pdf.text(noteLines, ml + 5, condY + 1);
+        condY += noteHeight;
       }
 
       y = Math.max(y + 45, condY + 8) + 5;
@@ -957,17 +963,17 @@ const Quotations = () => {
       switch (printType) {
         case 'ticket58':
           return `<style>
-            body { font-family: 'Courier New', monospace; font-size: 10px; margin: 0; padding: 5px; }
-            .thermal-58 { max-width: 54mm; margin: 0 auto; }
+            body { font-family: 'Courier New', monospace; font-size: 10px; margin: 0; padding: 0; }
+            .thermal-58 { max-width: 50mm; margin: 0 auto; padding: 2mm; box-sizing: border-box; }
             .center { text-align: center; }
-            @page { size: 58mm auto; margin: 0; }
+            @page { size: 58mm auto; margin: 3mm; }
           </style>`;
         case 'ticket80':
           return `<style>
-            body { font-family: 'Courier New', monospace; font-size: 12px; margin: 0; padding: 10px; }
-            .thermal-80 { max-width: 76mm; margin: 0 auto; }
+            body { font-family: 'Courier New', monospace; font-size: 12px; margin: 0; padding: 0; }
+            .thermal-80 { max-width: 72mm; margin: 0 auto; padding: 3mm; box-sizing: border-box; }
             .center { text-align: center; }
-            @page { size: 80mm auto; margin: 0; }
+            @page { size: 80mm auto; margin: 3mm; }
           </style>`;
         case 'letter':
         default:
