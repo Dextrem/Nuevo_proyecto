@@ -789,22 +789,24 @@ const Quotations = () => {
       line(y); y += 6;
 
       // ── INFO BOX ──
-      pdf.setFillColor(clr.light[0], clr.light[1], clr.light[2]);
-      pdf.rect(ml, y, contentW, 28, 'F');
-      const infoX = ml + 5;
-      bold(9); color(clr.dark);
-      pdf.text('CLIENTE', infoX, y + 5);
-      normal(9);
       const cName = q.client?.name || q.clientName || 'Público General';
       const cRnc = q.client?.rnc || q.clientRnc || 'N/A';
       const cPhone = q.client?.phone || q.clientPhone || 'N/A';
       const cAddr = q.client?.address || q.clientAddress || 'N/A';
       const cEmail = q.client?.email || q.clientEmail || 'N/A';
+      const infoHeight = 8 + (cAddr.length > 35 ? Math.ceil(cAddr.length / 35) * 4.5 : 4.5) + 4.5 + 4.5;
+      pdf.setFillColor(clr.light[0], clr.light[1], clr.light[2]);
+      pdf.rect(ml, y, contentW, Math.max(28, infoHeight), 'F');
+      const infoX = ml + 5;
+      bold(9); color(clr.dark);
+      pdf.text('CLIENTE', infoX, y + 5);
+      normal(9);
       pdf.text(cName, infoX, y + 11);
       pdf.text(`RNC/Céd: ${cRnc}`, infoX, y + 16);
       pdf.text(`Tel: ${cPhone}`, infoX + 80, y + 11);
-      pdf.text(cAddr.length > 35 ? cAddr.substring(0, 34) + '...' : cAddr, infoX + 80, y + 16);
-      pdf.text(cEmail.length > 28 ? cEmail.substring(0, 27) + '...' : cEmail, infoX, y + 21);
+      const addrLines = pdf.splitTextToSize(cAddr, 60);
+      pdf.text(addrLines, infoX + 80, y + 16);
+      pdf.text(cEmail, infoX, y + 21);
 
       const issueDate = q.createdAt ? new Date(q.createdAt) : new Date();
       const expiryDate = new Date(issueDate);
@@ -814,7 +816,7 @@ const Quotations = () => {
       bold(9); color(clr.red);
       pdf.text(`Válida hasta: ${expiryDate.toLocaleDateString('es-DO')}`, infoX + 155, y + 18);
 
-      y += 34;
+      y += Math.max(28, infoHeight) + 6;
 
       // ── ITEMS TABLE ──
       const colX = [ml, ml + 8, ml + 30, ml + 95, ml + 115, ml + 143];
@@ -840,8 +842,11 @@ const Quotations = () => {
         const qty = item.quantity;
         const price = item.price || item.total || 0;
         const total = price * qty;
+        const nameLines = pdf.splitTextToSize(name, colW[2] - 4);
+        const lineH = 4;
+        const actualRowH = Math.max(rowH, nameLines.length * lineH + 2);
 
-        if (y + rowH > 270) {
+        if (y + actualRowH > 270) {
           pdf.addPage();
           y = 25;
         }
@@ -849,17 +854,17 @@ const Quotations = () => {
         normal(8); color(clr.dark);
         if (i % 2 === 1) {
           pdf.setFillColor(249, 250, 251);
-          pdf.rect(ml, y, contentW, rowH, 'F');
+          pdf.rect(ml, y, contentW, actualRowH, 'F');
         }
         pdf.text(String(i + 1), colX[0] + 3, y + 4.5);
         pdf.text(sku, colX[1] + 2, y + 4.5);
-        pdf.text(name.length > 35 ? name.substring(0, 34) + '...' : name, colX[2] + 2, y + 4.5);
+        pdf.text(nameLines, colX[2] + 2, y + 4.5);
         pdf.text(String(qty), colX[3] + colW[3] - 3, y + 4.5, { align: 'right' });
         pdf.text(formatCurrency(price), colX[4] + colW[4] - 3, y + 4.5, { align: 'right' });
         bold(8);
         pdf.text(formatCurrency(total), colX[5] + colW[5] - 3, y + 4.5, { align: 'right' });
-        line(y + rowH - 0.5);
-        y += rowH;
+        line(y + actualRowH - 0.5);
+        y += actualRowH;
       }
 
       y += 5;
@@ -941,6 +946,20 @@ const Quotations = () => {
       pdf.text('Esta cotización es confidencial. Los precios pueden variar sin previo aviso.', pw / 2, y + 4, { align: 'center' });
       normal(6);
       pdf.text(`Generado el ${new Date().toLocaleString('es-DO')}`, pw / 2, y + 8, { align: 'center' });
+
+      // ── PAGE NUMBERS ──
+      const totalPages = pdf.internal.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        normal(7); color(clr.gray);
+        if (i < totalPages) {
+          pdf.setFillColor(249, 249, 249);
+          pdf.rect(ml, 275, contentW, 10, 'F');
+          pdf.text('Esta cotización es confidencial. Los precios pueden variar sin previo aviso.', pw / 2, 279, { align: 'center' });
+          pdf.text(`Generado el ${new Date().toLocaleString('es-DO')}`, pw / 2, 283, { align: 'center' });
+        }
+        pdf.text(`Página ${i} de ${totalPages}`, pw - mr, 279, { align: 'right' });
+      }
 
       pdf.save(`Cotizacion_${q.quotationNumber || 'COT'}.pdf`);
     } catch (error) {

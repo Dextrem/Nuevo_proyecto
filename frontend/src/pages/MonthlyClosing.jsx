@@ -138,6 +138,42 @@ const MonthlyClosing = () => {
     }
   };
 
+  const printReport = () => {
+    const content = document.getElementById('report-content');
+    if (!content) return;
+    const htmlContent = content.innerHTML;
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    if (!printWindow) return;
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Cierre Contable</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: Arial, sans-serif; font-size: 12px; padding: 20px; color: #000; }
+            table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+            th, td { padding: 6px 8px; border: 1px solid #000; text-align: left; font-size: 11px; }
+            th { background: #f0f0f0; font-weight: bold; }
+            h1 { font-size: 18px; margin: 10px 0; }
+            h2 { font-size: 14px; margin: 8px 0; }
+            h3 { font-size: 12px; margin: 6px 0; }
+            .center { text-align: center; }
+            .report-tabs, .btn, button, .no-print { display: none !important; }
+            @page { size: letter; margin: 0.5in; }
+          </style>
+        </head>
+        <body>
+          ${htmlContent}
+          <script>
+            window.onload = function() { window.print(); setTimeout(function() { window.close(); }, 500); };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
   const getMonthName = (month) => {
     const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
     return months[month - 1];
@@ -1217,7 +1253,7 @@ const MonthlyClosing = () => {
             {renderReportContent()}
 
             <div style={{ display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'center', position: 'sticky', bottom: '0', background: '#fff', padding: '15px', borderTop: '1px solid #eee' }}>
-              <button className="btn btn-primary" onClick={() => window.print()}>
+              <button className="btn btn-primary" onClick={printReport}>
                 <i className="fas fa-print"></i> Imprimir Reporte
               </button>
               <button className="btn btn-outline" onClick={() => setShowReportModal(false)}>

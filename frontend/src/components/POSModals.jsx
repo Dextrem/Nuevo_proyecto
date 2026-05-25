@@ -70,6 +70,9 @@ const QuotationReceipt80 = memo(({ sale, settings, formatCurrency }) => {
           <strong>Notas:</strong> {sale.notes}
         </div>
       )}
+      {settings.receiptFooterMessage && (
+        <div className="center" style={{ marginTop: '6px', fontSize: '7px', fontStyle: 'italic' }}>{settings.receiptFooterMessage}</div>
+      )}
       <div className="center" style={{ marginTop: '8px', fontSize: '8px' }}>
         ----------------------------<br />
         Esta cotización tiene validez de {sale.validityDays} días<br />
@@ -143,6 +146,9 @@ const QuotationReceipt58 = memo(({ sale, settings, formatCurrency }) => {
         <div style={{ marginTop: '4px', fontSize: '7px' }}>
           <strong>Notas:</strong> {sale.notes.substring(0, 50)}{sale.notes.length > 50 ? '...' : ''}
         </div>
+      )}
+      {settings.receiptFooterMessage && (
+        <div className="center" style={{ marginTop: '3px', fontSize: '6px', fontStyle: 'italic' }}>{settings.receiptFooterMessage}</div>
       )}
       <div className="center" style={{ marginTop: '4px', fontSize: '7px' }}>
         ========================<br />
@@ -384,6 +390,10 @@ const QuotationLetterReceipt = memo(({ sale, settings, formatCurrency }) => {
         </p>
       </div>
 
+      {settings.receiptFooterMessage && (
+        <div style={{ textAlign: 'center', marginTop: '15px', fontSize: '9pt', fontStyle: 'italic', color: '#666' }}>{settings.receiptFooterMessage}</div>
+      )}
+
       <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '9pt', color: '#999' }}>
         <p style={{ margin: '0' }}>Generado el {new Date().toLocaleString('es-DO')} | Sistema de Gestión</p>
       </div>
@@ -435,6 +445,9 @@ const ThermalReceipt80 = memo(({ sale, settings, formatCurrency }) => (
       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Pagado:</span><span>{formatCurrency(sale.paidAmount)}</span></div>
       {sale.change > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', color: 'green' }}><span>Cambio:</span><span>{formatCurrency(sale.change)}</span></div>}
     </div>
+    {settings.receiptFooterMessage && (
+      <div className="center" style={{ marginTop: '4px', fontSize: '8px', fontStyle: 'italic' }}>{settings.receiptFooterMessage}</div>
+    )}
     <div className="center" style={{ marginTop: '8px' }}>----------------------------<br />¡Gracias por su compra!</div>
   </div>
 ));
@@ -475,6 +488,9 @@ const ThermalReceipt58 = memo(({ sale, settings, formatCurrency }) => (
         <span>TOTAL:</span><span>{formatCurrency(sale.total)}</span>
       </div>
     </div>
+    {settings.receiptFooterMessage && (
+      <div className="center" style={{ marginTop: '3px', fontSize: '7px', fontStyle: 'italic' }}>{settings.receiptFooterMessage}</div>
+    )}
     <div className="center" style={{ marginTop: '6px' }}>========================<br />¡GRACIAS!</div>
   </div>
 ));
@@ -534,6 +550,9 @@ const LetterReceipt = memo(({ sale, settings, formatCurrency }) => (
       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Pagado:</span><span>{formatCurrency(sale.paidAmount)}</span></div>
       {sale.change > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', color: 'green' }}><span>Cambio:</span><span>{formatCurrency(sale.change)}</span></div>}
     </div>
+    {settings.receiptFooterMessage && (
+      <div className="center" style={{ marginTop: '10px', fontSize: '9pt', fontStyle: 'italic', color: '#666' }}>{settings.receiptFooterMessage}</div>
+    )}
     <div className="center" style={{ marginTop: '30px', paddingTop: '15px', borderTop: '1px solid #ccc' }}>
       <p>¡Gracias por su compra!</p>
     </div>
@@ -622,6 +641,9 @@ const A4Receipt = memo(({ sale, settings, formatCurrency }) => (
         </table>
       </div>
     </div>
+    {settings.receiptFooterMessage && (
+      <div className="center" style={{ marginTop: '20px', fontSize: '10px', fontStyle: 'italic', color: '#666' }}>{settings.receiptFooterMessage}</div>
+    )}
     <div className="center" style={{ marginTop: '50px', paddingTop: '20px', borderTop: '2px solid #ccc' }}>
       <p style={{ fontSize: '14px', fontStyle: 'italic' }}>¡Gracias por preferirnos!</p>
       <p style={{ fontSize: '10px', color: '#666', marginTop: '20px' }}>Esta factura es un documento legal conforme a las leyes vigentes.</p>
