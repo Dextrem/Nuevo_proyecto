@@ -3,6 +3,7 @@ import { clientService, saleService } from '../services/api';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { notifyDataUpdate } from '../hooks/useDataSync';
+import ConfirmModal from '../components/ConfirmModal';
 
 const AccountsReceivable = () => {
   const [accountsReceivable, setAccountsReceivable] = useState([]);
@@ -29,6 +30,7 @@ const AccountsReceivable = () => {
   const [activeTab, setActiveTab] = useState('invoices'); // 'invoices' o 'pending-payments'
   const [pendingPayments, setPendingPayments] = useState([]);
   const [pendingLoading, setPendingLoading] = useState(false);
+  const [confirmPayment, setConfirmPayment] = useState({ show: false, id: null, action: '' });
   const { formatCurrency } = useApp();
   const { hasPermission } = useAuth();
 
@@ -76,27 +78,36 @@ const AccountsReceivable = () => {
     }
   };
 
-  const handleApprovePayment = async (id) => {
-    if (!confirm('¿Estás seguro de aprobar este abono? Se registrará en contabilidad y afectará el balance del cliente.')) return;
+  const handleApprovePayment = (id) => {
+    setConfirmPayment({ show: true, id, action: 'approve' });
+  };
+
+  const handleRejectPayment = (id) => {
+    setConfirmPayment({ show: true, id, action: 'reject' });
+  };
+
+  const confirmPaymentAction = async () => {
+    const { id, action } = confirmPayment;
     try {
-      await saleService.approvePendingPayment(id);
-      loadPendingPayments();
-      notifyDataUpdate('accounts_receivable');
-      alert('Abono aprobado exitosamente');
+      if (action === 'approve') {
+        await saleService.approvePendingPayment(id);
+        loadPendingPayments();
+        notifyDataUpdate('accounts_receivable');
+        alert('Abono aprobado exitosamente');
+      } else {
+        await saleService.rejectPendingPayment(id);
+        loadPendingPayments();
+        alert('Abono rechazado');
+      }
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al aprobar abono');
+      alert(error.response?.data?.error || 'Error al procesar abono');
+    } finally {
+      setConfirmPayment({ show: false, id: null, action: '' });
     }
   };
 
-  const handleRejectPayment = async (id) => {
-    if (!confirm('¿Estás seguro de rechazar este abono?')) return;
-    try {
-      await saleService.rejectPendingPayment(id);
-      loadPendingPayments();
-      alert('Abono rechazado');
-    } catch (error) {
-      alert(error.response?.data?.error || 'Error al rechazar abono');
-    }
+  const cancelPaymentAction = () => {
+    setConfirmPayment({ show: false, id: null, action: '' });
   };
 
   const handleFilterChange = (field, value) => {
@@ -657,6 +668,21 @@ const AccountsReceivable = () => {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        show={confirmPayment.show}
+        title={confirmPayment.action === 'approve' ? 'Aprobar Abono' : 'Rechazar Abono'}
+        message={confirmPayment.action === 'approve'
+          ? '&iquest;Est&aacute;s seguro de aprobar este abono? Se registrar&aacute; en contabilidad y afectar&aacute; el balance del cliente.'
+          : '&iquest;Est&aacute;s seguro de rechazar este abono?'
+        }
+        icon={confirmPayment.action === 'approve' ? 'fa-check-circle' : 'fa-times-circle'}
+        iconColor={confirmPayment.action === 'approve' ? '#10B981' : '#EF4444'}
+        confirmText={confirmPayment.action === 'approve' ? 'S&iacute;, aprobar' : 'S&iacute;, rechazar'}
+        confirmButtonClass={confirmPayment.action === 'approve' ? 'btn btn-primary' : 'btn btn-primary'}
+        onConfirm={confirmPaymentAction}
+        onCancel={cancelPaymentAction}
+      />
     </div>
   );
 };

@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { notifyDataUpdate } from '../hooks/useDataSync';
 import Pagination from '../components/Pagination';
+import ConfirmModal from '../components/ConfirmModal';
 
 const Accounting = () => {
   const [transactions, setTransactions] = useState([]);
@@ -28,6 +29,11 @@ const Accounting = () => {
   });
   const { formatCurrency } = useApp();
   const { hasPermission } = useAuth();
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [showBudgetWarning, setShowBudgetWarning] = useState(false);
+  const [budgetWarningMsg, setBudgetWarningMsg] = useState('');
+  const [pendingSubmit, setPendingSubmit] = useState(null);
 
   const [formData, setFormData] = useState({
     type: 'INCOME',
@@ -118,7 +124,7 @@ const Accounting = () => {
   };
 
   const checkBudgetLimit = async (amount, category, type) => {
-    if (type !== 'EXPENSE' || !category) return true;
+    if (type !== 'EXPENSE' || !category) return { allowed: true };
     try {
       const now = new Date();
       const year = now.getFullYear();
@@ -130,18 +136,19 @@ const Accounting = () => {
       ]);
 
       const budget = budgetsRes.data.find(b => b.category === category);
-      if (!budget) return true;
+      if (!budget) return { allowed: true };
 
       const currentActual = executionRes.data.expenseByCategory[category] || 0;
       const totalAfter = currentActual + parseFloat(amount);
 
       if (totalAfter > budget.plannedAmount) {
-        return confirm(`⚠️ ADVERTENCIA DE POLÍTICA: Este gasto de ${formatCurrency(amount)} hará que la categoría '${category}' exceda el presupuesto mensual (${formatCurrency(budget.plannedAmount)}).\n\n¿Desea continuar de todos modos?`);
+        const msg = `Este gasto de ${formatCurrency(amount)} har&aacute; que la categor&iacute;a '${category}' exceda el presupuesto mensual (${formatCurrency(budget.plannedAmount)}).`;
+        return { allowed: false, warning: msg };
       }
-      return true;
+      return { allowed: true };
     } catch (e) {
       console.error('Error al verificar presupuesto:', e);
-      return true;
+      return { allowed: true };
     }
   };
 
@@ -149,19 +156,15 @@ const Accounting = () => {
     e.preventDefault();
     try {
       const amount = parseFloat(formData.amount);
-      const isAllowed = await checkBudgetLimit(amount, formData.category, formData.type);
-      if (!isAllowed) return;
-
-      const data = {
-        ...formData,
-        amount,
-      };
-
-      if (editingTransaction) {
-        await transactionService.update(editingTransaction.id, data);
-      } else {
-        await transactionService.create(data);
+      const result = await checkBudgetLimit(amount, formData.category, formData.type);
+      if (!result.allowed) {
+        setBudgetWarningMsg(result.warning);
+        setShowBudgetWarning(true);
+        setPendingSubmit(formData);
+        return;
       }
+
+      await saveTransaction(formData, amount);
 
       setShowModal(false);
       loadData();
@@ -171,16 +174,51 @@ const Accounting = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('¿Estás seguro de eliminar esta transacción?')) return;
+  const confirmSubmitWithBudgetWarning = async () => {
+    const amount = parseFloat(pendingSubmit.amount);
+    await saveTransaction(pendingSubmit, amount);
+    setShowBudgetWarning(false);
+    setPendingSubmit(null);
+    setShowModal(false);
+    loadData();
+    notifyDataUpdate('transactions');
+  };
 
+  const cancelBudgetWarning = () => {
+    setShowBudgetWarning(false);
+    setPendingSubmit(null);
+  };
+
+  const saveTransaction = async (data, amount) => {
+    const payload = { ...data, amount };
+    if (editingTransaction) {
+      await transactionService.update(editingTransaction.id, payload);
+    } else {
+      await transactionService.create(payload);
+    }
+  };
+
+  const handleDelete = (id) => {
+    setDeleteTargetId(id);
+    setShowConfirmDelete(true);
+  };
+
+  const confirmDeleteTransaction = async () => {
     try {
-      await transactionService.delete(id);
+      await transactionService.delete(deleteTargetId);
       loadData();
       notifyDataUpdate('transactions');
     } catch (error) {
       alert(error.response?.data?.error || 'Error al eliminar transacción');
+    } finally {
+      setShowConfirmDelete(false);
+      setDeleteTargetId(null);
     }
+  };
+
+  const cancelDeleteTransaction = () => {
+    setShowConfirmDelete(false);
+    setDeleteTargetId(null);
   };
 
   if (loading) {
@@ -459,6 +497,30 @@ const Accounting = () => {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        show={showBudgetWarning}
+        title="Advertencia de Presupuesto"
+        message={budgetWarningMsg}
+        icon="fa-exclamation-triangle"
+        iconColor="#F59E0B"
+        confirmText="S&iacute;, continuar"
+        confirmButtonClass="btn btn-primary"
+        onConfirm={confirmSubmitWithBudgetWarning}
+        onCancel={cancelBudgetWarning}
+      />
+
+      <ConfirmModal
+        show={showConfirmDelete}
+        title="Eliminar Transacci&oacute;n"
+        message="&iquest;Est&aacute;s seguro de eliminar esta transacci&oacute;n?"
+        icon="fa-trash-alt"
+        iconColor="#EF4444"
+        confirmText="S&iacute;, eliminar"
+        confirmButtonClass="btn btn-primary"
+        onConfirm={confirmDeleteTransaction}
+        onCancel={cancelDeleteTransaction}
+      />
     </div>
   );
 };

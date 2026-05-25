@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { quotationService, clientService, productService, saleService } from '../services/api';
 import { useApp } from '../context/AppContext';
 import { QuotationReceipt80, QuotationReceipt58, QuotationLetterReceipt } from '../components/POSModals';
+import ConfirmModal from '../components/ConfirmModal';
 
 const QuotationModal = ({ products, clients, onSave, onClose, editingQuotation, formatCurrency, onCreateClient }) => {
   const [formData, setFormData] = useState({
@@ -575,6 +576,8 @@ const Quotations = () => {
   const [copied, setCopied] = useState(false);
   const pdfPreviewRef = useRef(null);
   const [showPdfLoading, setShowPdfLoading] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const { formatCurrency, settings } = useApp();
 
   const loadData = async () => {
@@ -635,14 +638,26 @@ const Quotations = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('¿Eliminar esta cotización?')) return;
+  const handleDelete = (id) => {
+    setConfirmDeleteId(id);
+    setShowConfirmDelete(true);
+  };
+
+  const confirmDelete = async () => {
     try {
-      await quotationService.delete(id);
+      await quotationService.delete(confirmDeleteId);
       loadData();
     } catch (error) {
       alert(error.response?.data?.error || 'Error al eliminar');
+    } finally {
+      setShowConfirmDelete(false);
+      setConfirmDeleteId(null);
     }
+  };
+
+  const cancelDelete = () => {
+    setShowConfirmDelete(false);
+    setConfirmDeleteId(null);
   };
 
   const handleCreateClient = async (clientData) => {
@@ -1383,6 +1398,18 @@ const Quotations = () => {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        show={showConfirmDelete}
+        title="Eliminar Cotizaci&oacute;n"
+        message="&iquest;Eliminar esta cotizaci&oacute;n? Esta acci&oacute;n no se puede deshacer."
+        icon="fa-trash-alt"
+        iconColor="#EF4444"
+        confirmText="S&iacute;, eliminar"
+        confirmButtonClass="btn btn-primary"
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </div>
   );
 };

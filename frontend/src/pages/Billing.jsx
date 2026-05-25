@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { ThermalReceipt58, ThermalReceipt80, LetterReceipt } from '../components/POSModals';
 import { notifyDataUpdate } from '../hooks/useDataSync';
+import ConfirmModal from '../components/ConfirmModal';
 
 const Billing = () => {
   const [loading, setLoading] = useState(true);
@@ -31,6 +32,7 @@ const Billing = () => {
   const [cancelForm, setCancelForm] = useState({ username: '', password: '' });
   const [pendingInvoiceToPrint, setPendingInvoiceToPrint] = useState(null);
   const [pendingInvoiceToCancel, setPendingInvoiceToCancel] = useState(null);
+  const [showConfirmCancelInvoice, setShowConfirmCancelInvoice] = useState(false);
   const [printType, setPrintType] = useState('ticket58');
   const { formatCurrency, settings } = useApp();
   const { hasPermission } = useAuth();
@@ -121,13 +123,12 @@ const Billing = () => {
     setCancelForm({ username: '', password: '' });
   };
 
-  const handleCancelSale = async (e) => {
-    e.preventDefault();
-    if (!pendingInvoiceToCancel) return;
+  const handleCancelSaleConfirm = () => {
+    setShowConfirmCancelInvoice(true);
+  };
 
-    if (!window.confirm(`¿Está seguro que desea ANULAR la factura ${pendingInvoiceToCancel.invoiceNumber}? Esta acción devolverá el stock y reversará los pagos.`)) {
-      return;
-    }
+  const executeCancelSale = async () => {
+    if (!pendingInvoiceToCancel) return;
 
     try {
       setLoading(true);
@@ -137,6 +138,7 @@ const Billing = () => {
       });
       
       setShowCancelModal(false);
+      setShowConfirmCancelInvoice(false);
       alert('Venta anulada exitosamente');
       loadData();
       notifyDataUpdate();
@@ -742,7 +744,7 @@ const Billing = () => {
             <p style={{ marginBottom: '20px', color: 'var(--text-muted)' }}>
               Se requiere autorización de un <strong>Supervisor</strong> o <strong>Administrador</strong> para anular la factura <strong>{pendingInvoiceToCancel?.invoiceNumber}</strong>.
             </p>
-            <form onSubmit={handleCancelSale}>
+            <form onSubmit={(e) => { e.preventDefault(); handleCancelSaleConfirm(); }}>
               <div className="form-group" style={{ marginBottom: '12px' }}>
                 <label>Usuario Supervisor</label>
                 <input 
@@ -778,6 +780,18 @@ const Billing = () => {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        show={showConfirmCancelInvoice}
+        title="Anular Factura"
+        message={pendingInvoiceToCancel ? `&iquest;Est&aacute; seguro que desea ANULAR la factura ${pendingInvoiceToCancel.invoiceNumber}? Esta acci&oacute;n devolver&aacute; el stock y reversar&aacute; los pagos.` : ''}
+        icon="fa-ban"
+        iconColor="#EF4444"
+        confirmText="S&iacute;, anular"
+        confirmButtonClass="btn btn-primary"
+        onConfirm={executeCancelSale}
+        onCancel={() => setShowConfirmCancelInvoice(false)}
+      />
     </div>
   );
 };

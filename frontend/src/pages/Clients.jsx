@@ -3,6 +3,7 @@ import { clientService } from '../services/api';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import Pagination from '../components/Pagination';
+import ConfirmModal from '../components/ConfirmModal';
 
 const Clients = () => {
   const [clients, setClients] = useState([]);
@@ -12,6 +13,8 @@ const Clients = () => {
   const [editingClient, setEditingClient] = useState(null);
   const [selectedClient, setSelectedClient] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
@@ -122,15 +125,26 @@ const Clients = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('¿Estás seguro de desactivar este cliente? No podrá realizar nuevas compras a menos que lo reactives.')) return;
+  const handleDelete = (id) => {
+    setConfirmDeleteId(id);
+    setShowConfirmDelete(true);
+  };
 
+  const confirmDelete = async () => {
     try {
-      await clientService.delete(id);
+      await clientService.delete(confirmDeleteId);
       loadClients();
     } catch (error) {
       alert(error.response?.data?.error || 'Error al eliminar cliente');
+    } finally {
+      setShowConfirmDelete(false);
+      setConfirmDeleteId(null);
     }
+  };
+
+  const cancelDelete = () => {
+    setShowConfirmDelete(false);
+    setConfirmDeleteId(null);
   };
 
   const handlePayment = async () => {
@@ -491,6 +505,18 @@ const Clients = () => {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        show={showConfirmDelete}
+        title="Desactivar Cliente"
+        message="&iquest;Est&aacute;s seguro de desactivar este cliente? No podr&aacute; realizar nuevas compras a menos que lo reactives."
+        icon="fa-user-slash"
+        iconColor="#EF4444"
+        confirmText="S&iacute;, desactivar"
+        confirmButtonClass="btn btn-primary"
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </div>
   );
 };

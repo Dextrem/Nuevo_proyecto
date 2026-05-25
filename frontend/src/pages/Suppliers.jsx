@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supplierService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import Pagination from '../components/Pagination';
+import ConfirmModal from '../components/ConfirmModal';
 
 const Suppliers = () => {
   const [suppliers, setSuppliers] = useState([]);
@@ -17,6 +18,8 @@ const Suppliers = () => {
     hasNext: false,
     hasPrev: false
   });
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const { hasPermission, hasRole } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -95,15 +98,26 @@ const Suppliers = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('¿Estás seguro de desactivar este proveedor?')) return;
+  const handleDelete = (id) => {
+    setConfirmDeleteId(id);
+    setShowConfirmDelete(true);
+  };
 
+  const confirmDelete = async () => {
     try {
-      await supplierService.delete(id);
+      await supplierService.delete(confirmDeleteId);
       loadSuppliers();
     } catch (error) {
       alert(error.response?.data?.error || 'Error al eliminar proveedor');
+    } finally {
+      setShowConfirmDelete(false);
+      setConfirmDeleteId(null);
     }
+  };
+
+  const cancelDelete = () => {
+    setShowConfirmDelete(false);
+    setConfirmDeleteId(null);
   };
 
   const filteredSuppliers = suppliers.filter(
@@ -306,6 +320,18 @@ const Suppliers = () => {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        show={showConfirmDelete}
+        title="Desactivar Proveedor"
+        message="&iquest;Est&aacute;s seguro de desactivar este proveedor? No podr&aacute; gestionar facturas hasta que lo reactive."
+        icon="fa-truck"
+        iconColor="#EF4444"
+        confirmText="S&iacute;, desactivar"
+        confirmButtonClass="btn btn-primary"
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </div>
   );
 };

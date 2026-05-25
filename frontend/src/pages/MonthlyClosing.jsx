@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
 import { monthlyClosingService } from '../services/api';
+import ConfirmModal from '../components/ConfirmModal';
 
 const MonthlyClosing = () => {
   const [closings, setClosings] = useState([]);
@@ -21,6 +22,7 @@ const MonthlyClosing = () => {
   const [statusLoading, setStatusLoading] = useState(false);
   const [error, setError] = useState(null);
   const [listFilters, setListFilters] = useState({ year: '', status: '' });
+  const [showConfirmCreate, setShowConfirmCreate] = useState(false);
   const { hasPermission } = useAuth();
   const { formatCurrency } = useApp();
 
@@ -91,12 +93,11 @@ const MonthlyClosing = () => {
     }
   }, [showModal, selectedYear, selectedMonth]);
 
-  const handleCreateClosing = async () => {
-    const confirmMsg = `¿Estás seguro de crear el cierre para ${selectedYear}-${String(selectedMonth).padStart(2, '0')}? Esta acción no se puede deshacer.`;
-    if (!confirm(confirmMsg)) {
-      return;
-    }
+  const handleCreateClosing = () => {
+    setShowConfirmCreate(true);
+  };
 
+  const confirmCreateClosing = async () => {
     try {
       setCreating(true);
       const data = await monthlyClosingService.create({
@@ -115,7 +116,12 @@ const MonthlyClosing = () => {
       alert(err.response?.data?.error || 'Error al crear cierre');
     } finally {
       setCreating(false);
+      setShowConfirmCreate(false);
     }
+  };
+
+  const cancelCreateClosing = () => {
+    setShowConfirmCreate(false);
   };
 
   const handleViewReport = async (year, month) => {
@@ -1221,6 +1227,18 @@ const MonthlyClosing = () => {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        show={showConfirmCreate}
+        title="Crear Cierre Mensual"
+        message={`&iquest;Est&aacute;s seguro de crear el cierre para ${selectedYear}-${String(selectedMonth).padStart(2, '0')}? Esta acci&oacute;n no se puede deshacer.`}
+        icon="fa-calendar-alt"
+        iconColor="#4F46E5"
+        confirmText="S&iacute;, crear cierre"
+        confirmButtonClass="btn btn-primary"
+        onConfirm={confirmCreateClosing}
+        onCancel={cancelCreateClosing}
+      />
     </div>
   );
 };

@@ -3,6 +3,7 @@ import budgetService, { getBudgetExecution } from '../services/budgetService';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { DATA_UPDATED_EVENT } from '../hooks/useDataSync';
+import ConfirmModal from '../components/ConfirmModal';
 
 const BUDGET_CATEGORIES = [
   { id: 'ventas', name: 'Ventas', type: 'income' },
@@ -27,6 +28,8 @@ const Budget = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [summary, setSummary] = useState(null);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const { formatCurrency } = useApp();
   const { hasPermission } = useAuth();
 
@@ -157,15 +160,27 @@ const Budget = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('¿Estás seguro de eliminar este presupuesto?')) return;
+  const handleDelete = (id) => {
+    setConfirmDeleteId(id);
+    setShowConfirmDelete(true);
+  };
+
+  const confirmDelete = async () => {
     try {
-      await budgetService.delete(id);
+      await budgetService.delete(confirmDeleteId);
       loadBudgets();
       loadSummary();
     } catch (error) {
       alert(error.response?.data?.error || 'Error al eliminar presupuesto');
+    } finally {
+      setShowConfirmDelete(false);
+      setConfirmDeleteId(null);
     }
+  };
+
+  const cancelDelete = () => {
+    setShowConfirmDelete(false);
+    setConfirmDeleteId(null);
   };
 
   const getBudgetProgress = (category, type) => {
@@ -436,6 +451,18 @@ const Budget = () => {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        show={showConfirmDelete}
+        title="Eliminar Presupuesto"
+        message="&iquest;Est&aacute;s seguro de eliminar este presupuesto? Esta acci&oacute;n no se puede deshacer."
+        icon="fa-trash-alt"
+        iconColor="#EF4444"
+        confirmText="S&iacute;, eliminar"
+        confirmButtonClass="btn btn-primary"
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </div>
   );
 };

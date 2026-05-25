@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { userService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import Pagination from '../components/Pagination';
+import ConfirmModal from '../components/ConfirmModal';
 
 const AVAILABLE_PERMISSIONS = [
   { key: 'manage_users', label: 'Gestionar Usuarios', description: 'Crear, editar y eliminar usuarios' },
@@ -31,6 +32,8 @@ const Users = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
@@ -122,15 +125,26 @@ const Users = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('¿Estás seguro de eliminar este usuario?')) return;
+  const handleDelete = (id) => {
+    setConfirmDeleteId(id);
+    setShowConfirmDelete(true);
+  };
 
+  const confirmDelete = async () => {
     try {
-      await userService.delete(id);
+      await userService.delete(confirmDeleteId);
       loadUsers();
     } catch (error) {
       alert(error.response?.data?.message || error.response?.data?.error || 'Error al eliminar usuario');
+    } finally {
+      setShowConfirmDelete(false);
+      setConfirmDeleteId(null);
     }
+  };
+
+  const cancelDelete = () => {
+    setShowConfirmDelete(false);
+    setConfirmDeleteId(null);
   };
 
   const handlePermissionChange = (key, checked) => {
@@ -435,6 +449,18 @@ const Users = () => {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        show={showConfirmDelete}
+        title="Eliminar Usuario"
+        message="&iquest;Est&aacute;s seguro de eliminar este usuario? Perder&aacute; acceso al sistema."
+        icon="fa-user-slash"
+        iconColor="#EF4444"
+        confirmText="S&iacute;, eliminar"
+        confirmButtonClass="btn btn-primary"
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </div>
   );
 };

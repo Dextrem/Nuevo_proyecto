@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { fiscalService, settingsService } from '../services/api';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
+import ConfirmModal from '../components/ConfirmModal';
 
 const NCF_TYPE_LABELS = {
   '01': 'Crédito Fiscal', '02': 'Consumo', '03': 'Débito',
@@ -21,6 +22,8 @@ const FiscalReports = () => {
     ncfType: '',
   });
   const [sequences, setSequences] = useState([]);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [showSequenceModal, setShowSequenceModal] = useState(false);
   const [editingSequence, setEditingSequence] = useState(null);
   const [sequenceForm, setSequenceForm] = useState({
@@ -87,14 +90,26 @@ const FiscalReports = () => {
     }
   };
 
-  const handleDeleteSequence = async (id) => {
-    if (!confirm('¿Eliminar esta secuencia fiscal definitivamente?')) return;
+  const handleDeleteSequence = (id) => {
+    setConfirmDeleteId(id);
+    setShowConfirmDelete(true);
+  };
+
+  const confirmDeleteSequence = async () => {
     try {
-      await fiscalService.deleteSequence(id);
+      await fiscalService.deleteSequence(confirmDeleteId);
       loadStatus();
     } catch (err) {
       alert(err.response?.data?.error || 'Error al eliminar');
+    } finally {
+      setShowConfirmDelete(false);
+      setConfirmDeleteId(null);
     }
+  };
+
+  const cancelDeleteSequence = () => {
+    setShowConfirmDelete(false);
+    setConfirmDeleteId(null);
   };
 
   const getAlertStyle = (alert) => {
@@ -472,6 +487,18 @@ const FiscalReports = () => {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        show={showConfirmDelete}
+        title="Eliminar Secuencia Fiscal"
+        message="&iquest;Eliminar esta secuencia fiscal definitivamente? Esta acci&oacute;n no se puede deshacer."
+        icon="fa-trash-alt"
+        iconColor="#EF4444"
+        confirmText="S&iacute;, eliminar"
+        confirmButtonClass="btn btn-primary"
+        onConfirm={confirmDeleteSequence}
+        onCancel={cancelDeleteSequence}
+      />
     </div>
   );
 };

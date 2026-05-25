@@ -3,6 +3,7 @@ import { supplierService, financialReportService } from '../services/api';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { notifyDataUpdate } from '../hooks/useDataSync';
+import ConfirmModal from '../components/ConfirmModal';
 
 const AccountsPayable = () => {
   const [suppliers, setSuppliers] = useState([]);
@@ -22,6 +23,8 @@ const AccountsPayable = () => {
   const [agingData, setAgingData] = useState(null);
   const [notificationText, setNotificationText] = useState('');
   const [allSuppliers, setAllSuppliers] = useState([]);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [confirmDeleteInvoice, setConfirmDeleteInvoice] = useState(null);
   const { formatCurrency } = useApp();
   const { hasPermission } = useAuth();
 
@@ -195,17 +198,28 @@ const AccountsPayable = () => {
     }
   };
 
-  const handleDeleteInvoice = async (invoice) => {
-    if (!confirm('¿Eliminar esta factura?')) return;
+  const handleDeleteInvoice = (invoice) => {
+    setConfirmDeleteInvoice(invoice);
+    setShowConfirmDelete(true);
+  };
 
+  const confirmDeleteInvoiceAction = async () => {
     try {
-      await supplierService.deleteInvoice(selectedSupplier.id, invoice.id);
+      await supplierService.deleteInvoice(selectedSupplier.id, confirmDeleteInvoice.id);
       loadSupplierDetails(selectedSupplier);
       loadSuppliers();
       alert('Factura eliminada');
     } catch (error) {
       alert(error.response?.data?.error || 'Error al eliminar');
+    } finally {
+      setShowConfirmDelete(false);
+      setConfirmDeleteInvoice(null);
     }
+  };
+
+  const cancelDeleteInvoice = () => {
+    setShowConfirmDelete(false);
+    setConfirmDeleteInvoice(null);
   };
 
   const isInvoiceOverdue = (invoice) => {
@@ -827,6 +841,18 @@ const AccountsPayable = () => {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        show={showConfirmDelete}
+        title="Eliminar Factura"
+        message="&iquest;Eliminar esta factura? Esta acci&oacute;n no se puede deshacer."
+        icon="fa-file-invoice"
+        iconColor="#EF4444"
+        confirmText="S&iacute;, eliminar"
+        confirmButtonClass="btn btn-primary"
+        onConfirm={confirmDeleteInvoiceAction}
+        onCancel={cancelDeleteInvoice}
+      />
     </div>
   );
 };

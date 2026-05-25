@@ -4,6 +4,7 @@ import { productService, categoryService } from '../services/api';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { notifyDataUpdate } from '../hooks/useDataSync';
+import ConfirmModal from '../components/ConfirmModal';
 
 const Inventory = () => {
   const [products, setProducts] = useState([]);
@@ -13,6 +14,9 @@ const Inventory = () => {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showBarcodeWarning, setShowBarcodeWarning] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [showConfirmDeleteCategory, setShowConfirmDeleteCategory] = useState(false);
+  const [confirmDeleteCategoryId, setConfirmDeleteCategoryId] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [importPreview, setImportPreview] = useState(null);
@@ -420,15 +424,26 @@ const Inventory = () => {
     }
   };
 
-  const handleDeleteCategory = async (id) => {
-    if (!confirm('¿Estás seguro de eliminar esta categoría?')) return;
+  const handleDeleteCategory = (id) => {
+    setConfirmDeleteCategoryId(id);
+    setShowConfirmDeleteCategory(true);
+  };
 
+  const confirmDeleteCategory = async () => {
     try {
-      await categoryService.delete(id);
+      await categoryService.delete(confirmDeleteCategoryId);
       loadData();
     } catch (error) {
       alert(error.response?.data?.error || 'Error al eliminar categoría');
+    } finally {
+      setShowConfirmDeleteCategory(false);
+      setConfirmDeleteCategoryId(null);
     }
+  };
+
+  const cancelDeleteCategory = () => {
+    setShowConfirmDeleteCategory(false);
+    setConfirmDeleteCategoryId(null);
   };
 
   const filteredProducts = products.filter((product) => {
@@ -891,6 +906,18 @@ const Inventory = () => {
         </div>
       )}
 
+      <ConfirmModal
+        show={showConfirmDeleteCategory}
+        title="Eliminar Categor&iacute;a"
+        message="&iquest;Est&aacute;s seguro de eliminar esta categor&iacute;a? Esta acci&oacute;n no se puede deshacer."
+        icon="fa-tags"
+        iconColor="#EF4444"
+        confirmText="S&iacute;, eliminar"
+        confirmButtonClass="btn btn-primary"
+        onConfirm={confirmDeleteCategory}
+        onCancel={cancelDeleteCategory}
+      />
+
       {showDeleteConfirm && (
         <div className="modal-overlay" onClick={cancelDelete}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
@@ -1040,11 +1067,7 @@ const Inventory = () => {
                               </button>
                               <button
                                 className="btn btn-outline"
-                                onClick={() => {
-                                  if (confirm(`¿Eliminar categoría "${category.name}"?`)) {
-                                    handleDeleteCategory(category.id);
-                                  }
-                                }}
+                                onClick={() => handleDeleteCategory(category.id)}
                                 title="Eliminar"
                                 style={{
                                   padding: '6px 10px',
