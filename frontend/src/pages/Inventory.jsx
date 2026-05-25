@@ -12,6 +12,7 @@ const Inventory = () => {
   const [showModal, setShowModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showBarcodeWarning, setShowBarcodeWarning] = useState(false);
   const [importPreview, setImportPreview] = useState(null);
   const [importResults, setImportResults] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -303,12 +304,14 @@ const Inventory = () => {
     if (isSubmitting) return;
 
     if (!editingProduct && !formData.barcode) {
-      const confirmSave = confirm(
-        'El artículo no tiene código de barras. Esto podría dificultar la búsqueda en ventas futuras con lector. ¿Desea guardarlo de todas formas?'
-      );
-      if (!confirmSave) return;
+      setShowBarcodeWarning(true);
+      return;
     }
 
+    await saveProduct();
+  };
+
+  const saveProduct = async () => {
     setIsSubmitting(true);
     try {
       const data = {
@@ -340,6 +343,15 @@ const Inventory = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleBarcodeConfirm = async () => {
+    setShowBarcodeWarning(false);
+    await saveProduct();
+  };
+
+  const handleBarcodeCancel = () => {
+    setShowBarcodeWarning(false);
   };
 
   const handleDelete = async (id) => {
@@ -835,6 +847,33 @@ const Inventory = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showBarcodeWarning && (
+        <div className="modal-overlay" onClick={handleBarcodeCancel}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
+            <div style={{ textAlign: 'center', padding: '20px 0' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '16px', color: '#F59E0B' }}>
+                <i className="fas fa-exclamation-triangle"></i>
+              </div>
+              <h3 style={{ margin: '0 0 12px 0', color: '#F59E0B' }}>Advertencia</h3>
+              <p style={{ color: 'var(--text-muted)', lineHeight: 1.6, margin: 0, fontSize: '0.95rem' }}>
+                El art&iacute;culo no tiene c&oacute;digo de barras. Esto podr&iacute;a dificultar la b&uacute;squeda en ventas futuras con lector.
+              </p>
+              <p style={{ color: 'var(--text-muted)', lineHeight: 1.6, margin: '12px 0 0 0', fontWeight: 600 }}>
+                &iquest;Desea guardarlo de todas formas?
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button className="btn btn-primary" onClick={handleBarcodeConfirm}>
+                <i className="fas fa-check"></i> S&iacute;, guardar
+              </button>
+              <button className="btn btn-outline" onClick={handleBarcodeCancel}>
+                Cancelar
+              </button>
+            </div>
           </div>
         </div>
       )}
