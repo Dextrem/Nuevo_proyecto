@@ -455,14 +455,14 @@ const Reports = () => {
       switch (printType) {
         case 'ticket58':
           return `<style>
-            body { font-family: 'Courier New', Courier, monospace; font-size: 10px; margin: 0; padding: 5px; color: #000; }
-            .ticket58 { max-width: 54mm; margin: 0 auto; }
+            body { font-family: 'Courier New', Courier, monospace; font-size: 10px; margin: 0; padding: 0; color: #000; }
+            .ticket58 { max-width: 50mm; margin: 0 auto; padding: 2mm; box-sizing: border-box; }
             .center { text-align: center; }
             table { width: 100%; border-collapse: collapse; margin: 5px 0; }
             th, td { padding: 2px; border: none; border-bottom: 1px dashed #000; text-align: left; font-size: 9px; }
             th { font-weight: bold; border-top: 1px dashed #000; border-bottom: 1px dashed #000; background: transparent; }
             h2, h3, h4 { margin: 4px 0; font-size: 12px; }
-            @page { size: 58mm auto; margin: 0; }
+            @page { size: 58mm auto; margin: 3mm; }
             .no-print { display: none !important; }
             canvas { display: none !important; }
             .general-stats-grid { display: block; margin: 5px 0; }
@@ -477,14 +477,14 @@ const Reports = () => {
           </style>`;
         case 'ticket80':
           return `<style>
-            body { font-family: 'Courier New', Courier, monospace; font-size: 12px; margin: 0; padding: 8px; color: #000; }
-            .ticket80 { max-width: 76mm; margin: 0 auto; }
+            body { font-family: 'Courier New', Courier, monospace; font-size: 12px; margin: 0; padding: 0; color: #000; }
+            .ticket80 { max-width: 72mm; margin: 0 auto; padding: 3mm; box-sizing: border-box; }
             .center { text-align: center; }
             table { width: 100%; border-collapse: collapse; margin: 8px 0; }
             th, td { padding: 3px; border: none; border-bottom: 1px dashed #000; text-align: left; font-size: 10px; }
             th { font-weight: bold; border-top: 1px dashed #000; border-bottom: 1px dashed #000; background: transparent; }
             h2, h3, h4 { margin: 6px 0; font-size: 14px; }
-            @page { size: 80mm auto; margin: 0; }
+            @page { size: 80mm auto; margin: 3mm; }
             .no-print { display: none !important; }
             canvas { display: none !important; }
             .general-stats-grid { display: block; margin: 8px 0; }

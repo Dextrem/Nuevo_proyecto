@@ -183,32 +183,36 @@ const Billing = () => {
             <title>Factura ${invoice.invoiceNumber}</title>
             <style>
               * { margin: 0; padding: 0; box-sizing: border-box; }
-              body { font-family: 'Courier New', monospace; width: 58mm; padding: 5px; font-size: 9px; }
+              body { font-family: 'Courier New', monospace; font-size: 9px; margin: 0; padding: 0; }
+              .thermal-58 { max-width: 50mm; margin: 0 auto; padding: 2mm; }
               .center { text-align: center; }
               .divider { border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 3px 0; margin: 5px 0; }
+              @page { size: 58mm auto; margin: 3mm; }
             </style>
           </head>
           <body>
-            <div class="center">
-              <strong style="font-size:12px">${settings.companyName}</strong>
-              ${settings.companyRnc ? `<div>RNC: ${settings.companyRnc}</div>` : ''}
-              ${settings.companyAddress ? `<div>${settings.companyAddress}</div>` : ''}
-              <div class="divider"></div>
-            </div>
-            <div style="margin-bottom:5px">
-              <div>F: ${new Date(invoice.createdAt).toLocaleDateString()}</div>
-              <div>#${invoice.invoiceNumber}</div>
-            </div>
-            <div style="margin-bottom:5px">${itemsHTML}</div>
-            <div style="border-top:1px dashed #000;padding-top:3px;margin-top:5px">
-              <div style="display:flex;justify-content:space-between"><span>Sub:</span><span>${formatCurrency(invoice.subtotal)}</span></div>
-              <div style="display:flex;justify-content:space-between"><span>ITBIS:</span><span>${formatCurrency(invoice.tax)}</span></div>
-              ${invoice.discount > 0 ? `<div style="color:red"><span>Des:</span><span>-${formatCurrency(invoice.discount)}</span></div>` : ''}
-              <div style="display:flex;justify-content:space-between;font-weight:bold;border-top:1px solid #000;margin-top:3px;padding-top:3px">
-                <span>TOTAL:</span><span>${formatCurrency(invoice.total)}</span>
+            <div class="thermal-58">
+              <div class="center">
+                <strong style="font-size:12px">${settings.companyName}</strong>
+                ${settings.companyRnc ? `<div>RNC: ${settings.companyRnc}</div>` : ''}
+                ${settings.companyAddress ? `<div>${settings.companyAddress}</div>` : ''}
+                <div class="divider"></div>
               </div>
+              <div style="margin-bottom:5px">
+                <div>F: ${new Date(invoice.createdAt).toLocaleDateString()}</div>
+                <div>#${invoice.invoiceNumber}</div>
+              </div>
+              <div style="margin-bottom:5px">${itemsHTML}</div>
+              <div style="border-top:1px dashed #000;padding-top:3px;margin-top:5px">
+                <div style="display:flex;justify-content:space-between"><span>Sub:</span><span>${formatCurrency(invoice.subtotal)}</span></div>
+                <div style="display:flex;justify-content:space-between"><span>ITBIS:</span><span>${formatCurrency(invoice.tax)}</span></div>
+                ${invoice.discount > 0 ? `<div style="color:red"><span>Des:</span><span>-${formatCurrency(invoice.discount)}</span></div>` : ''}
+                <div style="display:flex;justify-content:space-between;font-weight:bold;border-top:1px solid #000;margin-top:3px;padding-top:3px">
+                  <span>TOTAL:</span><span>${formatCurrency(invoice.total)}</span>
+                </div>
+              </div>
+              <div class="center" style="margin-top:5px">========================<br />¡GRACIAS!</div>
             </div>
-            <div class="center" style="margin-top:5px">========================<br />¡GRACIAS!</div>
           </body>
         </html>
       `;
@@ -229,39 +233,43 @@ const Billing = () => {
             <title>Factura ${invoice.invoiceNumber}</title>
             <style>
               * { margin: 0; padding: 0; box-sizing: border-box; }
-              body { font-family: 'Courier New', monospace; width: 80mm; padding: 10px; font-size: 10px; }
+              body { font-family: 'Courier New', monospace; font-size: 10px; margin: 0; padding: 0; }
+              .thermal-80 { max-width: 72mm; margin: 0 auto; padding: 3mm; }
               .center { text-align: center; }
+              @page { size: 80mm auto; margin: 3mm; }
             </style>
           </head>
           <body>
-            <div class="center" style="margin-bottom:8px">
-              ${settings.logo ? `<img src="${settings.logo}" style="max-height:40px;max-width:100px" />` : ''}
-              <strong style="font-size:14px">${settings.companyName}</strong>
-              ${settings.companyRnc ? `<div>RNC: ${settings.companyRnc}</div>` : ''}
-              ${settings.companyAddress ? `<div>${settings.companyAddress}</div>` : ''}
-              <div style="margin-top:4px">----------------------------</div>
-            </div>
-            <div style="margin-bottom:8px">
-              <div>Fecha: ${new Date(invoice.createdAt).toLocaleString()}</div>
-              <div>Cajero: ${invoice.user?.name || 'N/A'}</div>
-              ${invoice.client ? `<div>Cliente: ${invoice.client.name}</div>` : ''}
-              <div>Factura: ${invoice.invoiceNumber}</div>
-            </div>
-            <div style="border-top:1px dashed #000;border-bottom:1px dashed #000;padding:4px 0;margin-bottom:8px">
-              <div style="display:flex;justify-content:space-between"><span>Producto</span><span>Cant</span><span>Total</span></div>
-            </div>
-            <div style="margin-bottom:8px">${itemsHTML}</div>
-            <div style="border-top:1px dashed #000;padding-top:4px;margin-top:8px">
-              <div style="display:flex;justify-content:space-between"><span>Subtotal:</span><span>${formatCurrency(invoice.subtotal)}</span></div>
-              <div style="display:flex;justify-content:space-between"><span>ITBIS:</span><span>${formatCurrency(invoice.tax)}</span></div>
-              ${invoice.discount > 0 ? `<div style="color:red"><span>Desc:</span><span>-${formatCurrency(invoice.discount)}</span></div>` : ''}
-              <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:14px;border-top:1px solid #000;margin-top:4px;padding-top:4px">
-                <span>TOTAL:</span><span>${formatCurrency(invoice.total)}</span>
+            <div class="thermal-80">
+              <div class="center" style="margin-bottom:8px">
+                ${settings.logo ? `<img src="${settings.logo}" style="max-height:40px;max-width:100px" />` : ''}
+                <strong style="font-size:14px">${settings.companyName}</strong>
+                ${settings.companyRnc ? `<div>RNC: ${settings.companyRnc}</div>` : ''}
+                ${settings.companyAddress ? `<div>${settings.companyAddress}</div>` : ''}
+                <div style="margin-top:4px">----------------------------</div>
               </div>
-              <div style="display:flex;justify-content:space-between"><span>Pagado:</span><span>${formatCurrency(invoice.paidAmount)}</span></div>
-              ${invoice.change > 0 ? `<div style="color:green"><span>Cambio:</span><span>${formatCurrency(invoice.change)}</span></div>` : ''}
+              <div style="margin-bottom:8px">
+                <div>Fecha: ${new Date(invoice.createdAt).toLocaleString()}</div>
+                <div>Cajero: ${invoice.user?.name || 'N/A'}</div>
+                ${invoice.client ? `<div>Cliente: ${invoice.client.name}</div>` : ''}
+                <div>Factura: ${invoice.invoiceNumber}</div>
+              </div>
+              <div style="border-top:1px dashed #000;border-bottom:1px dashed #000;padding:4px 0;margin-bottom:8px">
+                <div style="display:flex;justify-content:space-between"><span>Producto</span><span>Cant</span><span>Total</span></div>
+              </div>
+              <div style="margin-bottom:8px">${itemsHTML}</div>
+              <div style="border-top:1px dashed #000;padding-top:4px;margin-top:8px">
+                <div style="display:flex;justify-content:space-between"><span>Subtotal:</span><span>${formatCurrency(invoice.subtotal)}</span></div>
+                <div style="display:flex;justify-content:space-between"><span>ITBIS:</span><span>${formatCurrency(invoice.tax)}</span></div>
+                ${invoice.discount > 0 ? `<div style="color:red"><span>Desc:</span><span>-${formatCurrency(invoice.discount)}</span></div>` : ''}
+                <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:14px;border-top:1px solid #000;margin-top:4px;padding-top:4px">
+                  <span>TOTAL:</span><span>${formatCurrency(invoice.total)}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between"><span>Pagado:</span><span>${formatCurrency(invoice.paidAmount)}</span></div>
+                ${invoice.change > 0 ? `<div style="color:green"><span>Cambio:</span><span>${formatCurrency(invoice.change)}</span></div>` : ''}
+              </div>
+              <div class="center" style="margin-top:8px">----------------------------<br />¡Gracias por su compra!</div>
             </div>
-            <div class="center" style="margin-top:8px">----------------------------<br />¡Gracias por su compra!</div>
           </body>
         </html>
       `;
@@ -290,6 +298,7 @@ const Billing = () => {
               .totals { text-align: right; background: #f9fafb; padding: 15px; border-radius: 8px; }
               .total-final { font-size: 18px; font-weight: bold; color: #4F46E5; margin-top: 10px; }
               .footer { text-align: center; margin-top: 30px; color: #666; }
+              @page { size: letter; margin: 0.5in; }
             </style>
           </head>
           <body>
