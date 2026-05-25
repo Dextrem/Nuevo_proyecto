@@ -33,7 +33,7 @@ const Billing = () => {
   const [pendingInvoiceToPrint, setPendingInvoiceToPrint] = useState(null);
   const [pendingInvoiceToCancel, setPendingInvoiceToCancel] = useState(null);
   const [showConfirmCancelInvoice, setShowConfirmCancelInvoice] = useState(false);
-  const [printType, setPrintType] = useState('ticket58');
+  const [printType, setPrintType] = useState('thermal-58');
   const { formatCurrency, settings, showNotification } = useApp();
   const { hasPermission } = useAuth();
 
@@ -166,7 +166,7 @@ const Billing = () => {
     
     let htmlContent = '';
     
-    if (printType === 'ticket58') {
+    if (printType === 'thermal-58') {
       const itemsHTML = invoice.items?.map(item => `
         <div style="margin-bottom:2px;font-size:9px">
           <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.product?.name || 'Producto'}</div>
@@ -216,7 +216,7 @@ const Billing = () => {
           </body>
         </html>
       `;
-    } else if (printType === 'ticket80') {
+    } else if (printType === 'thermal-80') {
       const itemsHTML = invoice.items?.map(item => `
         <div style="margin-bottom:2px">
           <div>${item.product?.name || 'Producto'}</div>
@@ -614,8 +614,8 @@ const Billing = () => {
                   <input
                     type="radio"
                     name="printType"
-                    value="ticket58"
-                    checked={printType === 'ticket58'}
+                    value="thermal-58"
+                    checked={printType === 'thermal-58'}
                     onChange={(e) => setPrintType(e.target.value)}
                   />
                   <i className="fas fa-receipt"></i> Ticket (58mm)
@@ -624,8 +624,8 @@ const Billing = () => {
                   <input
                     type="radio"
                     name="printType"
-                    value="ticket80"
-                    checked={printType === 'ticket80'}
+                    value="thermal-80"
+                    checked={printType === 'thermal-80'}
                     onChange={(e) => setPrintType(e.target.value)}
                   />
                   <i className="fas fa-receipt"></i> Ticket (80mm)
@@ -654,19 +654,10 @@ const Billing = () => {
               display: 'flex',
               justifyContent: 'center'
             }}>
-              {printType === 'ticket58' && (
-                <div style={{ 
-                  background: '#fff', 
-                  width: '220px', 
-                  padding: '10px',
-                  fontFamily: "'Courier New', monospace",
-                  fontSize: '9px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                }}>
-                  <ThermalReceipt58 sale={selectedInvoice} settings={settings} formatCurrency={formatCurrency} />
-                </div>
+              {printType === 'thermal-58' && (
+                <ThermalReceipt58 sale={selectedInvoice} settings={settings} formatCurrency={formatCurrency} />
               )}
-              {printType === 'ticket80' && (
+              {printType === 'thermal-80' && (
                 <div style={{ 
                   background: '#fff', 
                   width: '280px', 

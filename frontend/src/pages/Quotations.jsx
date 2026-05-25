@@ -569,7 +569,7 @@ const Quotations = () => {
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [editingQuotation, setEditingQuotation] = useState(null);
   const [selectedQuotation, setSelectedQuotation] = useState(null);
-  const [printType, setPrintType] = useState('ticket58');
+  const [printType, setPrintType] = useState('thermal-58');
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [generatedMessage, setGeneratedMessage] = useState('');
   const [customNotes, setCustomNotes] = useState('');
@@ -976,14 +976,14 @@ const Quotations = () => {
 
     const getStyles = () => {
       switch (printType) {
-        case 'ticket58':
+        case 'thermal-58':
           return `<style>
             body { font-family: 'Courier New', monospace; font-size: 10px; margin: 0; padding: 0; }
             .thermal-58 { max-width: 50mm; margin: 0 auto; padding: 2mm; box-sizing: border-box; }
             .center { text-align: center; }
             @page { size: 58mm auto; margin: 3mm; }
           </style>`;
-        case 'ticket80':
+        case 'thermal-80':
           return `<style>
             body { font-family: 'Courier New', monospace; font-size: 12px; margin: 0; padding: 0; }
             .thermal-80 { max-width: 72mm; margin: 0 auto; padding: 3mm; box-sizing: border-box; }
@@ -1236,7 +1236,7 @@ const Quotations = () => {
             </div>
             
             <div style={{ marginBottom: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              {['ticket58', 'ticket80', 'letter'].map(type => (
+              {['thermal-58', 'thermal-80', 'letter'].map(type => (
                 <label 
                   key={type} 
                   style={{ 
@@ -1257,8 +1257,8 @@ const Quotations = () => {
                     onChange={() => setPrintType(type)} 
                     style={{ display: 'none' }}
                   />
-                  {type === 'ticket58' && <><i className="fas fa-receipt"></i> 58mm</>}
-                  {type === 'ticket80' && <><i className="fas fa-print"></i> 80mm</>}
+                  {type === 'thermal-58' && <><i className="fas fa-receipt"></i> 58mm</>}
+                  {type === 'thermal-80' && <><i className="fas fa-print"></i> 80mm</>}
                   {type === 'letter' && <><i className="fas fa-file-alt"></i> Carta</>}
                 </label>
               ))}
@@ -1276,12 +1276,12 @@ const Quotations = () => {
                 justifyContent: 'center' 
               }}
             >
-              {printType === 'ticket58' && (
+              {printType === 'thermal-58' && (
                 <div style={{ background: '#fff', width: '220px', padding: '10px', fontSize: '9px', fontFamily: 'monospace', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
                   <QuotationReceipt58 sale={selectedQuotation} settings={settings} formatCurrency={formatCurrency} />
                 </div>
               )}
-              {printType === 'ticket80' && (
+              {printType === 'thermal-80' && (
                 <div style={{ background: '#fff', width: '280px', padding: '15px', fontSize: '10px', fontFamily: 'monospace', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
                   <QuotationReceipt80 sale={selectedQuotation} settings={settings} formatCurrency={formatCurrency} />
                 </div>

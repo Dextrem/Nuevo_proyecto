@@ -453,10 +453,10 @@ const Reports = () => {
 
     const getStyles = () => {
       switch (printType) {
-        case 'ticket58':
+        case 'thermal-58':
           return `<style>
             body { font-family: 'Courier New', Courier, monospace; font-size: 10px; margin: 0; padding: 0; color: #000; }
-            .ticket58 { max-width: 50mm; margin: 0 auto; padding: 2mm; box-sizing: border-box; }
+            .thermal-58 { max-width: 50mm; margin: 0 auto; padding: 2mm; box-sizing: border-box; }
             .center { text-align: center; }
             table { width: 100%; border-collapse: collapse; margin: 5px 0; }
             th, td { padding: 2px; border: none; border-bottom: 1px dashed #000; text-align: left; font-size: 9px; }
@@ -475,10 +475,10 @@ const Reports = () => {
             .reports-container { padding: 0 !important; }
             .general-charts-grid { display: none !important; }
           </style>`;
-        case 'ticket80':
+        case 'thermal-80':
           return `<style>
             body { font-family: 'Courier New', Courier, monospace; font-size: 12px; margin: 0; padding: 0; color: #000; }
-            .ticket80 { max-width: 72mm; margin: 0 auto; padding: 3mm; box-sizing: border-box; }
+            .thermal-80 { max-width: 72mm; margin: 0 auto; padding: 3mm; box-sizing: border-box; }
             .center { text-align: center; }
             table { width: 100%; border-collapse: collapse; margin: 8px 0; }
             th, td { padding: 3px; border: none; border-bottom: 1px dashed #000; text-align: left; font-size: 10px; }
@@ -756,8 +756,8 @@ const Reports = () => {
           >
             <option value="letter">Carta</option>
             <option value="a4">A4</option>
-            <option value="ticket58">Térmica 58mm</option>
-            <option value="ticket80">Térmica 80mm</option>
+            <option value="thermal-58">Térmica 58mm</option>
+            <option value="thermal-80">Térmica 80mm</option>
           </select>
           <button className="btn btn-outline" onClick={printReport}>
             <i className="fas fa-print"></i> Imprimir
