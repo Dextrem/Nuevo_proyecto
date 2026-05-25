@@ -219,6 +219,7 @@ export const quotationService = {
 export const reportService = {
   getDashboard: () => api.get('/reports/dashboard'),
   getSalesReport: (params) => api.get('/reports/sales', { params }),
+  getSalesByProductReport: (params) => api.get('/reports/sales-by-product', { params }),
   getInventoryReport: (params) => api.get('/reports/inventory', { params }),
   getFinancialReport: (params) => api.get('/reports/financial', { params }),
 };

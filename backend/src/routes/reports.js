@@ -4,6 +4,7 @@ import {
   getSalesReport,
   getInventoryReport,
   getFinancialReport,
+  getSalesByProductReport,
 } from '../controllers/reportController.js';
 import { authenticateToken } from '../middleware/auth.js';
 
@@ -15,5 +16,6 @@ router.get('/dashboard', getDashboardStats);
 router.get('/sales', getSalesReport);
 router.get('/inventory', getInventoryReport);
 router.get('/financial', getFinancialReport);
+router.get('/sales-by-product', getSalesByProductReport);
 
 export default router;

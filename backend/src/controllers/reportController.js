@@ -244,6 +244,98 @@ export const getInventoryReport = async (req, res) => {
   }
 };
 
+export const getSalesByProductReport = async (req, res) => {
+  try {
+    const { startDate, endDate, categoryId } = req.query;
+
+    const where = {
+      sale: {
+        status: 'COMPLETED',
+      },
+    };
+
+    if (startDate || endDate) {
+      where.sale.createdAt = {};
+      if (startDate) {
+        const sDate = new Date(startDate);
+        sDate.setUTCHours(0, 0, 0, 0);
+        where.sale.createdAt.gte = sDate;
+      }
+      if (endDate) {
+        const eDate = new Date(endDate);
+        eDate.setUTCHours(23, 59, 59, 999);
+        where.sale.createdAt.lte = eDate;
+      }
+    }
+
+    if (categoryId) {
+      where.product = { categoryId };
+    }
+
+    const saleItems = await prisma.saleItem.findMany({
+      where,
+      include: {
+        product: {
+          select: { id: true, name: true, sku: true, categoryId: true, category: { select: { name: true } } },
+        },
+      },
+    });
+
+    const productMap = {};
+    for (const item of saleItems) {
+      const pid = item.productId;
+      if (!productMap[pid]) {
+        productMap[pid] = {
+          productId: pid,
+          productName: item.product?.name || 'Desconocido',
+          productSku: item.product?.sku || '',
+          categoryName: item.product?.category?.name || '',
+          totalQuantity: 0,
+          totalRevenue: 0,
+          totalCost: 0,
+          totalTax: 0,
+          saleCount: 0,
+          saleIds: new Set(),
+        };
+      }
+      productMap[pid].totalQuantity += item.quantity;
+      productMap[pid].totalRevenue += item.total;
+      productMap[pid].totalCost += (item.cost || 0) * item.quantity;
+      productMap[pid].totalTax += item.tax;
+      productMap[pid].saleIds.add(item.saleId);
+    }
+
+    let products = Object.values(productMap).map(p => {
+      const profit = p.totalRevenue - p.totalCost;
+      return {
+        ...p,
+        saleCount: p.saleIds.size,
+        profit,
+        profitMargin: p.totalRevenue > 0 ? profit / p.totalRevenue : 0,
+        saleIds: undefined,
+      };
+    });
+
+    products.sort((a, b) => b.totalRevenue - a.totalRevenue);
+
+    const totals = products.reduce((acc, p) => ({
+      totalQuantity: acc.totalQuantity + p.totalQuantity,
+      totalRevenue: acc.totalRevenue + p.totalRevenue,
+      totalCost: acc.totalCost + p.totalCost,
+      totalProfit: acc.totalProfit + p.profit,
+    }), { totalQuantity: 0, totalRevenue: 0, totalCost: 0, totalProfit: 0 });
+
+    res.json({
+      totalProducts: products.length,
+      ...totals,
+      products,
+    });
+  } catch (error) {
+    console.error('Error al generar reporte de ventas por producto:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
 export const getFinancialReport = async (req, res) => {
   try {
     const { startDate, endDate, clientId } = req.query;

@@ -9,6 +9,7 @@ import {
   saleService, 
   transactionService, 
   productService,
+  categoryService,
   financialReportService,
   cashRegisterService,
   clientService
@@ -40,6 +41,7 @@ const Reports = () => {
     startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0],
     clientId: '',
+    categoryId: '',
   });
   const [clients, setClients] = useState([]);
   const { formatCurrency } = useApp();
@@ -58,6 +60,8 @@ const Reports = () => {
   const [creditSalesData, setCreditSalesData] = useState(null);
   const [cashRegistersData, setCashRegistersData] = useState(null);
   const [dailySalesData, setDailySalesData] = useState(null);
+  const [salesByProductData, setSalesByProductData] = useState(null);
+  const [categories, setCategories] = useState([]);
   const [printType, setPrintType] = useState('letter');
 
   useEffect(() => {
@@ -72,7 +76,8 @@ const Reports = () => {
       const dateParams = {
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
-        clientId: dateRange.clientId
+        clientId: dateRange.clientId,
+        categoryId: dateRange.categoryId,
       };
       
       console.log('Loading reports with date range:', dateParams);
@@ -146,6 +151,16 @@ const Reports = () => {
         console.log('Daily sales:', dailySalesRes.data);
       } catch (e) { console.error('Error dailySalesRes:', e); dailySalesRes = { data: null }; }
 
+      let salesByProductRes;
+      try {
+        salesByProductRes = await reportService.getSalesByProductReport(dateParams);
+      } catch (e) { console.error('Error salesByProductRes:', e); salesByProductRes = { data: null }; }
+
+      let categoriesRes;
+      try {
+        categoriesRes = await categoryService.getAll();
+      } catch (e) { console.error('Error categoriesRes:', e); categoriesRes = { data: [] }; }
+
       setSalesData(salesRes.data);
       setFinancialData(financialRes.data);
       setSalesDetail(salesList.data?.data || salesList.data || []);
@@ -158,6 +173,8 @@ const Reports = () => {
       setCreditSalesData(creditSalesRes.data);
       setCashRegistersData(cashRegRes.data);
       setDailySalesData(dailySalesRes.data);
+      setSalesByProductData(salesByProductRes.data);
+      setCategories(categoriesRes.data?.data || categoriesRes.data || []);
 
       setSummaryData({
         sales: salesRes.data,
@@ -368,6 +385,30 @@ const Reports = () => {
         data.push(['INVENTARIO', 'Valor Total', { t: 'n', v: companyStatus?.inventory?.value || 0, z: '"RD$"#,##0.00' }]);
         data.push(['', 'Costo Total', { t: 'n', v: companyStatus?.inventory?.cost || 0, z: '"RD$"#,##0.00' }]);
         data.push(['', 'Ganancia Potencial', { t: 'n', v: companyStatus?.inventory?.profit || 0, z: '"RD$"#,##0.00' }]);
+        break;
+
+      case 'salesByProduct':
+        title = 'Ventas por Producto';
+        data.push(['Producto', 'SKU', 'Categoría', 'Cantidad', 'Ingresos', 'Costo', 'Ganancia', 'Margen', 'Ventas']);
+        (salesByProductData?.products || []).forEach(p => {
+          data.push([
+            p.productName,
+            p.productSku || '-',
+            p.categoryName || '-',
+            p.totalQuantity,
+            { t: 'n', v: p.totalRevenue, z: '"RD$"#,##0.00' },
+            { t: 'n', v: p.totalCost, z: '"RD$"#,##0.00' },
+            { t: 'n', v: p.profit, z: '"RD$"#,##0.00' },
+            `${(p.profitMargin * 100).toFixed(1)}%`,
+            p.saleCount,
+          ]);
+        });
+        if (salesByProductData?.products?.length > 0) {
+          data.push(['TOTAL', '', '', salesByProductData.totalQuantity,
+            { t: 'n', v: salesByProductData.totalRevenue, z: '"RD$"#,##0.00' },
+            { t: 'n', v: salesByProductData.totalCost, z: '"RD$"#,##0.00' },
+            { t: 'n', v: salesByProductData.totalProfit, z: '"RD$"#,##0.00' }, '', '']);
+        }
         break;
 
       case 'general':
@@ -586,6 +627,20 @@ const Reports = () => {
     };
   }, [productsDetail]);
 
+  const topProductsChartData = useMemo(() => {
+    const top10 = (salesByProductData?.products || []).slice(0, 10);
+    const colors = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#3B82F6', '#EC4899', '#14B8A6', '#F97316', '#6366F1'];
+    return {
+      labels: top10.map(p => p.productName.length > 18 ? p.productName.substring(0, 18) + '...' : p.productName),
+      datasets: [{
+        data: top10.map(p => p.totalRevenue),
+        backgroundColor: colors.slice(0, top10.length),
+        borderWidth: 0,
+        cutout: '55%',
+      }],
+    };
+  }, [salesByProductData]);
+
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -617,6 +672,7 @@ const Reports = () => {
   const tabs = [
     { id: 'general', label: 'General', icon: 'chart-pie' },
     { id: 'sales', label: 'Ventas', icon: 'shopping-cart' },
+    { id: 'salesByProduct', label: 'Ventas x Producto', icon: 'cube' },
     { id: 'credit', label: 'Crédito', icon: 'credit-card' },
     { id: 'daily', label: 'Diario', icon: 'calendar-day' },
     { id: 'receivable', label: 'CxC', icon: 'hand-holding-usd' },
@@ -657,6 +713,23 @@ const Reports = () => {
               <option key={client.id} value={client.id}>{client.name}</option>
             ))}
           </select>
+
+          {activeTab === 'salesByProduct' && (
+            <>
+              <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)', margin: '0 8px' }}>Categoría:</label>
+              <select 
+                className="form-control" 
+                value={dateRange.categoryId}
+                onChange={(e) => setDateRange({ ...dateRange, categoryId: e.target.value })}
+                style={{ minWidth: '160px' }}
+              >
+                <option value="">Todas las Categorías</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+            </>
+          )}
         </div>
         <button 
           className="btn btn-primary" 
@@ -1116,6 +1189,81 @@ const Reports = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'salesByProduct' && (
+        <div>
+          <div className="general-stats-grid" style={{ marginBottom: '24px' }}>
+            <StatCard icon="cube" label="Productos Vendidos" value={salesByProductData?.totalProducts || 0} subValue={`${salesByProductData?.totalQuantity || 0} unidades`} type="inventory" />
+            <StatCard icon="dollar-sign" label="Ingresos" value={formatCurrency(salesByProductData?.totalRevenue || 0)} type="sales" />
+            <StatCard icon="chart-line" label="Ganancia Bruta" value={formatCurrency(salesByProductData?.totalProfit || 0)} type="balance" />
+          </div>
+
+          {salesByProductData?.products?.length > 0 && (
+            <div className="general-charts-grid">
+              <div className="general-chart-card">
+                <h4><i className="fas fa-chart-pie"></i> Top 10 Productos por Ingresos</h4>
+                <div className="general-chart-container">
+                  <Doughnut data={topProductsChartData} options={chartOptions} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="data-table-container">
+            <div className="report-table-header">
+              <div className="report-table-title">
+                <h3>Ventas por Producto</h3>
+                <span className="badge badge-success">{salesByProductData?.totalProducts || 0} productos</span>
+              </div>
+              <div className="report-table-actions">
+                <button className="btn btn-outline" onClick={() => exportToExcel('salesByProduct')}><i className="fas fa-file-excel"></i> Excel</button>
+              </div>
+            </div>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>SKU</th>
+                  <th>Categoría</th>
+                  <th>Cantidad</th>
+                  <th>Ingresos</th>
+                  <th>Costo</th>
+                  <th>Ganancia</th>
+                  <th>Margen</th>
+                  <th>Ventas</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(!salesByProductData?.products || salesByProductData.products.length === 0) ? (
+                  <tr><td colSpan="9" style={{ textAlign: 'center', padding: '40px' }}>No hay datos de ventas por producto en este período</td></tr>
+                ) : salesByProductData.products.map(p => (
+                  <tr key={p.productId}>
+                    <td><strong>{p.productName}</strong></td>
+                    <td>{p.productSku || '-'}</td>
+                    <td>{p.categoryName || '-'}</td>
+                    <td>{p.totalQuantity}</td>
+                    <td>{formatCurrency(p.totalRevenue)}</td>
+                    <td>{formatCurrency(p.totalCost)}</td>
+                    <td style={{ color: p.profit >= 0 ? '#10B981' : '#EF4444', fontWeight: 600 }}>{formatCurrency(p.profit)}</td>
+                    <td>{(p.profitMargin * 100).toFixed(1)}%</td>
+                    <td>{p.saleCount}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr style={{ background: 'var(--bg-surface-hover)', fontWeight: '700' }}>
+                  <td colSpan="3" style={{ textAlign: 'right' }}>TOTAL:</td>
+                  <td>{salesByProductData?.totalQuantity || 0}</td>
+                  <td>{formatCurrency(salesByProductData?.totalRevenue || 0)}</td>
+                  <td>{formatCurrency(salesByProductData?.totalCost || 0)}</td>
+                  <td style={{ color: (salesByProductData?.totalProfit || 0) >= 0 ? '#10B981' : '#EF4444' }}>{formatCurrency(salesByProductData?.totalProfit || 0)}</td>
+                  <td colSpan="2"></td>
+                </tr>
+              </tfoot>
+            </table>
           </div>
         </div>
       )}
