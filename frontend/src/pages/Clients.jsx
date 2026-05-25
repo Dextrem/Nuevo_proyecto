@@ -23,7 +23,7 @@ const Clients = () => {
     hasNext: false,
     hasPrev: false
   });
-  const { formatCurrency } = useApp();
+  const { formatCurrency, showNotification } = useApp();
   const { hasPermission, hasRole } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -119,7 +119,7 @@ const Clients = () => {
       setShowModal(false);
       loadClients();
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al guardar cliente');
+      showNotification(error.response?.data?.error || 'Error al guardar cliente', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -135,7 +135,7 @@ const Clients = () => {
       await clientService.delete(confirmDeleteId);
       loadClients();
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al eliminar cliente');
+      showNotification(error.response?.data?.error || 'Error al eliminar cliente', 'error');
     } finally {
       setShowConfirmDelete(false);
       setConfirmDeleteId(null);
@@ -149,7 +149,7 @@ const Clients = () => {
 
   const handlePayment = async () => {
     if (!paymentData.amount || parseFloat(paymentData.amount) <= 0) {
-      alert('Ingresa un monto válido');
+      showNotification('Ingresa un monto válido', 'warning');
       return;
     }
     if (isSubmitting) return;
@@ -165,9 +165,9 @@ const Clients = () => {
       setPaymentData({ amount: '', description: '' });
       setSelectedClient(null);
       loadClients();
-      alert('Abono registrado exitosamente. Pendiente de aprobación por administración.');
+      showNotification('Abono registrado exitosamente. Pendiente de aprobación por administración.', 'success');
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al registrar pago');
+      showNotification(error.response?.data?.error || 'Error al registrar pago', 'error');
     } finally {
       setIsSubmitting(false);
     }

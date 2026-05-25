@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supplierService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useApp } from '../context/AppContext';
 import Pagination from '../components/Pagination';
 import ConfirmModal from '../components/ConfirmModal';
 
@@ -21,6 +22,7 @@ const Suppliers = () => {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const { hasPermission, hasRole } = useAuth();
+  const { showNotification } = useApp();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -94,7 +96,7 @@ const Suppliers = () => {
       setShowModal(false);
       loadSuppliers();
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al guardar proveedor');
+      showNotification(error.response?.data?.error || 'Error al guardar proveedor', 'error');
     }
   };
 
@@ -108,7 +110,7 @@ const Suppliers = () => {
       await supplierService.delete(confirmDeleteId);
       loadSuppliers();
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al eliminar proveedor');
+      showNotification(error.response?.data?.error || 'Error al eliminar proveedor', 'error');
     } finally {
       setShowConfirmDelete(false);
       setConfirmDeleteId(null);

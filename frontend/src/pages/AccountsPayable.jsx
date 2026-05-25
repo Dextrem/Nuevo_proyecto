@@ -25,7 +25,7 @@ const AccountsPayable = () => {
   const [allSuppliers, setAllSuppliers] = useState([]);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [confirmDeleteInvoice, setConfirmDeleteInvoice] = useState(null);
-  const { formatCurrency } = useApp();
+  const { formatCurrency, showNotification } = useApp();
   const { hasPermission } = useAuth();
 
   const [invoiceForm, setInvoiceForm] = useState({
@@ -70,10 +70,10 @@ const AccountsPayable = () => {
   const copyNotification = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
-      alert('Texto de notificación copiado al portapapeles');
+      showNotification('Texto de notificación copiado al portapapeles', 'success');
     } catch (err) {
       console.error('Error copiando texto:', err);
-      alert('No se pudo copiar al portapapeles');
+      showNotification('No se pudo copiar al portapapeles', 'error');
     }
   };
 
@@ -144,7 +144,7 @@ const AccountsPayable = () => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert('El archivo debe ser menor a 5MB');
+        showNotification('El archivo debe ser menor a 5MB', 'warning');
         return;
       }
       
@@ -164,7 +164,7 @@ const AccountsPayable = () => {
     e.preventDefault();
     
     if (!invoiceForm.description || !invoiceForm.amount) {
-      alert('Completa los campos requeridos');
+      showNotification('Completa los campos requeridos', 'warning');
       return;
     }
 
@@ -174,14 +174,14 @@ const AccountsPayable = () => {
           ...invoiceForm,
           amount: parseFloat(invoiceForm.amount)
         });
-        alert('Factura actualizada');
+        showNotification('Factura actualizada', 'success');
       } else {
         const targetSupplierId = showGlobalNewDebtModal ? globalSupplierId : selectedSupplier.id;
         await supplierService.createInvoice(targetSupplierId, {
           ...invoiceForm,
           amount: parseFloat(invoiceForm.amount)
         });
-        alert('Factura agregada y declarada correctamente en CxP');
+        showNotification('Factura agregada y declarada correctamente en CxP', 'success');
       }
 
       setShowInvoiceModal(false);
@@ -194,7 +194,7 @@ const AccountsPayable = () => {
       loadSuppliers();
       notifyDataUpdate('accounts_payable');
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al guardar factura');
+      showNotification(error.response?.data?.error || 'Error al guardar factura', 'error');
     }
   };
 
@@ -208,9 +208,9 @@ const AccountsPayable = () => {
       await supplierService.deleteInvoice(selectedSupplier.id, confirmDeleteInvoice.id);
       loadSupplierDetails(selectedSupplier);
       loadSuppliers();
-      alert('Factura eliminada');
+      showNotification('Factura eliminada', 'success');
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al eliminar');
+      showNotification(error.response?.data?.error || 'Error al eliminar', 'error');
     } finally {
       setShowConfirmDelete(false);
       setConfirmDeleteInvoice(null);
@@ -263,12 +263,12 @@ const AccountsPayable = () => {
 
   const handlePayment = async () => {
     if (!paymentAmount || parseFloat(paymentAmount) <= 0) {
-      alert('Ingresa un monto válido');
+      showNotification('Ingresa un monto válido', 'warning');
       return;
     }
 
     if (!selectedSupplier) {
-      alert('Selecciona primero un proveedor');
+      showNotification('Selecciona primero un proveedor', 'warning');
       return;
     }
 
@@ -296,9 +296,9 @@ const AccountsPayable = () => {
       loadSupplierDetails(selectedSupplier);
       loadSuppliers();
       notifyDataUpdate('accounts_payable');
-      alert('Pago registrado exitosamente');
+      showNotification('Pago registrado exitosamente', 'success');
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al registrar pago');
+      showNotification(error.response?.data?.error || 'Error al registrar pago', 'error');
     }
   };
 

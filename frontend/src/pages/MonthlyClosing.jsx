@@ -24,7 +24,7 @@ const MonthlyClosing = () => {
   const [listFilters, setListFilters] = useState({ year: '', status: '' });
   const [showConfirmCreate, setShowConfirmCreate] = useState(false);
   const { hasPermission } = useAuth();
-  const { formatCurrency } = useApp();
+  const { formatCurrency, showNotification } = useApp();
 
   useEffect(() => {
     loadClosings();
@@ -106,14 +106,14 @@ const MonthlyClosing = () => {
         notes: notes
       });
       
-      alert(data.message || 'Cierre creado exitosamente');
+      showNotification(data.message || 'Cierre creado exitosamente', 'success');
       setShowModal(false);
       setNotes('');
       loadClosings();
       loadCompanyStatus();
     } catch (err) {
       console.error('Error creating closing:', err);
-      alert(err.response?.data?.error || 'Error al crear cierre');
+      showNotification(err.response?.data?.error || 'Error al crear cierre', 'error');
     } finally {
       setCreating(false);
       setShowConfirmCreate(false);
@@ -132,7 +132,7 @@ const MonthlyClosing = () => {
       setShowReportModal(true);
     } catch (err) {
       console.error('Error loading report:', err);
-      alert(err.response?.data?.error || 'Error al cargar el reporte');
+      showNotification(err.response?.data?.error || 'Error al cargar el reporte', 'error');
     } finally {
       setLoading(false);
     }

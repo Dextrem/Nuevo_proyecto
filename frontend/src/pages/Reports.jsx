@@ -44,7 +44,7 @@ const Reports = () => {
     categoryId: '',
   });
   const [clients, setClients] = useState([]);
-  const { formatCurrency } = useApp();
+  const { formatCurrency, showNotification } = useApp();
   const dateRangeRef = useRef(dateRange);
 
   const [summaryData, setSummaryData] = useState(null);
@@ -433,7 +433,7 @@ const Reports = () => {
     }
 
     if (data.length === 0) {
-      alert('No hay datos para exportar');
+      showNotification('No hay datos para exportar', 'warning');
       return;
     }
 

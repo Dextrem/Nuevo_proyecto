@@ -29,7 +29,7 @@ const FiscalReports = () => {
   const [sequenceForm, setSequenceForm] = useState({
     type: '02', name: '', prefix: 'B', current: 1, limit: 100000, active: true,
   });
-  const { formatCurrency } = useApp();
+  const { formatCurrency, showNotification } = useApp();
   const { hasPermission } = useAuth();
 
   const loadStatus = useCallback(async () => {
@@ -86,7 +86,7 @@ const FiscalReports = () => {
       setShowSequenceModal(false);
       loadStatus();
     } catch (err) {
-      alert(err.response?.data?.error || 'Error al guardar secuencia');
+      showNotification(err.response?.data?.error || 'Error al guardar secuencia', 'error');
     }
   };
 
@@ -100,7 +100,7 @@ const FiscalReports = () => {
       await fiscalService.deleteSequence(confirmDeleteId);
       loadStatus();
     } catch (err) {
-      alert(err.response?.data?.error || 'Error al eliminar');
+      showNotification(err.response?.data?.error || 'Error al eliminar', 'error');
     } finally {
       setShowConfirmDelete(false);
       setConfirmDeleteId(null);

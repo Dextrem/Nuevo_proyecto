@@ -178,6 +178,7 @@ const NotificationContainer = ({ notifications }) => {
             borderRadius: '8px',
             background: notification.type === 'success' ? 'var(--secondary)' :
                        notification.type === 'error' ? 'var(--danger)' :
+                       notification.type === 'warning' ? '#F59E0B' :
                        'var(--primary)',
             color: 'white',
             boxShadow: 'var(--shadow-lg)',

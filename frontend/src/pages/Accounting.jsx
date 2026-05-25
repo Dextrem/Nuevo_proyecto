@@ -27,7 +27,7 @@ const Accounting = () => {
     endDate: '',
     reference: '',
   });
-  const { formatCurrency } = useApp();
+  const { formatCurrency, showNotification } = useApp();
   const { hasPermission } = useAuth();
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
@@ -170,7 +170,7 @@ const Accounting = () => {
       loadData();
       notifyDataUpdate('transactions');
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al guardar transacción');
+      showNotification(error.response?.data?.error || 'Error al guardar transacción', 'error');
     }
   };
 
@@ -209,7 +209,7 @@ const Accounting = () => {
       loadData();
       notifyDataUpdate('transactions');
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al eliminar transacción');
+      showNotification(error.response?.data?.error || 'Error al eliminar transacción', 'error');
     } finally {
       setShowConfirmDelete(false);
       setDeleteTargetId(null);

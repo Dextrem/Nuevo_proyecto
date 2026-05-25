@@ -32,7 +32,7 @@ const Inventory = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef(null);
   const imageInputRef = useRef(null);
-  const { formatCurrency } = useApp();
+  const { formatCurrency, showNotification } = useApp();
   const { hasPermission } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -145,7 +145,7 @@ const Inventory = () => {
         const jsonData = XLSX.utils.sheet_to_json(sheet);
 
         if (jsonData.length === 0) {
-          alert('El archivo está vacío');
+          showNotification('El archivo está vacío', 'warning');
           return;
         }
 
@@ -165,7 +165,7 @@ const Inventory = () => {
         setShowImportModal(true);
       } catch (error) {
         console.error('Error parsing file:', error);
-        alert('Error al leer el archivo. Asegúrate de que sea un archivo Excel válido.');
+        showNotification('Error al leer el archivo. Asegúrate de que sea un archivo Excel válido.', 'error');
       }
     };
     reader.readAsArrayBuffer(file);
@@ -173,7 +173,7 @@ const Inventory = () => {
 
   const processImport = async () => {
     if (!importPreview || !importPreview.data) {
-      alert('No hay datos para importar');
+      showNotification('No hay datos para importar', 'warning');
       return;
     }
     
@@ -244,7 +244,7 @@ const Inventory = () => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert('La imagen es demasiado grande. El límite es 5MB.');
+        showNotification('La imagen es demasiado grande. El límite es 5MB.', 'warning');
         return;
       }
       setSelectedImage(file);
@@ -345,7 +345,7 @@ const Inventory = () => {
       handleCloseModal();
       loadData();
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al guardar producto');
+      showNotification(error.response?.data?.error || 'Error al guardar producto', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -370,7 +370,7 @@ const Inventory = () => {
       await productService.delete(deleteTarget);
       loadData();
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al eliminar producto');
+      showNotification(error.response?.data?.error || 'Error al eliminar producto', 'error');
     } finally {
       setShowDeleteConfirm(false);
       setDeleteTarget(null);
@@ -418,7 +418,7 @@ const Inventory = () => {
       handleCloseCategoryModal();
       loadData();
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al guardar categoría');
+      showNotification(error.response?.data?.error || 'Error al guardar categoría', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -434,7 +434,7 @@ const Inventory = () => {
       await categoryService.delete(confirmDeleteCategoryId);
       loadData();
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al eliminar categoría');
+      showNotification(error.response?.data?.error || 'Error al eliminar categoría', 'error');
     } finally {
       setShowConfirmDeleteCategory(false);
       setConfirmDeleteCategoryId(null);

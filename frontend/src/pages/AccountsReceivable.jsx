@@ -31,7 +31,7 @@ const AccountsReceivable = () => {
   const [pendingPayments, setPendingPayments] = useState([]);
   const [pendingLoading, setPendingLoading] = useState(false);
   const [confirmPayment, setConfirmPayment] = useState({ show: false, id: null, action: '' });
-  const { formatCurrency } = useApp();
+  const { formatCurrency, showNotification } = useApp();
   const { hasPermission } = useAuth();
 
   useEffect(() => {
@@ -93,14 +93,14 @@ const AccountsReceivable = () => {
         await saleService.approvePendingPayment(id);
         loadPendingPayments();
         notifyDataUpdate('accounts_receivable');
-        alert('Abono aprobado exitosamente');
+        showNotification('Abono aprobado exitosamente', 'success');
       } else {
         await saleService.rejectPendingPayment(id);
         loadPendingPayments();
-        alert('Abono rechazado');
+        showNotification('Abono rechazado', 'success');
       }
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al procesar abono');
+      showNotification(error.response?.data?.error || 'Error al procesar abono', 'error');
     } finally {
       setConfirmPayment({ show: false, id: null, action: '' });
     }
@@ -200,7 +200,7 @@ const AccountsReceivable = () => {
     const client = selectedClientForMessage?.client;
     const phone = client?.phone?.replace(/\D/g, '') || '';
     if (!phone) {
-      alert('El cliente no tiene número de teléfono registrado');
+      showNotification('El cliente no tiene número de teléfono registrado', 'warning');
       return;
     }
     const encodedMessage = encodeURIComponent(getFullMessage());
@@ -211,7 +211,7 @@ const AccountsReceivable = () => {
     const client = selectedClientForMessage?.client;
     const email = client?.email;
     if (!email) {
-      alert('El cliente no tiene correo electrónico registrado');
+      showNotification('El cliente no tiene correo electrónico registrado', 'warning');
       return;
     }
     const subject = encodeURIComponent(`Recordatorio de pago - Factura ${selectedClientForMessage.invoiceNumber}`);
@@ -221,13 +221,13 @@ const AccountsReceivable = () => {
 
   const handlePayment = async () => {
     if (!paymentData.amount || parseFloat(paymentData.amount) <= 0) {
-      alert('Ingresa un monto válido');
+      showNotification('Ingresa un monto válido', 'warning');
       return;
     }
 
     const pending = selectedSale.total - selectedSale.paidAmount;
     if (parseFloat(paymentData.amount) > pending) {
-      alert('El monto excede el saldo pendiente');
+      showNotification('El monto excede el saldo pendiente', 'warning');
       return;
     }
 
@@ -242,9 +242,9 @@ const AccountsReceivable = () => {
       setSelectedSale(null);
       loadAccountsReceivable();
       notifyDataUpdate('accounts_receivable');
-      alert('Pago registrado exitosamente');
+      showNotification('Pago registrado exitosamente', 'success');
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al registrar pago');
+      showNotification(error.response?.data?.error || 'Error al registrar pago', 'error');
     }
   };
 

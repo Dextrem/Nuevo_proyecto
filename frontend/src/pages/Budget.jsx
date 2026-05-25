@@ -30,7 +30,7 @@ const Budget = () => {
   const [summary, setSummary] = useState(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
-  const { formatCurrency } = useApp();
+  const { formatCurrency, showNotification } = useApp();
   const { hasPermission } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -124,13 +124,13 @@ const Budget = () => {
     e.preventDefault();
     try {
       if (!formData.category) {
-        alert('Por favor selecciona una categoría');
+        showNotification('Por favor selecciona una categoría', 'warning');
         return;
       }
       
       const plannedAmount = parseFloat(formData.plannedAmount);
       if (isNaN(plannedAmount) || plannedAmount <= 0) {
-        alert('Por favor ingresa un monto válido mayor a 0');
+        showNotification('Por favor ingresa un monto válido mayor a 0', 'warning');
         return;
       }
 
@@ -156,7 +156,7 @@ const Budget = () => {
     } catch (error) {
       console.error('Error al guardar:', error);
       const errorMsg = error.response?.data?.error || error.message || 'Error al guardar presupuesto';
-      alert(errorMsg);
+      showNotification(errorMsg, 'error');
     }
   };
 
@@ -171,7 +171,7 @@ const Budget = () => {
       loadBudgets();
       loadSummary();
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al eliminar presupuesto');
+      showNotification(error.response?.data?.error || 'Error al eliminar presupuesto', 'error');
     } finally {
       setShowConfirmDelete(false);
       setConfirmDeleteId(null);

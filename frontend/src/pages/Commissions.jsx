@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { commissionService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useApp } from '../context/AppContext';
 import Pagination from '../components/Pagination';
 
 const Commissions = () => {
@@ -18,6 +19,7 @@ const Commissions = () => {
     totalPages: 0
   });
   const { hasPermission } = useAuth();
+  const { showNotification } = useApp();
   const [filters, setFilters] = useState({ status: '' });
 
   const [formData, setFormData] = useState({
@@ -84,13 +86,13 @@ const Commissions = () => {
         userIds: selectedCashiers 
       };
       const response = await commissionService.calculate(payload);
-      alert(response.data.message || 'Comisiones calculadas exitosamente');
+      showNotification(response.data.message || 'Comisiones calculadas exitosamente', 'success');
       setShowModal(false);
       setSelectedCashiers([]);
       loadCommissions();
       loadSummary();
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al calcular comisiones');
+      showNotification(error.response?.data?.error || 'Error al calcular comisiones', 'error');
     } finally {
       setCalculating(false);
     }
@@ -102,7 +104,7 @@ const Commissions = () => {
       loadCommissions(pagination.page);
       loadSummary();
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al actualizar estado');
+      showNotification(error.response?.data?.error || 'Error al actualizar estado', 'error');
     }
   };
 

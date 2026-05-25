@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { userService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useApp } from '../context/AppContext';
 import Pagination from '../components/Pagination';
 import ConfirmModal from '../components/ConfirmModal';
 
@@ -43,6 +44,7 @@ const Users = () => {
     hasPrev: false
   });
   const { hasPermission } = useAuth();
+  const { showNotification } = useApp();
 
   const [formData, setFormData] = useState({
     username: '',
@@ -121,7 +123,7 @@ const Users = () => {
       setShowModal(false);
       loadUsers();
     } catch (error) {
-      alert(error.response?.data?.message || error.response?.data?.error || 'Error al guardar usuario');
+      showNotification(error.response?.data?.message || error.response?.data?.error || 'Error al guardar usuario', 'error');
     }
   };
 
@@ -135,7 +137,7 @@ const Users = () => {
       await userService.delete(confirmDeleteId);
       loadUsers();
     } catch (error) {
-      alert(error.response?.data?.message || error.response?.data?.error || 'Error al eliminar usuario');
+      showNotification(error.response?.data?.message || error.response?.data?.error || 'Error al eliminar usuario', 'error');
     } finally {
       setShowConfirmDelete(false);
       setConfirmDeleteId(null);

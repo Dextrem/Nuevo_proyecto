@@ -34,7 +34,7 @@ const Billing = () => {
   const [pendingInvoiceToCancel, setPendingInvoiceToCancel] = useState(null);
   const [showConfirmCancelInvoice, setShowConfirmCancelInvoice] = useState(false);
   const [printType, setPrintType] = useState('ticket58');
-  const { formatCurrency, settings } = useApp();
+  const { formatCurrency, settings, showNotification } = useApp();
   const { hasPermission } = useAuth();
 
   const loadData = async () => {
@@ -111,7 +111,7 @@ const Billing = () => {
       setShowAuthModal(false);
       await openPrintModal(pendingInvoiceToPrint);
     } catch (error) {
-      alert(error.response?.data?.error || 'No autorizado para reimprimir');
+      showNotification(error.response?.data?.error || 'No autorizado para reimprimir', 'error');
     } finally {
       setLoading(false);
     }
@@ -139,11 +139,11 @@ const Billing = () => {
       
       setShowCancelModal(false);
       setShowConfirmCancelInvoice(false);
-      alert('Venta anulada exitosamente');
+      showNotification('Venta anulada exitosamente', 'success');
       loadData();
       notifyDataUpdate();
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al anular la venta');
+      showNotification(error.response?.data?.error || 'Error al anular la venta', 'error');
     } finally {
       setLoading(false);
     }
@@ -331,7 +331,7 @@ const Billing = () => {
 
     const printWindow = window.open('', '_blank', printType === 'letter' ? 'width=800,height=600' : 'width=400,height=600');
     if (!printWindow) {
-      alert('Permite ventanas emergentes para imprimir');
+      showNotification('Permite ventanas emergentes para imprimir', 'warning');
       return;
     }
     printWindow.document.write(htmlContent);

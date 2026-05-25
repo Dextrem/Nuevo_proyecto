@@ -78,7 +78,7 @@ const QuotationModal = ({ products, clients, onSave, onClose, editingQuotation, 
 
   const handleCreateNewClient = async () => {
     if (!formData.clientName?.trim()) {
-      alert('Ingresa el nombre del cliente');
+      showNotification('Ingresa el nombre del cliente', 'warning');
       return;
     }
     setIsCreatingClient(true);
@@ -96,9 +96,9 @@ const QuotationModal = ({ products, clients, onSave, onClose, editingQuotation, 
         clientName: newClient.name,
       });
       setShowNewClientOption(false);
-      alert('Cliente creado exitosamente: ' + newClient.name);
+      showNotification('Cliente creado exitosamente: ' + newClient.name, 'success');
     } catch (error) {
-      alert(error.message || 'Error al crear cliente');
+      showNotification(error.message || 'Error al crear cliente', 'error');
     } finally {
       setIsCreatingClient(false);
     }
@@ -161,7 +161,7 @@ const QuotationModal = ({ products, clients, onSave, onClose, editingQuotation, 
 
   const handleSubmit = () => {
     if (formData.items.length === 0) {
-      alert('Agrega al menos un producto');
+      showNotification('Agrega al menos un producto', 'warning');
       return;
     }
     onSave(formData);
@@ -578,7 +578,7 @@ const Quotations = () => {
   const [showPdfLoading, setShowPdfLoading] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
-  const { formatCurrency, settings } = useApp();
+  const { formatCurrency, settings, showNotification } = useApp();
 
   const loadData = async () => {
     try {
@@ -622,19 +622,19 @@ const Quotations = () => {
       setEditingQuotation(null);
       loadData();
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al guardar');
+      showNotification(error.response?.data?.error || 'Error al guardar', 'error');
     }
   };
 
   const handleConvert = async (formData) => {
     try {
       const res = await quotationService.convertToSale(selectedQuotation.id, formData);
-      alert('Cotización convertida a venta: ' + res.data.sale.invoiceNumber);
+      showNotification('Cotización convertida a venta: ' + res.data.sale.invoiceNumber, 'success');
       setShowConvertModal(false);
       setSelectedQuotation(null);
       loadData();
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al convertir');
+      showNotification(error.response?.data?.error || 'Error al convertir', 'error');
     }
   };
 
@@ -648,7 +648,7 @@ const Quotations = () => {
       await quotationService.delete(confirmDeleteId);
       loadData();
     } catch (error) {
-      alert(error.response?.data?.error || 'Error al eliminar');
+      showNotification(error.response?.data?.error || 'Error al eliminar', 'error');
     } finally {
       setShowConfirmDelete(false);
       setConfirmDeleteId(null);
@@ -727,7 +727,7 @@ const Quotations = () => {
     const phone = selectedQuotation.clientPhone || selectedQuotation.client?.phone || '';
     const cleanPhone = phone.replace(/\D/g, '');
     if (!cleanPhone) {
-      alert('El cliente no tiene un número de teléfono válido');
+      showNotification('El cliente no tiene un número de teléfono válido', 'warning');
       return;
     }
     const encodedMessage = encodeURIComponent(getFullMessage());
@@ -737,7 +737,7 @@ const Quotations = () => {
   const sendViaEmail = () => {
     const email = selectedQuotation.clientEmail || selectedQuotation.client?.email || '';
     if (!email) {
-      alert('El cliente no tiene un correo electrónico registrado');
+      showNotification('El cliente no tiene un correo electrónico registrado', 'warning');
       return;
     }
     const subject = encodeURIComponent(`Cotización ${selectedQuotation.quotationNumber}`);
@@ -945,7 +945,7 @@ const Quotations = () => {
       pdf.save(`Cotizacion_${q.quotationNumber || 'COT'}.pdf`);
     } catch (error) {
       console.error('Error generando PDF:', error);
-      alert('Error al generar el PDF. Verifica que los módulos estén instalados.');
+      showNotification('Error al generar el PDF. Verifica que los módulos estén instalados.', 'error');
     } finally {
       setShowPdfLoading(false);
     }
@@ -969,7 +969,7 @@ const Quotations = () => {
 
     const printWindow = window.open('', '_blank', 'width=600,height=800');
     if (!printWindow) {
-      alert('Permite ventanas emergentes para imprimir');
+      showNotification('Permite ventanas emergentes para imprimir', 'warning');
       window.print();
       return;
     }
