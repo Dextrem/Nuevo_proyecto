@@ -13,6 +13,8 @@ const Inventory = () => {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showBarcodeWarning, setShowBarcodeWarning] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [importPreview, setImportPreview] = useState(null);
   const [importResults, setImportResults] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -354,15 +356,26 @@ const Inventory = () => {
     setShowBarcodeWarning(false);
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('¿Estás seguro de eliminar este producto?')) return;
+  const handleDelete = (id) => {
+    setDeleteTarget(id);
+    setShowDeleteConfirm(true);
+  };
 
+  const confirmDelete = async () => {
     try {
-      await productService.delete(id);
+      await productService.delete(deleteTarget);
       loadData();
     } catch (error) {
       alert(error.response?.data?.error || 'Error al eliminar producto');
+    } finally {
+      setShowDeleteConfirm(false);
+      setDeleteTarget(null);
     }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false);
+    setDeleteTarget(null);
   };
 
   const handleOpenCategoryModal = (category = null) => {
@@ -871,6 +884,30 @@ const Inventory = () => {
                 <i className="fas fa-check"></i> S&iacute;, guardar
               </button>
               <button className="btn btn-outline" onClick={handleBarcodeCancel}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDeleteConfirm && (
+        <div className="modal-overlay" onClick={cancelDelete}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
+            <div style={{ textAlign: 'center', padding: '20px 0' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '16px', color: '#EF4444' }}>
+                <i className="fas fa-trash-alt"></i>
+              </div>
+              <h3 style={{ margin: '0 0 12px 0', color: '#EF4444' }}>Confirmar Eliminaci&oacute;n</h3>
+              <p style={{ color: 'var(--text-muted)', lineHeight: 1.6, margin: 0, fontSize: '0.95rem' }}>
+                &iquest;Est&aacute;s seguro de eliminar este producto? Esta acci&oacute;n no se puede deshacer.
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button className="btn btn-primary" onClick={confirmDelete} style={{ backgroundColor: '#EF4444', borderColor: '#EF4444' }}>
+                <i className="fas fa-trash"></i> S&iacute;, eliminar
+              </button>
+              <button className="btn btn-outline" onClick={cancelDelete}>
                 Cancelar
               </button>
             </div>
