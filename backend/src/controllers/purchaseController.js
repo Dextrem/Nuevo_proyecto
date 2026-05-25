@@ -2,14 +2,33 @@ import prisma from '../config/database.js';
 
 export const getPurchases = async (req, res) => {
   try {
-    const purchases = await prisma.purchaseOrder.findMany({
-      include: {
-        supplier: { select: { name: true } },
-        items: { include: { product: { select: { name: true, sku: true } } } }
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 50, 1), 500);
+    const skip = (page - 1) * limit;
+
+    const [purchases, total] = await Promise.all([
+      prisma.purchaseOrder.findMany({
+        include: {
+          supplier: { select: { name: true } },
+          items: { include: { product: { select: { name: true, sku: true } } } }
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.purchaseOrder.count(),
+    ]);
+    res.json({
+      data: purchases,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasNext: page * limit < total,
+        hasPrev: page > 1,
       },
-      orderBy: { createdAt: 'desc' }
     });
-    res.json(purchases);
   } catch (error) {
     res.status(500).json({ error: 'Error interno del servidor', details: error.message });
   }

@@ -35,25 +35,26 @@ export const getAllSuppliers = async (req, res) => {
       prisma.supplier.count({ where }),
     ]);
 
-    const suppliersWithPending = await Promise.all(
-      suppliers.map(async (supplier) => {
-        const pendingInvoices = await prisma.supplierInvoice.findMany({
-          where: { supplierId: supplier.id, paid: false },
-          select: { amount: true, paidAmount: true }
-        });
+    const supplierIds = suppliers.map(s => s.id);
+    const pendingGroups = supplierIds.length > 0
+      ? await prisma.supplierInvoice.groupBy({
+          by: ['supplierId'],
+          where: { supplierId: { in: supplierIds }, paid: false },
+          _sum: { amount: true, paidAmount: true },
+          _count: { supplierId: true },
+        })
+      : [];
 
-        const totalPending = pendingInvoices.reduce(
-          (sum, inv) => sum + (inv.amount - inv.paidAmount),
-          0
-        );
+    const pendingMap = {};
+    for (const g of pendingGroups) {
+      const totalPending = (g._sum.amount || 0) - (g._sum.paidAmount || 0);
+      pendingMap[g.supplierId] = { totalPending, pendingCount: g._count.supplierId };
+    }
 
-        return {
-          ...supplier,
-          totalPending,
-          pendingCount: pendingInvoices.length
-        };
-      })
-    );
+    const suppliersWithPending = suppliers.map((supplier) => {
+      const pending = pendingMap[supplier.id] || { totalPending: 0, pendingCount: 0 };
+      return { ...supplier, ...pending };
+    });
 
     res.json({
       data: suppliersWithPending,

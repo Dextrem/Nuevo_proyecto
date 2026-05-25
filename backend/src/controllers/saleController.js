@@ -388,19 +388,17 @@ export const createSale = async (req, res) => {
       });
 
       for (const item of items) {
-        const product = await tx.product.findUnique({ where: { id: item.productId } });
-
-        if (!product || product.stock < item.quantity) {
-          throw new Error(`Stock insuficiente para: ${product?.name || 'producto desconocido'}. Stock actual: ${product?.stock || 0}, requerido: ${item.quantity}`);
+        const product = products.find(p => p.id === item.productId);
+        if (!product) {
+          throw new Error(`Producto no encontrado: ${item.productId}`);
         }
-        
+        if (product.stock < item.quantity) {
+          throw new Error(`Stock insuficiente para: ${product.name}. Stock actual: ${product.stock}, requerido: ${item.quantity}`);
+        }
+
         await tx.product.update({
           where: { id: item.productId },
-          data: {
-            stock: {
-              decrement: item.quantity,
-            },
-          },
+          data: { stock: { decrement: item.quantity } },
         });
 
         await tx.inventoryMovement.create({
@@ -412,8 +410,8 @@ export const createSale = async (req, res) => {
             newStock: product.stock - item.quantity,
             reference: invoiceNumber,
             description: `Salida por Venta`,
-            userId: req.user.id
-          }
+            userId: req.user.id,
+          },
         });
       }
 
@@ -588,32 +586,40 @@ export const cancelSale = async (req, res) => {
 
     await prisma.$transaction(async (tx) => {
       // 1. Devolver stock e historial de inventario
-      for (const item of sale.items) {
-        const product = await tx.product.findUnique({ where: { id: item.productId } });
-        
-        if (product) {
-          await tx.product.update({
-            where: { id: item.productId },
-            data: {
-              stock: {
-                increment: item.quantity,
-              },
-            },
-          });
+      const productIds = sale.items.map(i => i.productId);
+      const cancelProducts = await tx.product.findMany({
+        where: { id: { in: productIds } },
+      });
+      const cancelProductMap = {};
+      for (const p of cancelProducts) {
+        cancelProductMap[p.id] = p;
+      }
 
-          await tx.inventoryMovement.create({
-            data: {
-              productId: item.productId,
-              type: 'IN',
-              quantity: item.quantity,
-              previousStock: product.stock,
-              newStock: product.stock + item.quantity,
-              reference: sale.invoiceNumber,
-              description: `Devolución por Anulación de Venta`,
-              userId: req.user.id
-            }
-          });
-        }
+      for (const item of sale.items) {
+        const product = cancelProductMap[item.productId];
+        if (!product) continue;
+
+        await tx.product.update({
+          where: { id: item.productId },
+          data: {
+            stock: {
+              increment: item.quantity,
+            },
+          },
+        });
+
+        await tx.inventoryMovement.create({
+          data: {
+            productId: item.productId,
+            type: 'IN',
+            quantity: item.quantity,
+            previousStock: product.stock,
+            newStock: product.stock + item.quantity,
+            reference: sale.invoiceNumber,
+            description: `Devolución por Anulación de Venta`,
+            userId: req.user.id
+          }
+        });
       }
 
       // 2. Reversar CostAnalysis mensual
@@ -787,6 +793,9 @@ export const getDailySales = async (req, res) => {
 export const getAccountsReceivable = async (req, res) => {
   try {
     const { startDate, endDate, invoiceNumber, clientId, status, saleStartDate, saleEndDate } = req.query;
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 50, 1), 500);
+    const skip = (page - 1) * limit;
 
     const where = {
       paymentMethod: 'CREDIT',
@@ -816,23 +825,28 @@ export const getAccountsReceivable = async (req, res) => {
       }
     }
 
-    const sales = await prisma.sale.findMany({
-      where,
-      include: {
-        client: true,
-        user: {
-          select: { id: true, name: true, username: true },
-        },
-        items: {
-          include: {
-            product: {
-              select: { id: true, name: true, sku: true },
+    const [sales, total] = await Promise.all([
+      prisma.sale.findMany({
+        where,
+        include: {
+          client: { select: { id: true, name: true, rnc: true, phone: true } },
+          user: {
+            select: { id: true, name: true, username: true },
+          },
+          items: {
+            include: {
+              product: {
+                select: { id: true, name: true, sku: true },
+              },
             },
           },
         },
-      },
-      orderBy: { dueDate: 'asc' },
-    });
+        orderBy: { dueDate: 'asc' },
+        skip,
+        take: limit,
+      }),
+      prisma.sale.count({ where }),
+    ]);
 
     const summary = sales.reduce((acc, sale) => {
       acc.totalPending += sale.total - sale.paidAmount;
@@ -842,7 +856,18 @@ export const getAccountsReceivable = async (req, res) => {
       return acc;
     }, { totalPending: 0, totalSales: 0, countPending: 0, countPartial: 0 });
 
-    res.json({ sales, summary });
+    res.json({
+      sales,
+      summary,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasNext: page * limit < total,
+        hasPrev: page > 1,
+      },
+    });
   } catch (error) {
     console.error('Error al obtener cuentas por cobrar:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
