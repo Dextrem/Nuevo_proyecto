@@ -301,6 +301,14 @@ const Inventory = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
+
+    if (!editingProduct && !formData.barcode) {
+      const confirmSave = confirm(
+        'El artículo no tiene código de barras. Esto podría dificultar la búsqueda en ventas futuras con lector. ¿Desea guardarlo de todas formas?'
+      );
+      if (!confirmSave) return;
+    }
+
     setIsSubmitting(true);
     try {
       const data = {
