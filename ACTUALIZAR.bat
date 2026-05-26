@@ -55,9 +55,6 @@ if not exist "backend\package.json" (
 :: ========================================
 :: CONFIGURACION
 :: ========================================
-set "REPO_URL=https://github.com/Dextrem/Nuevo_proyecto/archive/refs/heads/main.zip"
-set "ZIP_FILE=%TEMP%\finandex_update.zip"
-set "EXTRACT_DIR=%TEMP%\finandex_update"
 set "BACKEND_DIR=%~dp0backend"
 set "FRONTEND_DIR=%~dp0frontend"
 set "ENV_BACKUP=%~dp0backend\.env.update_backup"
@@ -67,7 +64,7 @@ echo %B%============================================%N%
 echo %B%   CONFIGURACION DE ACTUALIZACION%N%
 echo %B%============================================%N%
 echo.
-echo Origen: %REPO_URL%
+echo Origen: GitHub (Dextrem/Nuevo_proyecto)
 echo Destino: %~dp0
 echo.
 
@@ -107,171 +104,48 @@ if exist "%BACKEND_DIR%\.env" (
 )
 
 :: ========================================
-:: DESCARGAR CODIGO DESDE GITHUB
+:: ACTUALIZAR CODIGO CON GIT
 :: ========================================
 echo.
-echo %A%Descargando ultima version del codigo...%N%
+echo %A%Actualizando codigo desde GitHub...%N%
 
-:: Intentar metodo 1: PowerShell (Win 8/10/11)
-echo %A%  Metodo: PowerShell%N%
-powershell -NoProfile -ExecutionPolicy Bypass -Command "try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $wc = New-Object System.Net.WebClient; $wc.DownloadFile('%REPO_URL%', '%ZIP_FILE%'); Write-Host 'OK' } catch { Write-Host 'ERROR:' $_.Exception.Message; exit 1 }" > "%TEMP%\finandex_dl_result.txt" 2>&1
-set /p "DL_RESULT=" < "%TEMP%\finandex_dl_result.txt"
-
-if not "!DL_RESULT:OK=!"=="!DL_RESULT!" (
-    echo %V%  [OK] Descarga completada via PowerShell%N%
-) else (
-    echo %A%  [FALLBACK] PowerShell no disponible, intentando BITSAdmin...%N%
-    bitsadmin /transfer "FinandexUpdate" /download /priority FOREGROUND "%REPO_URL%" "%ZIP_FILE%" >nul 2>&1
-    if !errorlevel! equ 0 (
-        echo %V%  [OK] Descarga completada via BITSAdmin%N%
-    ) else (
-        echo %A%  [FALLBACK] BITSAdmin no disponible, intentando certutil...%N%
-        certutil -urlcache -split -f "%REPO_URL%" "%ZIP_FILE%" >nul 2>&1
-        if !errorlevel! equ 0 (
-            echo %V%  [OK] Descarga completada via certutil%N%
-        ) else (
-            echo %R%[ERROR] No se pudo descargar la actualizacion%N%
-            echo %A%Verifique: conexion a Internet, firewall, antivirus%N%
-            del "%TEMP%\finandex_dl_result.txt" >nul 2>&1
-            pause
-            exit /b 1
-        )
-    )
-)
-del "%TEMP%\finandex_dl_result.txt" >nul 2>&1
-
-:: Verificar que el ZIP existe y no esta corrupto
-if not exist "%ZIP_FILE%" (
-    echo %R%[ERROR] Archivo ZIP no encontrado%N%
+:: Verificar git
+where git >nul 2>&1
+if %errorlevel% neq 0 (
+    echo %R%[ERROR] Git no esta instalado%N%
+    echo %A%Instale git desde https://git-scm.com/ o actualice manualmente%N%
     pause
     exit /b 1
 )
-set "ZIP_SIZE=~0"
-for %%A in ("%ZIP_FILE%") do set "ZIP_SIZE=%%~zA"
-if !ZIP_SIZE! lss 1000 (
-    echo %R%[ERROR] Archivo ZIP corrupto o muy pequeno (%ZIP_SIZE% bytes)%N%
-    del "%ZIP_FILE%" >nul 2>&1
+
+:: Verificar que es un repo git
+if not exist ".git" (
+    echo %R%[ERROR] No es un repositorio Git%N%
+    echo %A%Ejecute: git init ^&^& git remote add origin https://github.com/Dextrem/Nuevo_proyecto.git%N%
+    echo %A%Luego vuelva a ejecutar este actualizador%N%
     pause
     exit /b 1
 )
-echo %V%  Tamanio: !ZIP_SIZE! bytes%N%
 
-:: ========================================
-:: EXTRAER CODIGO
-:: ========================================
-echo.
-echo %A%Extrayendo codigo...%N%
-
-:: Limpiar directorio de extraccion previo
-if exist "%EXTRACT_DIR%" (
-    rmdir /s /q "%EXTRACT_DIR%" >nul 2>&1
-)
-mkdir "%EXTRACT_DIR%" >nul 2>&1
-
-:: Intentar extraer con PowerShell (nativo)
-echo %A%  Metodo: PowerShell Expand-Archive%N%
-powershell -NoProfile -ExecutionPolicy Bypass -Command "try { Expand-Archive -Path '%ZIP_FILE%' -DestinationPath '%EXTRACT_DIR%' -Force; Write-Host 'OK' } catch { Write-Host 'ERROR:' $_.Exception.Message; exit 1 }" > "%TEMP%\finandex_extract_result.txt" 2>&1
-set /p "EX_RESULT=" < "%TEMP%\finandex_extract_result.txt"
-
-if "!EX_RESULT:OK=!"=="!EX_RESULT!" (
-    echo %R%  [FALLBACK] Expand-Archive fallo, intentando con certutil...%N%
-    :: Fallback: extraer con tar si esta disponible
-    where tar >nul 2>&1
-    if !errorlevel! equ 0 (
-        echo %A%  Metodo: tar (Windows 10+ )%N%
-        tar -xf "%ZIP_FILE%" -C "%EXTRACT_DIR%" >nul 2>&1
-        if !errorlevel! neq 0 (
-            echo %R%[ERROR] No se pudo extraer el archivo ZIP%N%
-            del "%ZIP_FILE%" >nul 2>&1
-            rmdir /s /q "%EXTRACT_DIR%" >nul 2>&1
-            pause
-            exit /b 1
-        )
-        echo %V%  [OK] Extraccion completada via tar%N%
-    ) else (
-        echo %R%[ERROR] No se pudo extraer el archivo ZIP%N%
-        echo %A%Intente descargar manualmente desde:%N%
-        echo %A%%REPO_URL%%N%
-        del "%ZIP_FILE%" >nul 2>&1
-        rmdir /s /q "%EXTRACT_DIR%" >nul 2>&1
-        pause
-        exit /b 1
-    )
-) else (
-    echo %V%  [OK] Extraccion completada via PowerShell%N%
-)
-del "%TEMP%\finandex_extract_result.txt" >nul 2>&1
-
-:: Encontrar la carpeta raiz del proyecto extraido
-set "EXTRACTED_ROOT=%EXTRACT_DIR%"
-for /d %%D in ("%EXTRACT_DIR%\*") do (
-    if exist "%%D\backend\package.json" (
-        set "EXTRACTED_ROOT=%%D"
-        goto :FOUND_ROOT
-    )
-)
-:FOUND_ROOT
-
-echo %V%  Extraido en: !EXTRACTED_ROOT!%N%
-
-:: ========================================
-:: COPIAR ARCHIVOS ACTUALIZADOS
-:: ========================================
-echo.
-echo %A%Aplicando actualizacion...%N%
-
-:: Backup de node_modules temporal (para evitar reinstalar si no cambio)
-set "BACKEND_NM_BACKUP=%TEMP%\finandex_backend_node_modules"
-if exist "%BACKEND_DIR%\node_modules" (
-    echo %A%  Preservando node_modules temporalmente...%N%
-    if exist "!BACKEND_NM_BACKUP!" rmdir /s /q "!BACKEND_NM_BACKUP!" >nul 2>&1
-    mkdir "!BACKEND_NM_BACKUP!" >nul 2>&1
-    move /Y "%BACKEND_DIR%\node_modules\*" "!BACKEND_NM_BACKUP!\" >nul 2>&1
-    rmdir /s /q "%BACKEND_DIR%\node_modules" >nul 2>&1
+:: Fetch ultimos cambios
+echo %A%  Descargando cambios...%N%
+git fetch origin main >nul 2>&1
+if !errorlevel! neq 0 (
+    echo %R%[ERROR] No se pudo conectar con GitHub%N%
+    echo %A%Verifique conexion a Internet y credenciales de git%N%
+    pause
+    exit /b 1
 )
 
-:: 1. Actualizar backend (codigo fuente)
-echo %A%  Actualizando backend...%N%
-if exist "!EXTRACTED_ROOT!\backend\" (
-    :: Eliminar archivos viejos (excepto node_modules)
-    if exist "%BACKEND_DIR%\node_modules" rmdir /s /q "%BACKEND_DIR%\node_modules" >nul 2>&1
-    if exist "%BACKEND_DIR%\.env" del "%BACKEND_DIR%\.env" >nul 2>&1
-    
-    xcopy /E /Y /I "!EXTRACTED_ROOT!\backend\*" "%BACKEND_DIR%\" >nul 2>&1
-    echo %V%    [OK] Backend actualizado%N%
-) else (
-    echo %R%    [ERROR] No se encontro backend en el paquete%N%
+:: Aplicar cambios (preserva .gitignore, node_modules, .env, data/)
+echo %A%  Aplicando cambios...%N%
+git reset --hard origin/main >nul 2>&1
+if !errorlevel! neq 0 (
+    echo %R%[ERROR] No se pudo aplicar la actualizacion%N%
+    pause
+    exit /b 1
 )
-
-:: 2. Actualizar frontend (codigo fuente)
-echo %A%  Actualizando frontend...%N%
-if exist "!EXTRACTED_ROOT!\frontend\" (
-    if exist "%FRONTEND_DIR%\node_modules" rmdir /s /q "%FRONTEND_DIR%\node_modules" >nul 2>&1
-    if exist "%FRONTEND_DIR%\dist" rmdir /s /q "%FRONTEND_DIR%\dist" >nul 2>&1
-    
-    xcopy /E /Y /I "!EXTRACTED_ROOT!\frontend\*" "%FRONTEND_DIR%\" >nul 2>&1
-    echo %V%    [OK] Frontend actualizado%N%
-) else (
-    echo %R%    [ERROR] No se encontro frontend en el paquete%N%
-)
-
-:: 3. Actualizar scripts batch (.bat)
-echo %A%  Actualizando scripts...%N%
-for %%S in (INSTALAR.bat INICIAR.bat DETENER.bat ACTUALIZAR.bat ACTUALIZAR_PRIMERA_VEZ.bat CONFIGURA_ARRANQUE_AUTOMATICO.bat CREA_BACKUP.bat RESTAURAR_BACKUP.bAT PROGRAMAR_RESPALDO_DIARIO.bat REPARAR_RED.bat) do (
-    if exist "!EXTRACTED_ROOT!\%%S" (
-        copy /Y "!EXTRACTED_ROOT!\%%S" "%~dp0%%S" >nul 2>&1
-    )
-)
-echo %V%    [OK] Scripts actualizados%N%
-
-:: 4. Actualizar documentacion
-echo %A%  Actualizando documentacion...%N%
-for %%D in (GUIA_CAMBIOS_Y_MANUAL_INSTALACION.txt GUIA_DE_INSTALACION_Y_USO.txt GUIA_ACTUALIZACION_PC_REMOTA.txt README.md) do (
-    if exist "!EXTRACTED_ROOT!\%%D" (
-        copy /Y "!EXTRACTED_ROOT!\%%D" "%~dp0%%D" >nul 2>&1
-    )
-)
-echo %V%    [OK] Documentacion actualizada%N%
+echo %V%  [OK] Codigo actualizado a la ultima version%N%
 
 :: ========================================
 :: RESTAURAR .env
@@ -381,14 +255,8 @@ echo %V%  [OK] Frontend compilado%N%
 popd
 
 :: ========================================
-:: LIMPIEZA
+:: COMPLETADO
 :: ========================================
-echo.
-echo %A%Limpiando archivos temporales...%N%
-del "%ZIP_FILE%" >nul 2>&1
-rmdir /s /q "%EXTRACT_DIR%" >nul 2>&1
-if exist "%TEMP%\finandex_backend_node_modules" rmdir /s /q "%TEMP%\finandex_backend_node_modules" >nul 2>&1
-echo %V%  [OK] Archivos temporales eliminados%N%
 
 :: ========================================
 :: RESUMEN FINAL
