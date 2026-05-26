@@ -88,7 +88,7 @@ const ScanFeedback = memo(({ show, productName }) => {
 
 ScanFeedback.displayName = 'ScanFeedback';
 
-const CartSummary = memo(({ cart, paymentMethod, selectedClient, paidAmount, setPaidAmount, discountPercent, setDiscountPercent, subtotal, totalTax, discountAmount, total, onProcessSale, onCashEnter, formatCurrency, settings, isProcessing }) => {
+const CartSummary = memo(({ cart, paymentMethod, selectedClient, paidAmount, setPaidAmount, discountPercent, setDiscountPercent, subtotal, totalTax, discountAmount, total, onProcessSale, formatCurrency, settings, isProcessing }) => {
   const handlePaidAmountChange = (value) => {
     const numValue = parseFloat(value) || 0;
     if (numValue <= total) {
@@ -132,7 +132,6 @@ const CartSummary = memo(({ cart, paymentMethod, selectedClient, paidAmount, set
             className="form-control"
             value={paidAmount}
             onChange={(e) => setPaidAmount(e.target.value)}
-            onKeyDown={onCashEnter}
             placeholder="0.00"
             min="0"
             step="0.01"
@@ -236,7 +235,6 @@ const POS = () => {
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const { formatCurrency, settings, showNotification } = useApp();
   const posContainerRef = useRef(null);
-  const cashAutoPrintRef = useRef(false);
 
   const loadCashRegister = useCallback(async () => {
     try {
@@ -412,7 +410,6 @@ const POS = () => {
     setIsProcessingSale(true);
     try {
       const response = await saleService.create(saleData);
-      cashAutoPrintRef.current = !!(saleData.paidAmount);
       setLastSale(response.data.sale);
       setShowReceiptModal(true);
       setCart([]);
@@ -433,7 +430,7 @@ const POS = () => {
     }
   }, [loadData, notifyDataUpdate, showNotification]);
 
-  const handleProcessSale = useCallback(async (skipOverlay) => {
+  const handleProcessSale = useCallback(async () => {
     if (isProcessingSale) return;
     if (cart.length === 0) {
       showNotification('Agrega productos al carrito', 'error');
@@ -506,12 +503,8 @@ const POS = () => {
       }
 
       const change = +(cashReceived - total).toFixed(2);
-      saleData.paidAmount = cashReceived;
-      if (skipOverlay === true) {
-        await submitSale(saleData);
-        return;
-      }
       // set pending data and show confirmation overlay
+      saleData.paidAmount = cashReceived;
       setPendingSaleData(saleData);
       setCashChange(change);
       setShowCashConfirm(true);
@@ -522,13 +515,6 @@ const POS = () => {
     // Other payment methods: proceed directly
     await submitSale(saleData);
   }, [cart, paymentMethod, selectedClient, paidAmount, dueDate, verificationRnc, total, discountAmount, loadData, showNotification, isProcessingSale, submitSale]);
-
-  const handleCashEnter = useCallback((e) => {
-    if (e.key === 'Enter' && !e.repeat) {
-      e.preventDefault();
-      handleProcessSale();
-    }
-  }, [handleProcessSale]);
 
   const printReceipt = useCallback(() => {
     const printContent = document.getElementById('receipt-preview')?.innerHTML;
@@ -607,25 +593,6 @@ const POS = () => {
       }, 1000);
     }, 500);
   }, [printType]);
-
-  useEffect(() => {
-    if (!showCashConfirm) return;
-    const handler = (e) => {
-      if (e.key === 'Enter' && !e.repeat && !isProcessingSale && pendingSaleData) {
-        submitSale(pendingSaleData);
-      }
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [showCashConfirm, isProcessingSale, pendingSaleData, submitSale]);
-
-  useEffect(() => {
-    if (showReceiptModal && cashAutoPrintRef.current) {
-      cashAutoPrintRef.current = false;
-      const timer = setTimeout(() => printReceipt(), 600);
-      return () => clearTimeout(timer);
-    }
-  }, [showReceiptModal, printReceipt]);
 
   const handleAddNewClient = useCallback(async () => {
     if (!newClientData.name.trim() || !newClientData.rnc.trim() || !newClientData.phone.trim() || !newClientData.address.trim()) {
@@ -834,7 +801,6 @@ const POS = () => {
             discountAmount={discountAmount}
             total={total}
             onProcessSale={handleProcessSale}
-            onCashEnter={handleCashEnter}
             formatCurrency={formatCurrency}
             settings={settings}
             isProcessing={isProcessingSale}
