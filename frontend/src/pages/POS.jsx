@@ -235,6 +235,7 @@ const POS = () => {
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const { formatCurrency, settings, showNotification } = useApp();
   const posContainerRef = useRef(null);
+  const cashAutoPrintRef = useRef(false);
 
   const loadCashRegister = useCallback(async () => {
     try {
@@ -319,6 +320,25 @@ const POS = () => {
     el.addEventListener('blur', onBlur);
     return () => el.removeEventListener('blur', onBlur);
   }, [isTouchDevice]);
+
+  useEffect(() => {
+    if (!showCashConfirm) return;
+    const handler = (e) => {
+      if (e.key === 'Enter' && !isProcessingSale && pendingSaleData) {
+        submitSale(pendingSaleData);
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [showCashConfirm, isProcessingSale, pendingSaleData, submitSale]);
+
+  useEffect(() => {
+    if (showReceiptModal && cashAutoPrintRef.current) {
+      cashAutoPrintRef.current = false;
+      const timer = setTimeout(() => printReceipt(), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [showReceiptModal, printReceipt]);
 
   const addToCart = useCallback((product) => {
     if (!product || product.stock <= 0) {
@@ -410,6 +430,7 @@ const POS = () => {
     setIsProcessingSale(true);
     try {
       const response = await saleService.create(saleData);
+      cashAutoPrintRef.current = !!(saleData.paidAmount);
       setLastSale(response.data.sale);
       setShowReceiptModal(true);
       setCart([]);
