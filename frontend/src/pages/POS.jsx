@@ -132,6 +132,7 @@ const CartSummary = memo(({ cart, paymentMethod, selectedClient, paidAmount, set
             className="form-control"
             value={paidAmount}
             onChange={(e) => setPaidAmount(e.target.value)}
+            onKeyDown={handleCashEnter}
             placeholder="0.00"
             min="0"
             step="0.01"
@@ -432,7 +433,14 @@ const POS = () => {
     }
   }, [loadData, notifyDataUpdate, showNotification]);
 
-  const handleProcessSale = useCallback(async () => {
+  const handleCashEnter = useCallback((e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleProcessSale(true);
+    }
+  }, [handleProcessSale]);
+
+  const handleProcessSale = useCallback(async (skipOverlay) => {
     if (isProcessingSale) return;
     if (cart.length === 0) {
       showNotification('Agrega productos al carrito', 'error');
@@ -505,8 +513,12 @@ const POS = () => {
       }
 
       const change = +(cashReceived - total).toFixed(2);
-      // set pending data and show confirmation overlay
       saleData.paidAmount = cashReceived;
+      if (skipOverlay === true) {
+        await submitSale(saleData);
+        return;
+      }
+      // set pending data and show confirmation overlay
       setPendingSaleData(saleData);
       setCashChange(change);
       setShowCashConfirm(true);
