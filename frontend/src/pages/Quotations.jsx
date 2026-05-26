@@ -811,10 +811,11 @@ const Quotations = () => {
       const issueDate = q.createdAt ? new Date(q.createdAt) : new Date();
       const expiryDate = new Date(issueDate);
       expiryDate.setDate(expiryDate.getDate() + (q.validityDays || 30));
-      normal(8);
-      pdf.text(`Fecha: ${issueDate.toLocaleDateString('es-DO')}`, infoX + 155, y + 11);
+      const dateX = ml + contentW;
+      normal(8); color(clr.gray);
+      pdf.text(`Fecha: ${issueDate.toLocaleDateString('es-DO')}`, dateX, y + 11, { align: 'right' });
       bold(9); color(clr.red);
-      pdf.text(`Válida hasta: ${expiryDate.toLocaleDateString('es-DO')}`, infoX + 155, y + 18);
+      pdf.text(`Válida hasta: ${expiryDate.toLocaleDateString('es-DO')}`, dateX, y + 18, { align: 'right' });
 
       y += Math.max(28, infoHeight) + 6;
 
@@ -947,10 +948,13 @@ const Quotations = () => {
       normal(6);
       pdf.text(`Generado el ${new Date().toLocaleString('es-DO')}`, pw / 2, y + 8, { align: 'center' });
 
-      // ── PAGE NUMBERS ──
+      // ── PAGE NUMBERS & WATERMARK ──
       const totalPages = pdf.internal.getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
         pdf.setPage(i);
+        pdf.setTextColor(240, 240, 240);
+        pdf.setFontSize(72);
+        pdf.text(settings.companyName || '', pw / 2, 145, { align: 'center', angle: -45 });
         normal(7); color(clr.gray);
         if (i < totalPages) {
           pdf.setFillColor(249, 249, 249);

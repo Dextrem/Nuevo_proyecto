@@ -190,8 +190,19 @@ const QuotationLetterReceipt = memo(({ sale, settings, formatCurrency }) => {
       width: '100%',
       maxWidth: '100%',
       margin: '0',
-      padding: '20mm 25mm'
+      padding: '20mm 25mm',
+      position: 'relative'
     }}>
+      <div style={{
+        position: 'absolute', top: '50%', left: '50%',
+        transform: 'translate(-50%, -50%) rotate(-45deg)',
+        fontSize: '48pt', color: '#000', opacity: 0.06,
+        pointerEvents: 'none', zIndex: 0, whiteSpace: 'nowrap',
+        fontWeight: 'bold'
+      }}>
+        {settings.companyName}
+      </div>
+      <div style={{ position: 'relative', zIndex: 1 }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '25px' }}>
         <tbody>
           <tr>
@@ -240,49 +251,37 @@ const QuotationLetterReceipt = memo(({ sale, settings, formatCurrency }) => {
         </tbody>
       </table>
 
-      <div style={{ backgroundColor: '#f5f5f5', padding: '15px', marginBottom: '20px' }}>
-        <table style={{ width: '100%', fontSize: '11pt' }}>
-          <tbody>
-            <tr>
-              <td style={{ width: '10%', fontWeight: 'bold', color: '#333', padding: '3px 0' }}>CLIENTE:</td>
-              <td style={{ padding: '3px 0', fontWeight: 'bold' }}>{clientData.name}</td>
-              <td style={{ width: '10%', fontWeight: 'bold', color: '#333', padding: '3px 0' }}>RNC/CÉD:</td>
-              <td style={{ padding: '3px 0' }}>{clientData.rnc}</td>
-            </tr>
-            <tr>
-              <td style={{ fontWeight: 'bold', color: '#333', padding: '3px 0' }}>DIRECCIÓN:</td>
-              <td style={{ padding: '3px 0' }}>{clientData.address}</td>
-              <td style={{ fontWeight: 'bold', color: '#333', padding: '3px 0' }}>TELÉFONO:</td>
-              <td style={{ padding: '3px 0' }}>{clientData.phone}</td>
-            </tr>
-            <tr>
-              <td style={{ fontWeight: 'bold', color: '#333', padding: '3px 0' }}>EMAIL:</td>
-              <td style={{ padding: '3px 0' }} colSpan={3}>{clientData.email}</td>
-            </tr>
-          </tbody>
-        </table>
+      <div style={{ marginBottom: '20px', borderBottom: '2px solid #1a1a1a', paddingBottom: '12px' }}>
+        <div style={{ fontWeight: 'bold', fontSize: '12pt', marginBottom: '8px', color: '#1a1a1a' }}>CLIENTE</div>
+        <div style={{ fontSize: '11pt', lineHeight: '1.6' }}>
+          <strong>{clientData.name}</strong>
+          <span style={{ marginLeft: '20px', color: '#555' }}>RNC/Céd: {clientData.rnc}</span>
+        </div>
+        <div style={{ fontSize: '10pt', color: '#555', marginTop: '4px' }}>
+          {clientData.address} | Tel: {clientData.phone} | {clientData.email}
+        </div>
       </div>
 
       <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px', fontSize: '11pt' }}>
         <thead>
-          <tr style={{ backgroundColor: '#4F46E5', color: 'white' }}>
-            <th style={{ padding: '10px 8px', textAlign: 'center', width: '40px' }}>#</th>
-            <th style={{ padding: '10px 8px', textAlign: 'left' }}>Código</th>
-            <th style={{ padding: '10px 8px', textAlign: 'left' }}>Descripción del Producto/Servicio</th>
-            <th style={{ padding: '10px 8px', textAlign: 'center', width: '60px' }}>Cant.</th>
-            <th style={{ padding: '10px 8px', textAlign: 'right', width: '100px' }}>P. Unit.</th>
-            <th style={{ padding: '10px 8px', textAlign: 'right', width: '100px' }}>Total</th>
+          <tr style={{ borderBottom: '2px solid #1a1a1a' }}>
+            <th style={{ padding: '8px 8px', textAlign: 'center', width: '40px', fontWeight: 'bold', color: '#1a1a1a' }}>#</th>
+            <th style={{ padding: '8px 8px', textAlign: 'left', fontWeight: 'bold', color: '#1a1a1a' }}>Código</th>
+            <th style={{ padding: '8px 8px', textAlign: 'left', fontWeight: 'bold', color: '#1a1a1a' }}>Descripción del Producto/Servicio</th>
+            <th style={{ padding: '8px 8px', textAlign: 'center', width: '60px', fontWeight: 'bold', color: '#1a1a1a' }}>Cant.</th>
+            <th style={{ padding: '8px 8px', textAlign: 'right', width: '100px', fontWeight: 'bold', color: '#1a1a1a' }}>P. Unit.</th>
+            <th style={{ padding: '8px 8px', textAlign: 'right', width: '100px', fontWeight: 'bold', color: '#1a1a1a' }}>Total</th>
           </tr>
         </thead>
         <tbody>
           {sale.items && sale.items.map((item, index) => (
             <tr key={index}>
-              <td style={{ padding: '8px', textAlign: 'center', borderBottom: '1px solid #ddd' }}>{index + 1}</td>
-              <td style={{ padding: '8px', borderBottom: '1px solid #ddd' }}>{item.product?.sku || item.sku || '-'}</td>
-              <td style={{ padding: '8px', borderBottom: '1px solid #ddd' }}>{item.product?.name || item.productName || 'Producto'}</td>
-              <td style={{ padding: '8px', textAlign: 'center', borderBottom: '1px solid #ddd' }}>{item.quantity}</td>
-              <td style={{ padding: '8px', textAlign: 'right', borderBottom: '1px solid #ddd' }}>{formatCurrency(item.price || item.total)}</td>
-              <td style={{ padding: '8px', textAlign: 'right', borderBottom: '1px solid #ddd', fontWeight: 'bold' }}>{formatCurrency((item.price || item.total) * item.quantity)}</td>
+              <td style={{ padding: '8px', textAlign: 'center', borderBottom: '1px dotted #ccc' }}>{index + 1}</td>
+              <td style={{ padding: '8px', borderBottom: '1px dotted #ccc' }}>{item.product?.sku || item.sku || '-'}</td>
+              <td style={{ padding: '8px', borderBottom: '1px dotted #ccc' }}>{item.product?.name || item.productName || 'Producto'}</td>
+              <td style={{ padding: '8px', textAlign: 'center', borderBottom: '1px dotted #ccc' }}>{item.quantity}</td>
+              <td style={{ padding: '8px', textAlign: 'right', borderBottom: '1px dotted #ccc' }}>{formatCurrency(item.price || item.total)}</td>
+              <td style={{ padding: '8px', textAlign: 'right', borderBottom: '1px dotted #ccc', fontWeight: 'bold' }}>{formatCurrency((item.price || item.total) * item.quantity)}</td>
             </tr>
           ))}
         </tbody>
@@ -292,8 +291,8 @@ const QuotationLetterReceipt = memo(({ sale, settings, formatCurrency }) => {
         <tbody>
           <tr>
             <td style={{ width: '58%', verticalAlign: 'top', paddingRight: '20px' }}>
-              <div style={{ backgroundColor: '#fffbe6', padding: '15px' }}>
-                <strong style={{ fontSize: '11pt', color: '#333' }}>CONDICIONES</strong>
+              <div style={{ borderTop: '2px solid #1a1a1a', paddingTop: '10px' }}>
+                <strong style={{ fontSize: '11pt', color: '#1a1a1a' }}>CONDICIONES</strong>
                 <table style={{ width: '100%', fontSize: '10pt', color: '#444', marginTop: '8px' }}>
                   <tbody>
                     <tr>
@@ -344,9 +343,9 @@ const QuotationLetterReceipt = memo(({ sale, settings, formatCurrency }) => {
                       <td style={{ padding: '8px 12px', textAlign: 'right', fontSize: '11pt', color: '#dc2626' }}>-{formatCurrency(sale.discount)}</td>
                     </tr>
                   )}
-                  <tr style={{ backgroundColor: '#4F46E5', color: 'white' }}>
-                    <td style={{ padding: '12px', fontSize: '14pt', fontWeight: 'bold' }}>TOTAL A PAGAR:</td>
-                    <td style={{ padding: '12px', textAlign: 'right', fontSize: '14pt', fontWeight: 'bold' }}>{formatCurrency(sale.total || 0)}</td>
+                  <tr style={{ borderTop: '3px double #1a1a1a' }}>
+                    <td style={{ padding: '8px 12px', fontSize: '14pt', fontWeight: 'bold', color: '#1a1a1a' }}>TOTAL A PAGAR:</td>
+                    <td style={{ padding: '8px 12px', textAlign: 'right', fontSize: '14pt', fontWeight: 'bold', color: '#1a1a1a' }}>{formatCurrency(sale.total || 0)}</td>
                   </tr>
                 </tbody>
               </table>
@@ -375,8 +374,8 @@ const QuotationLetterReceipt = memo(({ sale, settings, formatCurrency }) => {
 
       <div style={{ 
         marginTop: '40px', 
-        padding: '15px', 
-        backgroundColor: '#f9f9f9',
+        padding: '15px 0',
+        borderTop: '1px solid #ccc',
         fontSize: '10pt',
         color: '#666',
         textAlign: 'center'
@@ -396,6 +395,7 @@ const QuotationLetterReceipt = memo(({ sale, settings, formatCurrency }) => {
 
       <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '9pt', color: '#999' }}>
         <p style={{ margin: '0' }}>Generado el {new Date().toLocaleString('es-DO')} | Sistema de Gestión</p>
+      </div>
       </div>
     </div>
   );
