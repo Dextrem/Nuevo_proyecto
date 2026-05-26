@@ -100,9 +100,7 @@ if exist "%BACKEND_DIR%\.env" (
     if !errorlevel! equ 0 (
         echo %V%  [OK] .env respaldado en %ENV_BACKUP%%N%
     ) else (
-        echo %R%[ERROR] No se pudo respaldar .env%N%
-        pause
-        exit /b 1
+        echo %A%  [AVISO] No se pudo respaldar .env, continuando...%N%
     )
 ) else (
     echo %A%  [AVISO] No se encontro .env para respaldar%N%
@@ -122,16 +120,22 @@ set /p "DL_RESULT=" < "%TEMP%\finandex_dl_result.txt"
 if not "!DL_RESULT:OK=!"=="!DL_RESULT!" (
     echo %V%  [OK] Descarga completada via PowerShell%N%
 ) else (
-    echo %A%  [FALLBACK] PowerShell no disponible, intentando certutil...%N%
-    certutil -urlcache -split -f "%REPO_URL%" "%ZIP_FILE%" >nul 2>&1
+    echo %A%  [FALLBACK] PowerShell no disponible, intentando BITSAdmin...%N%
+    bitsadmin /transfer "FinandexUpdate" /download /priority FOREGROUND "%REPO_URL%" "%ZIP_FILE%" >nul 2>&1
     if !errorlevel! equ 0 (
-        echo %V%  [OK] Descarga completada via certutil%N%
+        echo %V%  [OK] Descarga completada via BITSAdmin%N%
     ) else (
-        echo %R%[ERROR] No se pudo descargar la actualizacion%N%
-        echo %A%Verifique: conexion a Internet, firewall, antivirus%N%
-        del "%TEMP%\finandex_dl_result.txt" >nul 2>&1
-        pause
-        exit /b 1
+        echo %A%  [FALLBACK] BITSAdmin no disponible, intentando certutil...%N%
+        certutil -urlcache -split -f "%REPO_URL%" "%ZIP_FILE%" >nul 2>&1
+        if !errorlevel! equ 0 (
+            echo %V%  [OK] Descarga completada via certutil%N%
+        ) else (
+            echo %R%[ERROR] No se pudo descargar la actualizacion%N%
+            echo %A%Verifique: conexion a Internet, firewall, antivirus%N%
+            del "%TEMP%\finandex_dl_result.txt" >nul 2>&1
+            pause
+            exit /b 1
+        )
     )
 )
 del "%TEMP%\finandex_dl_result.txt" >nul 2>&1
