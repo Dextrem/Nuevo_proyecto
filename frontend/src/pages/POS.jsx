@@ -250,7 +250,7 @@ const POS = () => {
   const loadData = useCallback(async () => {
     try {
       const [productsRes, clientsRes] = await Promise.all([
-        productService.getAll({ active: true }),
+        productService.getAll({ active: true, limit: 1000 }),
         clientService.getAll({ active: true }),
       ]);
       

@@ -317,6 +317,24 @@ echo %V%  [OK] Dependencias del frontend instaladas%N%
 popd
 
 :: ========================================
+:: RESPALDAR BASE DE DATOS
+:: ========================================
+echo.
+echo %A%Creando backup de base de datos antes de migrar...%N%
+set "PG_DUMP=%CD%\bin\pgsql\bin\pg_dump.exe"
+set "BACKUP_DIR=%CD%\backups"
+if not exist "%BACKUP_DIR%" mkdir "%BACKUP_DIR%"
+for /f %%a in ('powershell -Command "Get-Date -Format 'yyyyMMdd_HHmmss'"') do set "TS=%%a"
+set "PGPASSWORD=postgres"
+"%PG_DUMP%" -U postgres -h 127.0.0.1 -p 5432 finandex > "%BACKUP_DIR%\pre_update_%TS%.sql" 2>nul
+if !errorlevel! equ 0 (
+    echo %V%  [OK] Backup creado: pre_update_%TS%.sql
+) else (
+    echo %A%  [AVISO] No se pudo crear backup (BD puede no estar corriendo)
+)
+set "PGPASSWORD="
+
+:: ========================================
 :: MIGRAR BASE DE DATOS
 :: ========================================
 echo.
