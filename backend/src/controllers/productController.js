@@ -19,7 +19,9 @@ if (!fs.existsSync(UPLOAD_DIR)) {
 export const getAllProducts = async (req, res) => {
   try {
     const { search, categoryId, active, minStock, startDate, endDate } = req.query;
-    const { page, limit, skip } = parsePaginationParams(req.query);
+    const { page, limit: parsedLimit, skip: parsedSkip } = parsePaginationParams(req.query);
+    const limit = parsedLimit === -1 ? -1 : parsedLimit;
+    const skip = limit === -1 ? 0 : parsedSkip;
 
     const where = {};
 
@@ -60,30 +62,36 @@ export const getAllProducts = async (req, res) => {
       }
     }
 
-    const [products, total] = await Promise.all([
-      prisma.product.findMany({
-        where,
-        include: {
-          category: {
-            select: { id: true, name: true },
-          },
+    const findOptions = {
+      where,
+      include: {
+        category: {
+          select: { id: true, name: true },
         },
-        orderBy: { name: 'asc' },
-        skip,
-        take: limit,
-      }),
+      },
+      orderBy: { name: 'asc' },
+    };
+    if (limit !== -1) {
+      findOptions.skip = skip;
+      findOptions.take = limit;
+    }
+
+    const [products, total] = await Promise.all([
+      prisma.product.findMany(findOptions),
       prisma.product.count({ where }),
     ]);
+
+    const totalPages = limit === -1 ? 1 : Math.ceil(total / limit);
 
     res.json({
       data: products,
       pagination: {
-        page,
+        page: limit === -1 ? 1 : page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit),
-        hasNext: page * limit < total,
-        hasPrev: page > 1,
+        totalPages,
+        hasNext: false,
+        hasPrev: false,
       },
     });
   } catch (error) {

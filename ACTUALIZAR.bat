@@ -58,9 +58,9 @@ if not exist "backend\package.json" (
 set "REPO_URL=https://github.com/Dextrem/Nuevo_proyecto/archive/refs/heads/main.zip"
 set "ZIP_FILE=%TEMP%\finandex_update.zip"
 set "EXTRACT_DIR=%TEMP%\finandex_update"
-set "BACKEND_DIR=%CD%\backend"
-set "FRONTEND_DIR=%CD%\frontend"
-set "ENV_BACKUP=%CD%\backend\.env.update_backup"
+set "BACKEND_DIR=%~dp0backend"
+set "FRONTEND_DIR=%~dp0frontend"
+set "ENV_BACKUP=%~dp0backend\.env.update_backup"
 
 echo.
 echo %B%============================================%N%
@@ -68,7 +68,7 @@ echo %B%   CONFIGURACION DE ACTUALIZACION%N%
 echo %B%============================================%N%
 echo.
 echo Origen: %REPO_URL%
-echo Destino: %CD%
+echo Destino: %~dp0
 echo.
 
 :: ========================================
@@ -255,7 +255,7 @@ if exist "!EXTRACTED_ROOT!\frontend\" (
 echo %A%  Actualizando scripts...%N%
 for %%S in (INSTALAR.bat INICIAR.bat DETENER.bat ACTUALIZAR.bat ACTUALIZAR_PRIMERA_VEZ.bat CONFIGURA_ARRANQUE_AUTOMATICO.bat CREA_BACKUP.bat RESTAURAR_BACKUP.bAT PROGRAMAR_RESPALDO_DIARIO.bat REPARAR_RED.bat) do (
     if exist "!EXTRACTED_ROOT!\%%S" (
-        copy /Y "!EXTRACTED_ROOT!\%%S" "%CD%\%%S" >nul 2>&1
+        copy /Y "!EXTRACTED_ROOT!\%%S" "%~dp0%%S" >nul 2>&1
     )
 )
 echo %V%    [OK] Scripts actualizados%N%
@@ -264,7 +264,7 @@ echo %V%    [OK] Scripts actualizados%N%
 echo %A%  Actualizando documentacion...%N%
 for %%D in (GUIA_CAMBIOS_Y_MANUAL_INSTALACION.txt GUIA_DE_INSTALACION_Y_USO.txt GUIA_ACTUALIZACION_PC_REMOTA.txt README.md) do (
     if exist "!EXTRACTED_ROOT!\%%D" (
-        copy /Y "!EXTRACTED_ROOT!\%%D" "%CD%\%%D" >nul 2>&1
+        copy /Y "!EXTRACTED_ROOT!\%%D" "%~dp0%%D" >nul 2>&1
     )
 )
 echo %V%    [OK] Documentacion actualizada%N%
@@ -321,8 +321,8 @@ popd
 :: ========================================
 echo.
 echo %A%Creando backup de base de datos antes de migrar...%N%
-set "PG_DUMP=%CD%\bin\pgsql\bin\pg_dump.exe"
-set "BACKUP_DIR=%CD%\backups"
+set "PG_DUMP=%~dp0bin\pgsql\bin\pg_dump.exe"
+set "BACKUP_DIR=%~dp0backups"
 if not exist "%BACKUP_DIR%" mkdir "%BACKUP_DIR%"
 for /f %%a in ('powershell -Command "Get-Date -Format 'yyyyMMdd_HHmmss'"') do set "TS=%%a"
 set "PGPASSWORD=postgres"
