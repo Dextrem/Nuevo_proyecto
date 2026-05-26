@@ -524,7 +524,7 @@ const POS = () => {
   }, [cart, paymentMethod, selectedClient, paidAmount, dueDate, verificationRnc, total, discountAmount, loadData, showNotification, isProcessingSale, submitSale]);
 
   const handleCashEnter = useCallback((e) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.repeat) {
       e.preventDefault();
       handleProcessSale();
     }
@@ -611,7 +611,7 @@ const POS = () => {
   useEffect(() => {
     if (!showCashConfirm) return;
     const handler = (e) => {
-      if (e.key === 'Enter' && !isProcessingSale && pendingSaleData) {
+      if (e.key === 'Enter' && !e.repeat && !isProcessingSale && pendingSaleData) {
         submitSale(pendingSaleData);
       }
     };
