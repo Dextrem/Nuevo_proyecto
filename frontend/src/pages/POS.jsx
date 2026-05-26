@@ -433,13 +433,6 @@ const POS = () => {
     }
   }, [loadData, notifyDataUpdate, showNotification]);
 
-  const handleCashEnter = useCallback((e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleProcessSale(true);
-    }
-  }, [handleProcessSale]);
-
   const handleProcessSale = useCallback(async (skipOverlay) => {
     if (isProcessingSale) return;
     if (cart.length === 0) {
@@ -529,6 +522,13 @@ const POS = () => {
     // Other payment methods: proceed directly
     await submitSale(saleData);
   }, [cart, paymentMethod, selectedClient, paidAmount, dueDate, verificationRnc, total, discountAmount, loadData, showNotification, isProcessingSale, submitSale]);
+
+  const handleCashEnter = useCallback((e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleProcessSale(true);
+    }
+  }, [handleProcessSale]);
 
   const printReceipt = useCallback(() => {
     const printContent = document.getElementById('receipt-preview')?.innerHTML;
