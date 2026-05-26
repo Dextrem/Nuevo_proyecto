@@ -100,7 +100,8 @@ export const AppProvider = ({ children }) => {
 
   const updateSettings = async (newSettings) => {
     try {
-      const response = await settingsService.update(newSettings);
+      const { accent, secondary, ...apiData } = newSettings;
+      const response = await settingsService.update(apiData);
       const updated = { ...settings, ...response.data.settings };
       setSettings(updated);
       return { success: true };
