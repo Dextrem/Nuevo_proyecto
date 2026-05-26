@@ -321,25 +321,6 @@ const POS = () => {
     return () => el.removeEventListener('blur', onBlur);
   }, [isTouchDevice]);
 
-  useEffect(() => {
-    if (!showCashConfirm) return;
-    const handler = (e) => {
-      if (e.key === 'Enter' && !isProcessingSale && pendingSaleData) {
-        submitSale(pendingSaleData);
-      }
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [showCashConfirm, isProcessingSale, pendingSaleData, submitSale]);
-
-  useEffect(() => {
-    if (showReceiptModal && cashAutoPrintRef.current) {
-      cashAutoPrintRef.current = false;
-      const timer = setTimeout(() => printReceipt(), 600);
-      return () => clearTimeout(timer);
-    }
-  }, [showReceiptModal, printReceipt]);
-
   const addToCart = useCallback((product) => {
     if (!product || product.stock <= 0) {
       if (product) showNotification(`Producto sin stock: ${product.name}`, 'error');
@@ -614,6 +595,25 @@ const POS = () => {
       }, 1000);
     }, 500);
   }, [printType]);
+
+  useEffect(() => {
+    if (!showCashConfirm) return;
+    const handler = (e) => {
+      if (e.key === 'Enter' && !isProcessingSale && pendingSaleData) {
+        submitSale(pendingSaleData);
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [showCashConfirm, isProcessingSale, pendingSaleData, submitSale]);
+
+  useEffect(() => {
+    if (showReceiptModal && cashAutoPrintRef.current) {
+      cashAutoPrintRef.current = false;
+      const timer = setTimeout(() => printReceipt(), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [showReceiptModal, printReceipt]);
 
   const handleAddNewClient = useCallback(async () => {
     if (!newClientData.name.trim() || !newClientData.rnc.trim() || !newClientData.phone.trim() || !newClientData.address.trim()) {
