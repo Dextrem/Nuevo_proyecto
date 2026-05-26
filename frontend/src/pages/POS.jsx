@@ -88,7 +88,7 @@ const ScanFeedback = memo(({ show, productName }) => {
 
 ScanFeedback.displayName = 'ScanFeedback';
 
-const CartSummary = memo(({ cart, paymentMethod, selectedClient, paidAmount, setPaidAmount, discountPercent, setDiscountPercent, subtotal, totalTax, discountAmount, total, onProcessSale, formatCurrency, settings, isProcessing }) => {
+const CartSummary = memo(({ cart, paymentMethod, selectedClient, paidAmount, setPaidAmount, discountPercent, setDiscountPercent, subtotal, totalTax, discountAmount, total, onProcessSale, onCashEnter, formatCurrency, settings, isProcessing }) => {
   const handlePaidAmountChange = (value) => {
     const numValue = parseFloat(value) || 0;
     if (numValue <= total) {
@@ -132,7 +132,7 @@ const CartSummary = memo(({ cart, paymentMethod, selectedClient, paidAmount, set
             className="form-control"
             value={paidAmount}
             onChange={(e) => setPaidAmount(e.target.value)}
-            onKeyDown={handleCashEnter}
+            onKeyDown={onCashEnter}
             placeholder="0.00"
             min="0"
             step="0.01"
@@ -834,6 +834,7 @@ const POS = () => {
             discountAmount={discountAmount}
             total={total}
             onProcessSale={handleProcessSale}
+            onCashEnter={handleCashEnter}
             formatCurrency={formatCurrency}
             settings={settings}
             isProcessing={isProcessingSale}
