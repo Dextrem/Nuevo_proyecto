@@ -526,7 +526,7 @@ const POS = () => {
   const handleCashEnter = useCallback((e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      handleProcessSale(true);
+      handleProcessSale();
     }
   }, [handleProcessSale]);
 
