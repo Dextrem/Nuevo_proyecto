@@ -4,6 +4,8 @@ import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { ThermalReceipt58, ThermalReceipt80, LetterReceipt } from '../components/POSModals';
 import { notifyDataUpdate } from '../hooks/useDataSync';
+import { generateInvoicePDF } from '../utils/pdfGenerator';
+import { exportSalesToExcel } from '../utils/excelExporter';
 import ConfirmModal from '../components/ConfirmModal';
 
 const Billing = () => {
@@ -351,11 +353,23 @@ const Billing = () => {
     }, 500);
   };
 
+  const downloadInvoicePDF = async (invoice) => {
+    try {
+      let fullInvoice = invoice;
+      if (!invoice.items || invoice.items.length === 0) {
+        const res = await saleService.getById(invoice.id);
+        fullInvoice = res.data;
+      }
+      const doc = generateInvoicePDF(fullInvoice, settings);
+      doc.save(`Factura_${fullInvoice.invoiceNumber || fullInvoice.id}.pdf`);
+    } catch (err) {
+      console.error('Error generando PDF:', err);
+      showNotification('Error al generar PDF', 'error');
+    }
+  };
+
   const stats = {
     total: pagination.total,
-    // Note: totalAmount here might be partial if we only fetch one page. 
-    // Ideally the backend should return a summary too. 
-    // For now we use the current invoices total as a sample.
     totalAmount: invoices.reduce((sum, inv) => sum + inv.total, 0),
     cash: invoices.filter(i => i.paymentMethod === 'CASH').reduce((sum, inv) => sum + inv.total, 0),
     card: invoices.filter(i => i.paymentMethod === 'CARD').reduce((sum, inv) => sum + inv.total, 0),
@@ -374,6 +388,9 @@ const Billing = () => {
           <h1>Facturación</h1>
           <p>Gestiona todas las facturas</p>
         </div>
+        <button className="btn btn-primary" onClick={() => exportSalesToExcel(invoices, `facturas_${new Date().toISOString().split('T')[0]}`)}>
+          <i className="fas fa-file-excel"></i> Exportar a Excel
+        </button>
       </div>
 
       <div className="kpi-grid" style={{ marginBottom: '24px' }}>
@@ -549,28 +566,36 @@ const Billing = () => {
                      invoice.status === 'PARTIAL' ? 'Parcial' : 'Cancelada'}
                   </span>
                 </td>
-                <td>
-                  <div style={{ display: 'flex', gap: '4px' }}>
-                    <button
-                      className="btn btn-outline"
-                      onClick={() => requestPrintAuthorization(invoice)}
-                      style={{ padding: '4px 8px' }}
-                      title="Imprimir"
-                    >
-                      <i className="fas fa-print"></i>
-                    </button>
-                    {invoice.status !== 'CANCELLED' && (
+                  <td>
+                    <div style={{ display: 'flex', gap: '4px' }}>
                       <button
                         className="btn btn-outline"
-                        onClick={() => requestCancelAuthorization(invoice)}
-                        style={{ padding: '4px 8px', color: 'var(--danger)', borderColor: 'rgba(239,68,68,0.2)' }}
-                        title="Anular Factura"
+                        onClick={() => requestPrintAuthorization(invoice)}
+                        style={{ padding: '4px 8px' }}
+                        title="Imprimir"
                       >
-                        <i className="fas fa-ban"></i>
+                        <i className="fas fa-print"></i>
                       </button>
-                    )}
-                  </div>
-                </td>
+                      <button
+                        className="btn btn-outline"
+                        onClick={() => downloadInvoicePDF(invoice)}
+                        style={{ padding: '4px 8px', color: 'var(--danger)', borderColor: 'rgba(239,68,68,0.2)' }}
+                        title="Descargar PDF"
+                      >
+                        <i className="fas fa-file-pdf"></i>
+                      </button>
+                      {invoice.status !== 'CANCELLED' && (
+                        <button
+                          className="btn btn-outline"
+                          onClick={() => requestCancelAuthorization(invoice)}
+                          style={{ padding: '4px 8px', color: 'var(--danger)', borderColor: 'rgba(239,68,68,0.2)' }}
+                          title="Anular Factura"
+                        >
+                          <i className="fas fa-ban"></i>
+                        </button>
+                      )}
+                    </div>
+                  </td>
               </tr>
             ))}
           </tbody>

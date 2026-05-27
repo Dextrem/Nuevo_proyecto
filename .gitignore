@@ -26,3 +26,6 @@ backend/uploads/
 installer/
 INSTALL/
 _standalone_archive/
+
+# ANSI artifact
+[0m
