@@ -19,19 +19,31 @@ echo %B%============================================%N%
 echo.
 echo %A%Verificando requisitos...%N%
 
-:: 1. Verificar Node.js
-where node >nul 2>&1
-if %errorlevel% neq 0 (
-    echo %R%[ERROR] Node.js no esta instalado o no esta en PATH%N%
-    echo %A%Por favor ejecute INSTALAR.bat primero%N%
-    pause
-    exit /b 1
-)
+:: 1. Verificar Node.js (portable primero, luego sistema)
+set "PORTABLE_NODE=%~dp0bin\node.exe"
+set "PORTABLE_NPM=%~dp0bin\npm.cmd"
+set "PORTABLE_NPX=%~dp0bin\npx.cmd"
 
-:: Obtener version de Node
-for /f "tokens=1,2 delims=v" %%a in ('node -v') do set "NODE_VER=%%a"
-set "NODE_MAJOR=!NODE_VER:~0,2!"
-echo %V%  [OK] Node.js !NODE_VER!%N%
+if exist "%PORTABLE_NODE%" (
+    set "NODE_CMD=%PORTABLE_NODE%"
+    set "NPM_CMD=%PORTABLE_NPM%"
+    set "NPX_CMD=%PORTABLE_NPX%"
+    for /f "tokens=1,2 delims=v" %%a in ('"%PORTABLE_NODE%" -v') do set "NODE_VER=%%a"
+    echo %V%  [OK] Node.js portatil !NODE_VER!%N%
+) else (
+    where node >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo %R%[ERROR] Node.js no encontrado (ni portable ni en PATH)%N%
+        echo %A%Por favor ejecute INSTALAR.bat primero%N%
+        pause
+        exit /b 1
+    )
+    set "NODE_CMD=node"
+    set "NPM_CMD=npm"
+    set "NPX_CMD=npx"
+    for /f "tokens=1,2 delims=v" %%a in ('node -v') do set "NODE_VER=%%a"
+    echo %V%  [OK] Node.js del sistema !NODE_VER!%N%
+)
 
 :: 2. Verificar conexion a Internet
 echo %A%  Verificando conexion a Internet...%N%
@@ -172,7 +184,7 @@ if not exist "%BACKEND_DIR%\.env" (
 echo.
 echo %A%Instalando dependencias del backend...%N%
 pushd "%BACKEND_DIR%"
-call npm install --production --no-fund --no-audit --loglevel=error
+call "%NPM_CMD%" install --production --no-fund --no-audit --loglevel=error
 if !errorlevel! neq 0 (
     echo %R%  [ERROR] npm install fallo en backend%N%
     popd
@@ -184,7 +196,7 @@ popd
 
 echo %A%Instalando dependencias del frontend...%N%
 pushd "%FRONTEND_DIR%"
-call npm install --no-fund --no-audit --loglevel=error
+call "%NPM_CMD%" install --no-fund --no-audit --loglevel=error
 if !errorlevel! neq 0 (
     echo %R%  [ERROR] npm install fallo en frontend%N%
     popd
@@ -218,7 +230,7 @@ set "PGPASSWORD="
 echo.
 echo %A%Migrando base de datos (Prisma)...%N%
 pushd "%BACKEND_DIR%"
-call npx prisma generate --no-hints --no-color >nul 2>&1
+call "%NPX_CMD%" prisma generate --no-hints --no-color >nul 2>&1
 if !errorlevel! neq 0 (
     echo %R%  [ERROR] prisma generate fallo%N%
     popd
@@ -227,7 +239,7 @@ if !errorlevel! neq 0 (
 )
 echo %V%  [OK] Prisma client generado%N%
 
-call npx prisma db push --accept-data-loss --no-color >nul 2>&1
+call "%NPX_CMD%" prisma db push --accept-data-loss --no-color >nul 2>&1
 if !errorlevel! neq 0 (
     echo %R%  [ERROR] prisma db push fallo%N%
     popd
@@ -244,7 +256,7 @@ popd
 echo.
 echo %A%Compilando frontend...%N%
 pushd "%FRONTEND_DIR%"
-call npx vite build --no-color 2>&1
+call "%NPX_CMD%" vite build --no-color 2>&1
 if !errorlevel! neq 0 (
     echo %R%  [ERROR] Compilacion del frontend fallo%N%
     popd

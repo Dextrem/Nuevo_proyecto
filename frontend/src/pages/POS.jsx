@@ -822,7 +822,7 @@ const POS = () => {
 
       {showCashConfirm && pendingSaleData && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#fff', borderRadius: 12, padding: 28, maxWidth: 720, width: '90%', boxShadow: '0 10px 30px rgba(0,0,0,0.3)', textAlign: 'center' }}>
+          <div style={{ background: '#fff', borderRadius: 12, padding: 28, maxWidth: 720, width: '90%', boxShadow: '0 10px 30px rgba(0,0,0,0.3)', textAlign: 'center', maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ background: '#ECFDF5', borderRadius: 8, padding: '18px 24px', marginBottom: 16, border: '1px solid #10B981' }}>
               <h2 style={{ margin: 0, color: '#065F46', fontSize: '2.6rem' }}>{formatCurrency(cashChange)}</h2>
               <div style={{ color: '#065F46', fontWeight: 600 }}>Cambio a devolver</div>

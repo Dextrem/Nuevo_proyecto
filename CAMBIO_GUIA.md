@@ -237,6 +237,38 @@ Componente `ConfirmModal` reutilizable con:
 
 ---
 
+## 12. ACTUALIZAR.bat — Soporte para Node.js portátil
+
+**Problema:** En la PC de producción no hay Node.js instalado globalmente, solo el portátil en `bin/`. `ACTUALIZAR.bat` fallaba porque usaba `npm`/`npx` del PATH del sistema.
+
+**Solución:** Detectar primero `bin\node.exe` portátil. Si existe, usar ese; si no, caer en el del sistema.
+
+```batch
+if exist "%~dp0bin\node.exe" (
+    set "NPM_CMD=%~dp0bin\npm.cmd"
+    set "NPX_CMD=%~dp0bin\npx.cmd"
+) else (
+    set "NPM_CMD=npm"
+    set "NPX_CMD=npx"
+)
+```
+
+Todas las llamadas a `npm install`, `npx prisma generate`, `npx prisma db push` y `npx vite build` ahora usan `"%NPM_CMD%"` y `"%NPX_CMD%"`.
+
+---
+
+## 13. POS.jsx — Scroll en overlay de confirmación de efectivo
+
+**Problema:** El overlay de confirmación de efectivo (`showCashConfirm`) no tenía `max-height` ni `overflow-y`. En pantallas pequeñas o con mucho contenido, los botones quedaban fuera de la vista sin posibilidad de hacer scroll.
+
+**Solución:** Agregar `maxHeight: '90vh', overflowY: 'auto'` al contenedor interno del overlay.
+
+```jsx
+<div style={{ ..., maxHeight: '90vh', overflowY: 'auto' }}>
+```
+
+---
+
 ## Para desplegar en la otra PC
 
 ### Opción 1 — Copiar archivos manualmente
