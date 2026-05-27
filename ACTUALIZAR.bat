@@ -2,12 +2,13 @@
 title Finandex - Actualizacion Automatica
 setlocal enabledelayedexpansion
 
-:: Colores
-set "V=[92m"
-set "R=[91m"
-set "A=[93m"
-set "B=[96m"
-set "N=[0m"
+:: Colores ANSI (generar ESC dinamicamente para compatibilidad)
+for /f %%a in ('echo prompt $E ^| cmd') do set "ESC=%%a"
+set "V=%ESC%[92m"
+set "R=%ESC%[91m"
+set "A=%ESC%[93m"
+set "B=%ESC%[96m"
+set "N=%ESC%[0m"
 
 :: ========================================
 :: VERIFICAR REQUISITOS BASICOS
