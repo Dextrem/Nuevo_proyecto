@@ -65,6 +65,23 @@ if not exist "backend\package.json" (
     exit /b 1
 )
 
+:: 4. Verificar que .env NO este trackeado por git
+echo %A%  Verificando que .env no este en tracking de git...%N%
+git ls-files backend\.env >nul 2>&1
+if !errorlevel! equ 0 (
+    echo %A%  [AVISO] .env esta trackeado por git. Removiendo del tracking...
+    git rm --cached backend\.env >nul 2>&1
+    if !errorlevel! equ 0 (
+        echo %V%  [OK] .env removido del tracking de git
+    ) else (
+        echo %R%  [ERROR] No se pudo remover .env del tracking
+        pause
+        exit /b 1
+    )
+) else (
+    echo %V%  [OK] .env no esta en tracking de git
+)
+
 :: ========================================
 :: CONFIGURACION
 :: ========================================
