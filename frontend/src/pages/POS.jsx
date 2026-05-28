@@ -88,7 +88,7 @@ const ScanFeedback = memo(({ show, productName }) => {
 
 ScanFeedback.displayName = 'ScanFeedback';
 
-const CartSummary = memo(({ cart, paymentMethod, selectedClient, paidAmount, setPaidAmount, discountPercent, setDiscountPercent, subtotal, totalTax, discountAmount, total, onProcessSale, formatCurrency, settings, isProcessing }) => {
+const CartSummary = memo(({ cart, paymentMethod, selectedClient, paidAmount, setPaidAmount, discountPercent, setDiscountPercent, shippingCost, setShippingCost, subtotal, totalTax, discountAmount, total, onProcessSale, formatCurrency, settings, isProcessing }) => {
   const handlePaidAmountChange = (value) => {
     const numValue = parseFloat(value) || 0;
     if (numValue <= total) {
@@ -169,6 +169,24 @@ const CartSummary = memo(({ cart, paymentMethod, selectedClient, paidAmount, set
           <span>-{formatCurrency(discountAmount)}</span>
         </div>
       )}
+      <div className="form-group" style={{ marginBottom: '12px' }}>
+        <label>Envío</label>
+        <input
+          type="number"
+          className="form-control"
+          value={shippingCost}
+          onChange={(e) => setShippingCost(parseFloat(e.target.value) || 0)}
+          placeholder="0.00"
+          min="0"
+          step="0.01"
+        />
+      </div>
+      {shippingCost > 0 && (
+        <div className="summary-line" style={{ color: 'var(--info)' }}>
+          <span>Envío</span>
+          <span>{formatCurrency(shippingCost)}</span>
+        </div>
+      )}
       <div className="summary-line total">
         <span>Total</span>
         <span>{formatCurrency(total)}</span>
@@ -205,6 +223,7 @@ const POS = () => {
   const [paymentMethod, setPaymentMethod] = useState('CASH');
   const [paidAmount, setPaidAmount] = useState('');
   const [discountPercent, setDiscountPercent] = useState('0');
+  const [shippingCost, setShippingCost] = useState(0);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [lastSale, setLastSale] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -404,7 +423,7 @@ const POS = () => {
   const totalTax = cart.reduce((sum, item) => sum + item.tax * item.quantity, 0);
   const discountPercentValue = parseFloat(discountPercent) || 0;
   const discountAmount = (subtotal * discountPercentValue) / 100;
-  const total = subtotal + totalTax - discountAmount;
+  const total = subtotal + totalTax - discountAmount + shippingCost;
 
   const submitSale = useCallback(async (saleData) => {
     setIsProcessingSale(true);
@@ -415,6 +434,7 @@ const POS = () => {
       setCart([]);
       setPaidAmount('');
       setDiscountPercent('0');
+      setShippingCost(0);
       setSelectedClient(null);
       setVerificationRnc('');
       setDueDate('');
@@ -483,6 +503,7 @@ const POS = () => {
       paymentMethod,
       paidAmount: paymentMethod === 'CREDIT' ? paidAmountValue : total,
       discount: discountAmount,
+      shippingCost,
       dueDate: paymentMethod === 'CREDIT' ? dueDate : null,
       items: cart.map((item) => ({
         productId: item.product.id,
@@ -796,6 +817,8 @@ const POS = () => {
             setPaidAmount={setPaidAmount}
             discountPercent={discountPercent}
             setDiscountPercent={setDiscountPercent}
+            shippingCost={shippingCost}
+            setShippingCost={setShippingCost}
             subtotal={subtotal}
             totalTax={totalTax}
             discountAmount={discountAmount}
@@ -831,7 +854,7 @@ const POS = () => {
             <div style={{ textAlign: 'left', marginBottom: 12 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                 <strong>Total:</strong>
-                <span>{formatCurrency(pendingSaleData.items.reduce((s, it) => s + it.total, 0) + pendingSaleData.discount * 0 + 0)}</span>
+                <span>{formatCurrency(pendingSaleData.items.reduce((s, it) => s + it.total, 0) - pendingSaleData.discount + (pendingSaleData.shippingCost || 0))}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                 <strong>Efectivo recibido:</strong>

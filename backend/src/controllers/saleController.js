@@ -247,7 +247,7 @@ export const getSaleById = async (req, res) => {
 
 export const createSale = async (req, res) => {
   try {
-    const { clientId, paymentMethod, paidAmount, discount = 0, items, dueDate, ncfType } = req.body;
+    const { clientId, paymentMethod, paidAmount, discount = 0, shippingCost = 0, items, dueDate, ncfType } = req.body;
 
     let ncf = null;
     if (ncfType) {
@@ -313,7 +313,7 @@ export const createSale = async (req, res) => {
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const totalTax = items.reduce((sum, item) => sum + (item.tax * item.quantity), 0);
     const totalDiscount = items.reduce((sum, item) => sum + (item.discount || 0), 0);
-    const total = subtotal + totalTax - totalDiscount - discount;
+    const total = subtotal + totalTax - totalDiscount - discount + shippingCost;
 
     const products = await prisma.product.findMany({
       where: {
@@ -345,6 +345,7 @@ export const createSale = async (req, res) => {
           subtotal,
           tax: totalTax,
           discount,
+          shippingCost,
           total,
           paidAmount: paymentMethod === 'CREDIT' ? Math.min(paidAmount, total) : total,
           change: paymentMethod === 'CASH' ? Math.max(0, paidAmount - total) : 0,

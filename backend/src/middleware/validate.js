@@ -136,6 +136,7 @@ export const schemas = {
     paidAmount: z.number().min(0),
     ncfType: z.string().optional().nullable(),
     discount: z.number().min(0).optional(),
+    shippingCost: z.number().min(0).optional(),
     dueDate: z.string().optional().nullable(),
     items: z.array(z.object({
       productId: z.string(),

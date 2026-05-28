@@ -86,7 +86,7 @@ const ScanFeedback = memo(({ show, productName }) => {
 
 ScanFeedback.displayName = 'ScanFeedback';
 
-const CartSummary = memo(({ cart, paymentMethod, selectedClient, paidAmount, setPaidAmount, discountPercent, setDiscountPercent, subtotal, totalTax, discountAmount, total, onProcessSale, formatCurrency, settings, isProcessing }) => {
+const CartSummary = memo(({ cart, paymentMethod, selectedClient, paidAmount, setPaidAmount, discountPercent, setDiscountPercent, shippingCost, setShippingCost, subtotal, totalTax, discountAmount, total, onProcessSale, formatCurrency, settings, isProcessing }) => {
   const availableCredit = useMemo(() => {
     if (!selectedClient) return 0;
     const balance = selectedClient.balance ?? selectedClient.currentBalance ?? 0;
@@ -155,6 +155,25 @@ const CartSummary = memo(({ cart, paymentMethod, selectedClient, paidAmount, set
           <span>-{formatCurrency(discountAmount)}</span>
         </div>
       )}
+      <div className="form-group" style={{ marginBottom: '12px' }}>
+        <label style={{ fontSize: '0.85rem', color: '#6B7280', display: 'block', marginBottom: '6px' }}>Envío</label>
+        <input
+          type="number"
+          className="form-control"
+          value={shippingCost}
+          onChange={(e) => setShippingCost(parseFloat(e.target.value) || 0)}
+          placeholder="0.00"
+          min="0"
+          step="0.01"
+          style={{ padding: '10px', fontSize: '0.95rem', borderRadius: '8px' }}
+        />
+      </div>
+      {shippingCost > 0 && (
+        <div className="summary-line" style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--info)', marginBottom: '12px' }}>
+          <span>Envío</span>
+          <span>{formatCurrency(shippingCost)}</span>
+        </div>
+      )}
       <div className="summary-line total" style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
@@ -217,6 +236,7 @@ const POSQR = () => {
   const [paymentMethod, setPaymentMethod] = useState('CASH');
   const [paidAmount, setPaidAmount] = useState('');
   const [discountPercent, setDiscountPercent] = useState('0');
+  const [shippingCost, setShippingCost] = useState(0);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [lastSale, setLastSale] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -356,7 +376,7 @@ const POSQR = () => {
   const totalTax = useMemo(() => cart.reduce((sum, item) => sum + item.tax * item.quantity, 0), [cart]);
   const discountPercentValue = parseFloat(discountPercent) || 0;
   const discountAmount = useMemo(() => (subtotal * discountPercentValue) / 100, [subtotal, discountPercentValue]);
-  const total = subtotal + totalTax - discountAmount;
+  const total = subtotal + totalTax - discountAmount + shippingCost;
 
   const handleProcessSale = useCallback(async () => {
     if (isProcessingSale) return;
@@ -413,6 +433,7 @@ const POSQR = () => {
         paymentMethod,
         paidAmount: paymentMethod === 'CREDIT' ? paidAmountValue : total,
         discount: discountAmount,
+        shippingCost,
         dueDate: paymentMethod === 'CREDIT' ? dueDate : null,
         items: cart.map((item) => ({
           productId: item.product.id,
@@ -442,6 +463,7 @@ const POSQR = () => {
       setCart([]);
       setPaidAmount('');
       setDiscountPercent('0');
+      setShippingCost(0);
       setSelectedClient(null);
       setDueDate('');
       loadData();
@@ -751,9 +773,11 @@ const POSQR = () => {
               selectedClient={selectedClient}
               paidAmount={paidAmount}
               setPaidAmount={setPaidAmount}
-              discountPercent={discountPercent}
-              setDiscountPercent={setDiscountPercent}
-              subtotal={subtotal}
+            discountPercent={discountPercent}
+            setDiscountPercent={setDiscountPercent}
+            shippingCost={shippingCost}
+            setShippingCost={setShippingCost}
+            subtotal={subtotal}
               totalTax={totalTax}
               discountAmount={discountAmount}
               total={total}

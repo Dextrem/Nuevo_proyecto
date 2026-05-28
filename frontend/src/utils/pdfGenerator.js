@@ -138,6 +138,12 @@ export const generateInvoicePDF = (invoice, settings) => {
     doc.setTextColor(50, 50, 50);
   }
 
+  if (invoice.shippingCost > 0) {
+    doc.text('Envío:', margin + contentW - totalsWidth + 5, ty);
+    doc.text(formatCurrency(invoice.shippingCost), margin + contentW - 5, ty, { align: 'right' });
+    ty += 7;
+  }
+
   // Total line
   doc.setDrawColor(primary);
   doc.setLineWidth(0.5);

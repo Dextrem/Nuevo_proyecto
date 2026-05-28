@@ -225,7 +225,8 @@ export const createQuotation = async (req, res) => {
       clientEmail,
       paymentMethod,
       deliveryTime,
-      warranty
+      warranty,
+      shippingCost = 0
     } = req.body;
 
     const quotationNumber = await generateQuotationNumber();
@@ -233,7 +234,7 @@ export const createQuotation = async (req, res) => {
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const totalTax = items.reduce((sum, item) => sum + (item.tax * item.quantity), 0);
     const totalDiscount = items.reduce((sum, item) => sum + (item.discount || 0), 0);
-    const total = subtotal + totalTax - totalDiscount;
+    const total = subtotal + totalTax - totalDiscount + shippingCost;
 
     const quotation = await prisma.quotation.create({
       data: {
@@ -241,6 +242,7 @@ export const createQuotation = async (req, res) => {
         subtotal,
         tax: totalTax,
         discount: totalDiscount,
+        shippingCost,
         total,
         notes,
         validityDays,
@@ -306,7 +308,8 @@ export const updateQuotation = async (req, res) => {
       clientEmail,
       paymentMethod,
       deliveryTime,
-      warranty
+      warranty,
+      shippingCost
     } = req.body;
 
     const existingQuotation = await prisma.quotation.findUnique({
@@ -325,7 +328,7 @@ export const updateQuotation = async (req, res) => {
       subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
       totalTax = items.reduce((sum, item) => sum + (item.tax * item.quantity), 0);
       totalDiscount = items.reduce((sum, item) => sum + (item.discount || 0), 0);
-      total = subtotal + totalTax - totalDiscount;
+      total = subtotal + totalTax - totalDiscount + (shippingCost ?? existingQuotation.shippingCost);
 
       quotation = await prisma.$transaction(async (tx) => {
         await tx.quotationItem.deleteMany({
@@ -354,6 +357,7 @@ export const updateQuotation = async (req, res) => {
             subtotal,
             tax: totalTax,
             discount: totalDiscount,
+            shippingCost: shippingCost ?? existingQuotation.shippingCost,
             total,
             clientName,
             clientRnc,
@@ -382,6 +386,7 @@ export const updateQuotation = async (req, res) => {
           paymentMethod,
           deliveryTime,
           warranty,
+          ...(shippingCost !== undefined && { shippingCost }),
         },
       });
     }
@@ -472,6 +477,7 @@ export const convertToSale = async (req, res) => {
           subtotal: quotation.subtotal,
           tax: quotation.tax,
           discount: quotation.discount,
+          shippingCost: quotation.shippingCost,
           total: quotation.total,
           paidAmount: paymentMethod === 'CREDIT' ? Math.min(paidAmount, quotation.total) : quotation.total,
           change: paymentMethod === 'CASH' ? Math.max(0, paidAmount - quotation.total) : 0,

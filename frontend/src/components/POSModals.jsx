@@ -56,6 +56,7 @@ const QuotationReceipt80 = memo(({ sale, settings, formatCurrency }) => {
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}><span>Subtotal:</span><span>{formatCurrency(sale.subtotal)}</span></div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}><span>ITBIS:</span><span>{formatCurrency(sale.tax)}</span></div>
         {sale.discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', color: 'red', fontSize: '10px' }}><span>Desc:</span><span>-{formatCurrency(sale.discount)}</span></div>}
+        {sale.shippingCost > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}><span>Envío:</span><span>{formatCurrency(sale.shippingCost)}</span></div>}
         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14px', borderTop: '1px solid #000', marginTop: '4px', paddingTop: '4px' }}>
           <span>TOTAL:</span><span>{formatCurrency(sale.total)}</span></div>
       </div>
@@ -134,6 +135,7 @@ const QuotationReceipt58 = memo(({ sale, settings, formatCurrency }) => {
         <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Sub:</span><span>{formatCurrency(sale.subtotal)}</span></div>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>ITBIS:</span><span>{formatCurrency(sale.tax)}</span></div>
         {sale.discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', color: 'red' }}><span>Des:</span><span>-{formatCurrency(sale.discount)}</span></div>}
+        {sale.shippingCost > 0 && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Envío:</span><span>{formatCurrency(sale.shippingCost)}</span></div>}
         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', borderTop: '1px solid #000', marginTop: '2px', paddingTop: '2px' }}>
           <span>TOTAL:</span><span>{formatCurrency(sale.total)}</span>
         </div>
@@ -343,6 +345,12 @@ const QuotationLetterReceipt = memo(({ sale, settings, formatCurrency }) => {
                       <td style={{ padding: '8px 12px', textAlign: 'right', fontSize: '11pt', color: '#dc2626' }}>-{formatCurrency(sale.discount)}</td>
                     </tr>
                   )}
+                  {sale.shippingCost > 0 && (
+                    <tr>
+                      <td style={{ padding: '8px 12px', fontSize: '11pt' }}>Envío:</td>
+                      <td style={{ padding: '8px 12px', textAlign: 'right', fontSize: '11pt' }}>{formatCurrency(sale.shippingCost)}</td>
+                    </tr>
+                  )}
                   <tr style={{ borderTop: '3px double #1a1a1a' }}>
                     <td style={{ padding: '8px 12px', fontSize: '14pt', fontWeight: 'bold', color: '#1a1a1a' }}>TOTAL A PAGAR:</td>
                     <td style={{ padding: '8px 12px', textAlign: 'right', fontSize: '14pt', fontWeight: 'bold', color: '#1a1a1a' }}>{formatCurrency(sale.total || 0)}</td>
@@ -439,6 +447,7 @@ const ThermalReceipt80 = memo(({ sale, settings, formatCurrency }) => (
       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Subtotal:</span><span>{formatCurrency(sale.subtotal)}</span></div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>ITBIS:</span><span>{formatCurrency(sale.tax)}</span></div>
       {sale.discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', color: 'red' }}><span>Desc:</span><span>-{formatCurrency(sale.discount)}</span></div>}
+      {sale.shippingCost > 0 && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Envío:</span><span>{formatCurrency(sale.shippingCost)}</span></div>}
       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14px', borderTop: '1px solid #000', marginTop: '4px', paddingTop: '4px' }}>
         <span>TOTAL:</span><span>{formatCurrency(sale.total)}</span>
       </div>
@@ -484,6 +493,7 @@ const ThermalReceipt58 = memo(({ sale, settings, formatCurrency }) => (
       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Sub:</span><span>{formatCurrency(sale.subtotal)}</span></div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>ITBIS:</span><span>{formatCurrency(sale.tax)}</span></div>
       {sale.discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', color: 'red' }}><span>Des:</span><span>-{formatCurrency(sale.discount)}</span></div>}
+      {sale.shippingCost > 0 && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Envío:</span><span>{formatCurrency(sale.shippingCost)}</span></div>}
       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', borderTop: '1px solid #000', marginTop: '3px', paddingTop: '3px' }}>
         <span>TOTAL:</span><span>{formatCurrency(sale.total)}</span>
       </div>
@@ -543,6 +553,7 @@ const LetterReceipt = memo(({ sale, settings, formatCurrency }) => (
       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Subtotal:</span><span>{formatCurrency(sale.subtotal)}</span></div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>ITBIS ({(settings.taxRate * 100).toFixed(0)}%):</span><span>{formatCurrency(sale.tax)}</span></div>
       {sale.discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', color: 'red' }}><span>Descuento:</span><span>-{formatCurrency(sale.discount)}</span></div>}
+      {sale.shippingCost > 0 && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Envío:</span><span>{formatCurrency(sale.shippingCost)}</span></div>}
       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '16px', borderTop: '2px solid #333', marginTop: '8px', paddingTop: '8px' }}>
         <span>TOTAL:</span><span>{formatCurrency(sale.total)}</span>
       </div>
@@ -630,6 +641,7 @@ const A4Receipt = memo(({ sale, settings, formatCurrency }) => (
             <tr><td style={{ padding: '5px 10px' }}>Subtotal:</td><td style={{ padding: '5px 10px', textAlign: 'right' }}>{formatCurrency(sale.subtotal)}</td></tr>
             <tr><td style={{ padding: '5px 10px' }}>ITBIS ({(settings.taxRate * 100).toFixed(0)}%):</td><td style={{ padding: '5px 10px', textAlign: 'right' }}>{formatCurrency(sale.tax)}</td></tr>
             {sale.discount > 0 && <tr style={{ color: 'red' }}><td style={{ padding: '5px 10px' }}>Descuento:</td><td style={{ padding: '5px 10px', textAlign: 'right' }}>-{formatCurrency(sale.discount)}</td></tr>}
+            {sale.shippingCost > 0 && <tr><td style={{ padding: '5px 10px' }}>Envío:</td><td style={{ padding: '5px 10px', textAlign: 'right' }}>{formatCurrency(sale.shippingCost)}</td></tr>}
             <tr style={{ backgroundColor: '#4F46E5', color: 'white', fontWeight: 'bold', fontSize: '16px' }}>
               <td style={{ padding: '12px 10px' }}>TOTAL A PAGAR:</td>
               <td style={{ padding: '12px 10px', textAlign: 'right' }}>{formatCurrency(sale.total)}</td>

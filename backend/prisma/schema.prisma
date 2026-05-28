@@ -183,6 +183,7 @@ model Sale {
   subtotal       Float
   tax            Float
   discount       Float         @default(0)
+  shippingCost   Float         @default(0)
   interest       Float         @default(0)
   total          Float
   paidAmount     Float
@@ -234,8 +235,9 @@ model SaleItem {
   price     Float
   cost      Float  @default(0)
   tax       Float
-  discount  Float  @default(0)
-  total     Float
+  discount        Float      @default(0)
+  shippingCost    Float      @default(0)
+  total           Float
   saleId    String
   productId String
 

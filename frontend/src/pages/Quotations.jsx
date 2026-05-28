@@ -15,6 +15,7 @@ const QuotationModal = ({ products, clients, onSave, onClose, editingQuotation, 
     notes: '',
     validityDays: 30,
     paymentMethod: 'CASH',
+    shippingCost: 0,
     deliveryTime: '',
     warranty: '',
     items: [],
@@ -37,6 +38,7 @@ const QuotationModal = ({ products, clients, onSave, onClose, editingQuotation, 
         paymentMethod: editingQuotation.paymentMethod || 'CASH',
         deliveryTime: editingQuotation.deliveryTime || '',
         warranty: editingQuotation.warranty || '',
+        shippingCost: editingQuotation.shippingCost || 0,
         items: editingQuotation.items.map(item => ({
           productId: item.productId,
           product: item.product,
@@ -157,7 +159,8 @@ const QuotationModal = ({ products, clients, onSave, onClose, editingQuotation, 
   const subtotal = formData.items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
   const totalTax = formData.items.reduce((sum, i) => sum + (i.tax * i.quantity), 0);
   const totalDiscount = formData.items.reduce((sum, i) => sum + ((i.discount || 0) * i.quantity), 0);
-  const total = subtotal + totalTax - totalDiscount;
+  const shippingCost = parseFloat(formData.shippingCost) || 0;
+  const total = subtotal + totalTax - totalDiscount + shippingCost;
 
   const handleSubmit = () => {
     if (formData.items.length === 0) {
@@ -313,6 +316,18 @@ const QuotationModal = ({ products, clients, onSave, onClose, editingQuotation, 
               </select>
             </div>
             <div className="form-group">
+              <label style={{ fontSize: '12px' }}>Costo de Envío</label>
+              <input
+                type="number"
+                className="form-control"
+                value={formData.shippingCost}
+                onChange={e => setFormData({ ...formData, shippingCost: parseFloat(e.target.value) || 0 })}
+                placeholder="0.00"
+                min="0"
+                step="0.01"
+              />
+            </div>
+            <div className="form-group">
               <label style={{ fontSize: '12px' }}>Tiempo de Entrega</label>
               <input 
                 type="text" 
@@ -440,6 +455,12 @@ const QuotationModal = ({ products, clients, onSave, onClose, editingQuotation, 
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', color: '#fca5a5' }}>
               <span>Descuento:</span>
               <span>-{formatCurrency(totalDiscount)}</span>
+            </div>
+          )}
+          {shippingCost > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+              <span>Envío:</span>
+              <span>{formatCurrency(shippingCost)}</span>
             </div>
           )}
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.3rem', fontWeight: 'bold', borderTop: '1px solid rgba(255,255,255,0.3)', paddingTop: '10px', marginTop: '10px' }}>
@@ -887,18 +908,18 @@ const Quotations = () => {
       pdf.text(formatCurrency(sub), totalX + 77, y + 7, { align: 'right' });
       pdf.text(`ITBIS (${(taxRate * 100).toFixed(0)}%):`, totalX + 8, y + 13.5);
       pdf.text(formatCurrency(tax), totalX + 77, y + 13.5, { align: 'right' });
-      if (disc > 0) {
-        color(clr.red);
-        pdf.text('Descuento:', totalX + 8, y + 20);
-        pdf.text(`-${formatCurrency(disc)}`, totalX + 77, y + 20, { align: 'right' });
-      }
+      const ship = q.shippingCost || 0;
+      let rowCount = 0;
+      if (disc > 0) { color(clr.red); pdf.text('Descuento:', totalX + 8, y + 20); pdf.text(`-${formatCurrency(disc)}`, totalX + 77, y + 20, { align: 'right' }); rowCount++; }
+      if (ship > 0) { color(clr.dark); pdf.text('Envío:', totalX + 8, y + 20 + rowCount * 6.5); pdf.text(formatCurrency(ship), totalX + 77, y + 20 + rowCount * 6.5, { align: 'right' }); rowCount++; }
+      const offset = rowCount * 6.5;
       pdf.setFillColor(clr.primary[0], clr.primary[1], clr.primary[2]);
-      pdf.rect(totalX, y + (disc > 0 ? 22 : 20), 85, 10, 'F');
+      pdf.rect(totalX, y + (disc > 0 ? 20 + offset : ship > 0 ? 20 + offset : 20), 85, 10, 'F');
       bold(11); pdf.setTextColor(255, 255, 255);
-      pdf.text('TOTAL:', totalX + 8, y + (disc > 0 ? 29 : 27));
-      pdf.text(formatCurrency(totalQ), totalX + 77, y + (disc > 0 ? 29 : 27), { align: 'right' });
+      pdf.text('TOTAL:', totalX + 8, y + (disc > 0 ? 27 + offset : ship > 0 ? 27 + offset : 27));
+      pdf.text(formatCurrency(totalQ), totalX + 77, y + (disc > 0 ? 27 + offset : ship > 0 ? 27 + offset : 27), { align: 'right' });
 
-      y += disc > 0 ? 40 : 36;
+      y += (disc > 0 || ship > 0) ? 40 + offset : 36;
 
       // ── CONDITIONS ──
       if (y + 45 > 270) { pdf.addPage(); y = 25; }

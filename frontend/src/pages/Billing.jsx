@@ -209,6 +209,16 @@ const Billing = () => {
                 <div style="display:flex;justify-content:space-between"><span>Sub:</span><span>${formatCurrency(invoice.subtotal)}</span></div>
                 <div style="display:flex;justify-content:space-between"><span>ITBIS:</span><span>${formatCurrency(invoice.tax)}</span></div>
                 ${invoice.discount > 0 ? `<div style="color:red"><span>Des:</span><span>-${formatCurrency(invoice.discount)}</span></div>` : ''}
+                ${invoice.shippingCost > 0 ? `<div><span>Envío:</span><span>${formatCurrency(invoice.shippingCost)}</span></div>` : ''}
+                <div style="display:flex;justify-content:space-between;font-weight:bold;border-top:1px solid #000;margin-top:3px;padding-top:3px">
+                  <span>TOTAL:</span><span>${formatCurrency(invoice.total)}</span>
+                </div>
+              </div>
+              <div style="border-top:1px dashed #000;padding-top:3px;margin-top:5px">
+                <div style="display:flex;justify-content:space-between"><span>Sub:</span><span>${formatCurrency(invoice.subtotal)}</span></div>
+                <div style="display:flex;justify-content:space-between"><span>ITBIS:</span><span>${formatCurrency(invoice.tax)}</span></div>
+                ${invoice.discount > 0 ? `<div style="color:red"><span>Des:</span><span>-${formatCurrency(invoice.discount)}</span></div>` : ''}
+                ${invoice.shippingCost > 0 ? `<div><span>Envío:</span><span>${formatCurrency(invoice.shippingCost)}</span></div>` : ''}
                 <div style="display:flex;justify-content:space-between;font-weight:bold;border-top:1px solid #000;margin-top:3px;padding-top:3px">
                   <span>TOTAL:</span><span>${formatCurrency(invoice.total)}</span>
                 </div>
@@ -264,6 +274,7 @@ const Billing = () => {
                 <div style="display:flex;justify-content:space-between"><span>Subtotal:</span><span>${formatCurrency(invoice.subtotal)}</span></div>
                 <div style="display:flex;justify-content:space-between"><span>ITBIS:</span><span>${formatCurrency(invoice.tax)}</span></div>
                 ${invoice.discount > 0 ? `<div style="color:red"><span>Desc:</span><span>-${formatCurrency(invoice.discount)}</span></div>` : ''}
+                ${invoice.shippingCost > 0 ? `<div><span>Envío:</span><span>${formatCurrency(invoice.shippingCost)}</span></div>` : ''}
                 <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:14px;border-top:1px solid #000;margin-top:4px;padding-top:4px">
                   <span>TOTAL:</span><span>${formatCurrency(invoice.total)}</span>
                 </div>
@@ -329,6 +340,7 @@ const Billing = () => {
               <div><strong>Subtotal:</strong> ${formatCurrency(invoice.subtotal)}</div>
               <div><strong>ITBIS:</strong> ${formatCurrency(invoice.tax)}</div>
               ${invoice.discount > 0 ? `<div style="color:red"><strong>Descuento:</strong> -${formatCurrency(invoice.discount)}</div>` : ''}
+              ${invoice.shippingCost > 0 ? `<div><strong>Envío:</strong> ${formatCurrency(invoice.shippingCost)}</div>` : ''}
               <div class="total-final">TOTAL: ${formatCurrency(invoice.total)}</div>
             </div>
             <div class="footer">
@@ -524,6 +536,7 @@ const Billing = () => {
               <th>Método</th>
               <th>Subtotal</th>
               <th>ITBIS</th>
+              <th>Envío</th>
               <th>Total</th>
               <th>Pagado</th>
               <th>Estado</th>
@@ -533,7 +546,7 @@ const Billing = () => {
           <tbody>
             {invoices.length === 0 ? (
               <tr>
-                <td colSpan="10" style={{ textAlign: 'center', padding: '40px' }}>
+                <td colSpan="11" style={{ textAlign: 'center', padding: '40px' }}>
                   No hay facturas registradas
                 </td>
               </tr>
@@ -554,6 +567,7 @@ const Billing = () => {
                 </td>
                 <td>{formatCurrency(invoice.subtotal)}</td>
                 <td>{formatCurrency(invoice.tax)}</td>
+                <td>{invoice.shippingCost > 0 ? formatCurrency(invoice.shippingCost) : '-'}</td>
                 <td><strong>{formatCurrency(invoice.total)}</strong></td>
                 <td style={{ color: 'var(--secondary)' }}>{formatCurrency(invoice.paidAmount)}</td>
                 <td>
