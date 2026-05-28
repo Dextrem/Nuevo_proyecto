@@ -75,9 +75,8 @@ export const generateInvoicePDF = (invoice, settings) => {
     y += 24;
   }
 
-  // Items table header
-  const colX = [margin, margin + 70, margin + 115, margin + 145, margin + 175];
-  const colW = [70, 45, 30, 30, contentW - 175];
+  // Items table header (columna Total ampliada para que quepan montos grandes)
+  const colX = [margin, margin + 65, margin + 105, margin + 135, margin + 160];
 
   doc.setFillColor(primary);
   doc.roundedRect(margin, y, contentW, 7, 1, 1, 'F');
@@ -115,24 +114,25 @@ export const generateInvoicePDF = (invoice, settings) => {
 
   y += 4;
 
-  // Totals
+  // Totals (caja de 120mm para evitar desbordamiento con montos grandes)
+  const totalsWidth = 120;
   doc.setFillColor(243, 244, 246);
-  doc.roundedRect(margin + contentW - 90, y, 90, 40, 2, 2, 'F');
+  doc.roundedRect(margin + contentW - totalsWidth, y, totalsWidth, 40, 2, 2, 'F');
   let ty = y + 8;
   doc.setFontSize(9);
   doc.setFont('Helvetica', 'bold');
   doc.setTextColor(50, 50, 50);
 
   doc.setFont('Helvetica', 'normal');
-  doc.text('Subtotal:', margin + contentW - 85, ty);
+  doc.text('Subtotal:', margin + contentW - totalsWidth + 5, ty);
   doc.text(formatCurrency(invoice.subtotal), margin + contentW - 5, ty, { align: 'right' });
   ty += 7;
-  doc.text('ITBIS:', margin + contentW - 85, ty);
+  doc.text('ITBIS:', margin + contentW - totalsWidth + 5, ty);
   doc.text(formatCurrency(invoice.tax), margin + contentW - 5, ty, { align: 'right' });
   ty += 7;
   if (invoice.discount > 0) {
     doc.setTextColor(220, 38, 38);
-    doc.text('Descuento:', margin + contentW - 85, ty);
+    doc.text('Descuento:', margin + contentW - totalsWidth + 5, ty);
     doc.text(`-${formatCurrency(invoice.discount)}`, margin + contentW - 5, ty, { align: 'right' });
     ty += 7;
     doc.setTextColor(50, 50, 50);
@@ -141,12 +141,12 @@ export const generateInvoicePDF = (invoice, settings) => {
   // Total line
   doc.setDrawColor(primary);
   doc.setLineWidth(0.5);
-  doc.line(margin + contentW - 85, ty, margin + contentW - 5, ty);
+  doc.line(margin + contentW - totalsWidth + 5, ty, margin + contentW - 5, ty);
   ty += 5;
   doc.setFont('Helvetica', 'bold');
   doc.setFontSize(12);
   doc.setTextColor(primary);
-  doc.text('TOTAL:', margin + contentW - 85, ty);
+  doc.text('TOTAL:', margin + contentW - totalsWidth + 5, ty);
   doc.text(formatCurrency(invoice.total), margin + contentW - 5, ty, { align: 'right' });
 
   y += 50;
