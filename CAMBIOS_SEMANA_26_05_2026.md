@@ -1,6 +1,6 @@
 # Cambios Semana del 26 de Mayo de 2026
 
-Período: 22 al 27 de mayo — Total: **34 commits** (excluyendo módulo RRHH)
+Período: 22 al 28 de mayo — Total: **35 commits** (excluyendo módulo RRHH)
 
 ---
 
@@ -8,6 +8,7 @@ Período: 22 al 27 de mayo — Total: **34 commits** (excluyendo módulo RRHH)
 
 | Commit | Fecha | Descripción |
 |---|---|---|
+| `47122438` | 2026-05-28 | feat: costo de envío por venta/cotización (shippingCost) — schema, API, POS, recibos, PDF, Billing |
 | `ca374c3a` | 2026-05-27 | fix: ANSI escape codes en ACTUALIZAR.bat (faltaba ESC byte) |
 | `19934b82` | 2026-05-27 | fix: Node.js portátil en ACTUALIZAR.bat + scroll overlay efectivo POS |
 | `ba82c254` | 2026-05-27 | feat: exportar facturas a Excel/PDF desde Billing + documentar cambios |

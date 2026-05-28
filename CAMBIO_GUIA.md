@@ -4,6 +4,7 @@
 
 | Commit | Fecha | Descripción |
 |---|---|---|
+| `47122438` | 2026-05-28 | Costo de envío por venta/cotización (shippingCost) — schema, API, POS, recibos, PDF, Billing |
 | `e96202c8` | 2026-05-27 | Reemplazar descarga ZIP por `git fetch + reset` |
 | `19c04cb8` | 2026-05-27 | No enviar `accent`/`secondary` al API al guardar settings |
 | `5916fe09` | 2026-05-27 | `.env` backup no fatal + BITSAdmin fallback |
