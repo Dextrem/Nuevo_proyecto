@@ -170,7 +170,7 @@ const Billing = () => {
     
     if (printType === 'thermal-58') {
       const itemsHTML = invoice.items?.map(item => `
-        <div style="margin-bottom:2px;font-size:9px">
+        <div style="margin-bottom:2px;font-size:10px;font-weight:bold">
           <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.product?.name || 'Producto'}</div>
           <div style="display:flex;justify-content:space-between">
             <span>x${item.quantity}</span><span>${formatCurrency(item.total)}</span>
@@ -185,7 +185,7 @@ const Billing = () => {
             <title>Factura ${invoice.invoiceNumber}</title>
             <style>
               * { margin: 0; padding: 0; box-sizing: border-box; }
-              body { font-family: 'Courier New', monospace; font-size: 9px; margin: 0; padding: 0; }
+              body { font-family: 'Courier New', monospace; font-size: 10px; font-weight: bold; margin: 0; padding: 0; -webkit-font-smoothing: none; }
               .thermal-58 { max-width: 50mm; margin: 0 auto; padding: 2mm; }
               .center { text-align: center; }
               .divider { border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 3px 0; margin: 5px 0; }
@@ -208,16 +208,7 @@ const Billing = () => {
               <div style="border-top:1px dashed #000;padding-top:3px;margin-top:5px">
                 <div style="display:flex;justify-content:space-between"><span>Sub:</span><span>${formatCurrency(invoice.subtotal)}</span></div>
                 <div style="display:flex;justify-content:space-between"><span>ITBIS:</span><span>${formatCurrency(invoice.tax)}</span></div>
-                ${invoice.discount > 0 ? `<div style="color:red"><span>Des:</span><span>-${formatCurrency(invoice.discount)}</span></div>` : ''}
-                ${invoice.shippingCost > 0 ? `<div><span>Envío:</span><span>${formatCurrency(invoice.shippingCost)}</span></div>` : ''}
-                <div style="display:flex;justify-content:space-between;font-weight:bold;border-top:1px solid #000;margin-top:3px;padding-top:3px">
-                  <span>TOTAL:</span><span>${formatCurrency(invoice.total)}</span>
-                </div>
-              </div>
-              <div style="border-top:1px dashed #000;padding-top:3px;margin-top:5px">
-                <div style="display:flex;justify-content:space-between"><span>Sub:</span><span>${formatCurrency(invoice.subtotal)}</span></div>
-                <div style="display:flex;justify-content:space-between"><span>ITBIS:</span><span>${formatCurrency(invoice.tax)}</span></div>
-                ${invoice.discount > 0 ? `<div style="color:red"><span>Des:</span><span>-${formatCurrency(invoice.discount)}</span></div>` : ''}
+                ${invoice.discount > 0 ? `<div><span>Des:</span><span>-${formatCurrency(invoice.discount)}</span></div>` : ''}
                 ${invoice.shippingCost > 0 ? `<div><span>Envío:</span><span>${formatCurrency(invoice.shippingCost)}</span></div>` : ''}
                 <div style="display:flex;justify-content:space-between;font-weight:bold;border-top:1px solid #000;margin-top:3px;padding-top:3px">
                   <span>TOTAL:</span><span>${formatCurrency(invoice.total)}</span>
@@ -230,7 +221,7 @@ const Billing = () => {
       `;
     } else if (printType === 'thermal-80') {
       const itemsHTML = invoice.items?.map(item => `
-        <div style="margin-bottom:2px">
+        <div style="margin-bottom:2px;font-size:11px;font-weight:bold">
           <div>${item.product?.name || 'Producto'}</div>
           <div style="display:flex;justify-content:space-between">
             <span>x${item.quantity}</span><span>${formatCurrency(item.total)}</span>
@@ -245,7 +236,7 @@ const Billing = () => {
             <title>Factura ${invoice.invoiceNumber}</title>
             <style>
               * { margin: 0; padding: 0; box-sizing: border-box; }
-              body { font-family: 'Courier New', monospace; font-size: 10px; margin: 0; padding: 0; }
+              body { font-family: 'Courier New', monospace; font-size: 11px; font-weight: bold; margin: 0; padding: 0; -webkit-font-smoothing: none; }
               .thermal-80 { max-width: 72mm; margin: 0 auto; padding: 3mm; }
               .center { text-align: center; }
               @page { size: 80mm auto; margin: 3mm; }
@@ -273,13 +264,13 @@ const Billing = () => {
               <div style="border-top:1px dashed #000;padding-top:4px;margin-top:8px">
                 <div style="display:flex;justify-content:space-between"><span>Subtotal:</span><span>${formatCurrency(invoice.subtotal)}</span></div>
                 <div style="display:flex;justify-content:space-between"><span>ITBIS:</span><span>${formatCurrency(invoice.tax)}</span></div>
-                ${invoice.discount > 0 ? `<div style="color:red"><span>Desc:</span><span>-${formatCurrency(invoice.discount)}</span></div>` : ''}
+                ${invoice.discount > 0 ? `<div><span>Desc:</span><span>-${formatCurrency(invoice.discount)}</span></div>` : ''}
                 ${invoice.shippingCost > 0 ? `<div><span>Envío:</span><span>${formatCurrency(invoice.shippingCost)}</span></div>` : ''}
                 <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:14px;border-top:1px solid #000;margin-top:4px;padding-top:4px">
                   <span>TOTAL:</span><span>${formatCurrency(invoice.total)}</span>
                 </div>
                 <div style="display:flex;justify-content:space-between"><span>Pagado:</span><span>${formatCurrency(invoice.paidAmount)}</span></div>
-                ${invoice.change > 0 ? `<div style="color:green"><span>Cambio:</span><span>${formatCurrency(invoice.change)}</span></div>` : ''}
+                ${invoice.change > 0 ? `<div><span>Cambio:</span><span>${formatCurrency(invoice.change)}</span></div>` : ''}
               </div>
               <div class="center" style="margin-top:8px">----------------------------<br />¡Gracias por su compra!</div>
             </div>

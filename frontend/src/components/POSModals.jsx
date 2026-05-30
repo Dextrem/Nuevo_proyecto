@@ -40,12 +40,12 @@ const QuotationReceipt80 = memo(({ sale, settings, formatCurrency }) => {
         {clientData.rnc && <div>RNC: {clientData.rnc}</div>}
       </div>
       <div style={{ borderTop: '1px dashed #000', borderBottom: '1px dashed #000', padding: '4px 0', marginBottom: '8px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
           <span>Producto</span><span>Cant</span><span>Total</span>
         </div>
       </div>
       {sale.items && sale.items.map((item, index) => (
-        <div key={index} style={{ marginBottom: '2px', fontSize: '10px' }}>
+        <div key={index} style={{ marginBottom: '2px', fontSize: '11px' }}>
           <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.product?.name || item.productName || 'Producto'}</div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <span>x{item.quantity}</span><span>{formatCurrency((item.price || item.total) * item.quantity)}</span>
@@ -53,28 +53,28 @@ const QuotationReceipt80 = memo(({ sale, settings, formatCurrency }) => {
         </div>
       ))}
       <div style={{ marginTop: '8px', borderTop: '1px dashed #000', paddingTop: '4px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}><span>Subtotal:</span><span>{formatCurrency(sale.subtotal)}</span></div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}><span>ITBIS:</span><span>{formatCurrency(sale.tax)}</span></div>
-        {sale.discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', color: 'red', fontSize: '10px' }}><span>Desc:</span><span>-{formatCurrency(sale.discount)}</span></div>}
-        {sale.shippingCost > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}><span>Envío:</span><span>{formatCurrency(sale.shippingCost)}</span></div>}
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}><span>Subtotal:</span><span>{formatCurrency(sale.subtotal)}</span></div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}><span>ITBIS:</span><span>{formatCurrency(sale.tax)}</span></div>
+        {sale.discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}><span>Desc:</span><span>-{formatCurrency(sale.discount)}</span></div>}
+        {sale.shippingCost > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}><span>Envío:</span><span>{formatCurrency(sale.shippingCost)}</span></div>}
         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14px', borderTop: '1px solid #000', marginTop: '4px', paddingTop: '4px' }}>
           <span>TOTAL:</span><span>{formatCurrency(sale.total)}</span></div>
       </div>
-      <div style={{ marginTop: '8px', borderTop: '1px dashed #000', paddingTop: '4px', fontSize: '9px' }}>
+      <div style={{ marginTop: '8px', borderTop: '1px dashed #000', paddingTop: '4px', fontSize: '11px' }}>
         <div><strong>Forma de Pago:</strong> {paymentMethodDisplay}</div>
         <div><strong>Validez:</strong> {sale.validityDays} días</div>
         {sale.deliveryTime && <div><strong>Entrega:</strong> {sale.deliveryTime}</div>}
         {sale.warranty && <div><strong>Garantía:</strong> {sale.warranty}</div>}
       </div>
       {sale.notes && (
-        <div style={{ marginTop: '8px', padding: '4px', border: '1px dashed #000', fontSize: '8px' }}>
+        <div style={{ marginTop: '8px', padding: '4px', border: '1px dashed #000', fontSize: '11px' }}>
           <strong>Notas:</strong> {sale.notes}
         </div>
       )}
       {settings.receiptFooterMessage && (
-        <div className="center" style={{ marginTop: '6px', fontSize: '7px', fontStyle: 'italic' }}>{settings.receiptFooterMessage}</div>
+        <div className="center" style={{ marginTop: '6px', fontSize: '11px' }}>{settings.receiptFooterMessage}</div>
       )}
-      <div className="center" style={{ marginTop: '8px', fontSize: '8px' }}>
+      <div className="center" style={{ marginTop: '8px', fontSize: '11px' }}>
         ----------------------------<br />
         Esta cotización tiene validez de {sale.validityDays} días<br />
         Precios sujetos a variación
@@ -106,53 +106,53 @@ const QuotationReceipt58 = memo(({ sale, settings, formatCurrency }) => {
       <div className="center" style={{ marginBottom: '4px' }}>
         {settings.logo && <img src={settings.logo} alt="Logo" style={{ maxHeight: '25px', maxWidth: '70px', marginBottom: '2px' }} />}
         <strong style={{ fontSize: '11px', display: 'block' }}>{settings.companyName}</strong>
-        {settings.companyPhone && <div style={{ fontSize: '8px' }}>{settings.companyPhone}</div>}
+        {settings.companyPhone && <div style={{ fontSize: '10px' }}>{settings.companyPhone}</div>}
         <div style={{ marginTop: '2px' }}>========================</div>
       </div>
       <div className="center" style={{ marginBottom: '4px' }}>
         <strong style={{ fontSize: '12px' }}>COTIZACIÓN</strong>
       </div>
-      <div style={{ marginBottom: '4px', fontSize: '9px' }}>
+      <div style={{ marginBottom: '4px', fontSize: '10px' }}>
         <div>#{sale.quotationNumber}</div>
         <div>F: {issueDate.toLocaleDateString('es-DO')}</div>
         <div>Vence: {expiryDate.toLocaleDateString('es-DO')}</div>
         <div>Cl: {clientData.name}</div>
       </div>
       <div style={{ borderTop: '1px dashed #000', borderBottom: '1px dashed #000', padding: '2px 0', marginBottom: '4px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
           <span>Producto</span><span>Cant</span><span>Total</span>
         </div>
       </div>
       {sale.items && sale.items.map((item, index) => (
-        <div key={index} style={{ marginBottom: '1px', fontSize: '8px' }}>
+        <div key={index} style={{ marginBottom: '1px', fontSize: '10px' }}>
           <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.product?.name || item.productName || 'Prod'}</div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <span>x{item.quantity}</span><span>{formatCurrency((item.price || item.total) * item.quantity)}</span>
           </div>
         </div>
       ))}
-      <div style={{ marginTop: '4px', borderTop: '1px dashed #000', paddingTop: '2px', fontSize: '9px' }}>
+      <div style={{ marginTop: '4px', borderTop: '1px dashed #000', paddingTop: '2px', fontSize: '10px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Sub:</span><span>{formatCurrency(sale.subtotal)}</span></div>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>ITBIS:</span><span>{formatCurrency(sale.tax)}</span></div>
-        {sale.discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', color: 'red' }}><span>Des:</span><span>-{formatCurrency(sale.discount)}</span></div>}
+        {sale.discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Des:</span><span>-{formatCurrency(sale.discount)}</span></div>}
         {sale.shippingCost > 0 && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Envío:</span><span>{formatCurrency(sale.shippingCost)}</span></div>}
         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', borderTop: '1px solid #000', marginTop: '2px', paddingTop: '2px' }}>
           <span>TOTAL:</span><span>{formatCurrency(sale.total)}</span>
         </div>
       </div>
-      <div style={{ marginTop: '4px', fontSize: '7px' }}>
+      <div style={{ marginTop: '4px', fontSize: '10px' }}>
         <div><strong>Pago:</strong> {paymentMethodDisplay}</div>
         <div><strong>Vál:</strong> {sale.validityDays} días</div>
       </div>
       {sale.notes && (
-        <div style={{ marginTop: '4px', fontSize: '7px' }}>
+        <div style={{ marginTop: '4px', fontSize: '10px' }}>
           <strong>Notas:</strong> {sale.notes.substring(0, 50)}{sale.notes.length > 50 ? '...' : ''}
         </div>
       )}
       {settings.receiptFooterMessage && (
-        <div className="center" style={{ marginTop: '3px', fontSize: '6px', fontStyle: 'italic' }}>{settings.receiptFooterMessage}</div>
+        <div className="center" style={{ marginTop: '3px', fontSize: '10px' }}>{settings.receiptFooterMessage}</div>
       )}
-      <div className="center" style={{ marginTop: '4px', fontSize: '7px' }}>
+      <div className="center" style={{ marginTop: '4px', fontSize: '10px' }}>
         ========================<br />
         Válida {sale.validityDays} días
       </div>
@@ -455,7 +455,7 @@ const ThermalReceipt80 = memo(({ sale, settings, formatCurrency }) => (
       {sale.change > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', color: 'green' }}><span>Cambio:</span><span>{formatCurrency(sale.change)}</span></div>}
     </div>
     {settings.receiptFooterMessage && (
-      <div className="center" style={{ marginTop: '4px', fontSize: '8px', fontStyle: 'italic' }}>{settings.receiptFooterMessage}</div>
+      <div className="center" style={{ marginTop: '4px', fontSize: '11px' }}>{settings.receiptFooterMessage}</div>
     )}
     <div className="center" style={{ marginTop: '8px' }}>----------------------------<br />¡Gracias por su compra!</div>
   </div>
@@ -482,7 +482,7 @@ const ThermalReceipt58 = memo(({ sale, settings, formatCurrency }) => (
       {sale.ncf && <div>NCF: {sale.ncf}</div>}
     </div>
     {sale.items.map((item, index) => (
-      <div key={index} style={{ marginBottom: '2px', fontSize: '9px' }}>
+      <div key={index} style={{ marginBottom: '2px', fontSize: '10px' }}>
         <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.product?.name}</div>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <span>x{item.quantity}</span><span>{formatCurrency(item.total)}</span>
@@ -492,14 +492,14 @@ const ThermalReceipt58 = memo(({ sale, settings, formatCurrency }) => (
     <div style={{ marginTop: '6px', borderTop: '1px dashed #000', paddingTop: '3px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Sub:</span><span>{formatCurrency(sale.subtotal)}</span></div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>ITBIS:</span><span>{formatCurrency(sale.tax)}</span></div>
-      {sale.discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', color: 'red' }}><span>Des:</span><span>-{formatCurrency(sale.discount)}</span></div>}
+      {sale.discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Des:</span><span>-{formatCurrency(sale.discount)}</span></div>}
       {sale.shippingCost > 0 && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Envío:</span><span>{formatCurrency(sale.shippingCost)}</span></div>}
       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', borderTop: '1px solid #000', marginTop: '3px', paddingTop: '3px' }}>
         <span>TOTAL:</span><span>{formatCurrency(sale.total)}</span>
       </div>
     </div>
     {settings.receiptFooterMessage && (
-      <div className="center" style={{ marginTop: '3px', fontSize: '7px', fontStyle: 'italic' }}>{settings.receiptFooterMessage}</div>
+      <div className="center" style={{ marginTop: '3px', fontSize: '10px' }}>{settings.receiptFooterMessage}</div>
     )}
     <div className="center" style={{ marginTop: '6px' }}>========================<br />¡GRACIAS!</div>
   </div>

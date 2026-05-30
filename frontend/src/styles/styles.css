@@ -2316,3 +2316,19 @@ body {
         grid-template-columns: repeat(2, 1fr) !important;
     }
 }
+
+/* THERMAL PRINTING: maximo contraste y legibilidad en impresoras termicas */
+.thermal-58, .thermal-80 {
+    font-family: 'Courier New', 'Lucida Console', monospace !important;
+    -webkit-font-smoothing: none !important;
+    -moz-osx-font-smoothing: unset !important;
+    font-weight: 600 !important;
+    color: #000 !important;
+    background: #fff !important;
+}
+
+.thermal-58 *, .thermal-80 * {
+    font-weight: 600 !important;
+    color: #000 !important;
+    -webkit-font-smoothing: none !important;
+}

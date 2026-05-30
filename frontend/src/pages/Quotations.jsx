@@ -1022,14 +1022,14 @@ const Quotations = () => {
       switch (printType) {
         case 'thermal-58':
           return `<style>
-            body { font-family: 'Courier New', monospace; font-size: 10px; margin: 0; padding: 0; }
+            body { font-family: 'Courier New', monospace; font-size: 10px; font-weight: bold; margin: 0; padding: 0; -webkit-font-smoothing: none; }
             .thermal-58 { max-width: 50mm; margin: 0 auto; padding: 2mm; box-sizing: border-box; }
             .center { text-align: center; }
             @page { size: 58mm auto; margin: 3mm; }
           </style>`;
         case 'thermal-80':
           return `<style>
-            body { font-family: 'Courier New', monospace; font-size: 12px; margin: 0; padding: 0; }
+            body { font-family: 'Courier New', monospace; font-size: 12px; font-weight: bold; margin: 0; padding: 0; -webkit-font-smoothing: none; }
             .thermal-80 { max-width: 72mm; margin: 0 auto; padding: 3mm; box-sizing: border-box; }
             .center { text-align: center; }
             @page { size: 80mm auto; margin: 3mm; }
