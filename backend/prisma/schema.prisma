@@ -204,6 +204,10 @@ model Sale {
   items             SaleItem[]
   AccountReceivable AccountReceivable[]
 
+  // Warranty fields
+  hasWarranty  Boolean @default(false)
+  warrantyData Json?
+
   // DGII Fiscal fields
   ncf     String?
   ncfType String?
@@ -365,6 +369,13 @@ model Settings {
   // Fiscal Settings (NCF / DGII)
   fiscalEnabled  Boolean @default(false)
   defaultNcfType String  @default("02")
+
+  // Warranty Settings
+  warrantyEnabled      Boolean @default(true)
+  warrantyMinAmount    Float   @default(2000)
+  warrantyDefaultDays  Int     @default(90)
+  warrantyCoverageText String?
+  warrantyExclusionText String?
 
   updatedAt DateTime @updatedAt
 

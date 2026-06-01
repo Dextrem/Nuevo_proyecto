@@ -2,8 +2,8 @@ import { useState, useEffect, useRef, useCallback, memo, useMemo } from 'react';
 import { productService, clientService, saleService, cashRegisterService } from '../services/api';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
-import { Cart, ClientDropdown, PaymentMethods } from '../components/POSComponents';
-import { ReceiptModal, NewClientModal } from '../components/POSModals';
+import { SearchDropdown, Cart, ClientDropdown, PaymentMethods } from '../components/POSComponents';
+import { ReceiptModal, NewClientModal, WarrantyModal } from '../components/POSModals';
 import { notifyDataUpdate } from '../hooks/useDataSync';
 
 const BarcodeScanner = memo(({ inputRef, value, onChange, onScan }) => {
@@ -254,6 +254,8 @@ const POSQR = () => {
   const [dueDate, setDueDate] = useState('');
   const [currentCashRegister, setCurrentCashRegister] = useState(null);
   const [isProcessingSale, setIsProcessingSale] = useState(false);
+  const [showWarrantyModal, setShowWarrantyModal] = useState(false);
+  const [pendingWarrantySaleData, setPendingWarrantySaleData] = useState(null);
 
   const barcodeInputRef = useRef(null);
   const { formatCurrency, settings, showNotification } = useApp();
@@ -425,25 +427,36 @@ const POSQR = () => {
       }
     }
 
+    const saleData = {
+      clientId: selectedClient?.id || null,
+      paymentMethod,
+      paidAmount: paymentMethod === 'CREDIT' ? paidAmountValue : total,
+      discount: discountAmount,
+      shippingCost,
+      dueDate: paymentMethod === 'CREDIT' ? dueDate : null,
+      items: cart.map((item) => ({
+        productId: item.product.id,
+        quantity: item.quantity,
+        price: item.price,
+        tax: item.tax,
+        total: item.price * item.quantity + item.tax * item.quantity,
+      })),
+    };
+
+    // Check if warranty should be offered
+    if (settings.warrantyEnabled !== false && total >= (settings.warrantyMinAmount || 2000)) {
+      setPendingWarrantySaleData(saleData);
+      setShowWarrantyModal(true);
+      setIsProcessingSale(false);
+      return;
+    }
+
+    await submitSale(saleData);
+  }, [cart, paymentMethod, selectedClient, paidAmount, total, discountAmount, dueDate, loadData, loadCashRegister, showNotification, isProcessingSale, settings]);
+
+  const submitSale = useCallback(async (saleData) => {
     setIsProcessingSale(true);
-
     try {
-      const saleData = {
-        clientId: selectedClient?.id || null,
-        paymentMethod,
-        paidAmount: paymentMethod === 'CREDIT' ? paidAmountValue : total,
-        discount: discountAmount,
-        shippingCost,
-        dueDate: paymentMethod === 'CREDIT' ? dueDate : null,
-        items: cart.map((item) => ({
-          productId: item.product.id,
-          quantity: item.quantity,
-          price: item.price,
-          tax: item.tax,
-          total: item.price * item.quantity + item.tax * item.quantity,
-        })),
-      };
-
       // Validate locally if a fiscal comprobante that requires RNC is selected
       if (saleData.ncfType === '01') {
         if (!selectedClient || !selectedClient.rnc) {
@@ -475,7 +488,18 @@ const POSQR = () => {
     } finally {
       setIsProcessingSale(false);
     }
-  }, [cart, paymentMethod, selectedClient, paidAmount, total, discountAmount, dueDate, loadData, loadCashRegister, showNotification, isProcessingSale]);
+  }, [selectedClient, showNotification, saleService, loadData, loadCashRegister]);
+
+  const handleWarrantyConfirm = useCallback((warrantyResult) => {
+    setShowWarrantyModal(false);
+    const saleData = { ...pendingWarrantySaleData };
+    if (warrantyResult) {
+      saleData.hasWarranty = true;
+      saleData.warrantyData = warrantyResult;
+    }
+    setPendingWarrantySaleData(null);
+    submitSale(saleData);
+  }, [pendingWarrantySaleData, submitSale]);
 
   const printReceipt = useCallback(() => {
     const printContent = document.getElementById('receipt-preview')?.innerHTML;
@@ -622,17 +646,14 @@ const POSQR = () => {
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .pos-qr-fullscreen { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 1400px; margin: 0 auto; }
-        .pos-qr-left { background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px; text-align: center; }
-        .pos-qr-right { background: rgba(255,255,255,0.95); border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; }
-        .qr-scanner-icon { width: 150px; height: 150px; border-radius: 50%; background: linear-gradient(135deg, #4F46E5 0%, #8B5CF6 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; box-shadow: 0 10px 40px rgba(79,70,229,0.3); }
-        .qr-scanner-icon i { font-size: 4rem; color: #fff; }
-        .pos-qr-left h2 { font-size: 1.8rem; margin-bottom: 12px; color: #1F2937; }
-        .pos-qr-left p { color: #6B7280; font-size: 1.1rem; }
-        .pos-qr-right .cart-header { padding: 20px; border-bottom: 1px solid #E5E7EB; }
-        .pos-qr-right .cart-items { flex: 1; overflow-y: auto; padding: 20px; }
+        .pos-qr-fullscreen { display: grid; grid-template-columns: 1fr 340px; gap: 20px; max-width: 1400px; margin: 0 auto; height: calc(100vh - 40px); }
+        .pos-qr-left { background: rgba(255,255,255,0.95); border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; }
+        .pos-qr-right { background: rgba(255,255,255,0.95); border-radius: 20px; display: flex; flex-direction: column; min-height: 0; }
+        .qr-scanner-icon { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #4F46E5 0%, #8B5CF6 100%); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(79,70,229,0.3); }
+        .qr-scanner-icon i { font-size: 1.2rem; color: #fff; }
+        .pos-qr-left .cart-items { flex: 1; overflow-y: auto; padding: 20px; }
         .pos-qr-right .cart-summary { border-top: 1px solid #E5E7EB; }
-        .scanner-hint { margin-top: 30px; padding: 16px; background: rgba(79,70,229,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; color: #4F46E5; }
+        .scanner-hint { padding: 10px 16px; background: rgba(79,70,229,0.1); border-radius: 8px; display: flex; align-items: center; gap: 8px; color: #4F46E5; font-size: 0.85rem; }
       `}</style>
 
       <BarcodeScanner
@@ -693,33 +714,38 @@ const POSQR = () => {
       ) : (
         <div className="pos-qr-fullscreen">
           <div className="pos-qr-left">
-            <div className="qr-scanner-icon">
-              <i className="fas fa-qrcode"></i>
-            </div>
-            <h2>Modo Lector QR/Barcode</h2>
-            <p>Escanea el código del producto con tu lector para agregarlo al carrito</p>
-            
-            {lastScannedProduct && showScanFeedback && (
-              <ScanFeedback show={showScanFeedback} productName={lastScannedProduct?.name} />
-            )}
-
-            <div className="scanner-hint">
-              <i className="fas fa-keyboard"></i>
-              <span>O escribe el código y presiona Enter</span>
-            </div>
-
-            {currentCashRegister && (
-              <div style={{ marginTop: '24px', padding: '16px', background: 'rgba(16,185,129,0.1)', borderRadius: '12px', border: '1px solid rgba(16,185,129,0.3)' }}>
-                <div style={{ fontSize: '0.85rem', color: '#6B7280' }}>Caja Activa</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#10B981' }}>
-                  {currentCashRegister.name} - {formatCurrency(currentCashRegister.currentAmount)}
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid #E5E7EB', display: 'flex', flexDirection: 'column', gap: '12px', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div className="qr-scanner-icon">
+                  <i className="fas fa-qrcode"></i>
                 </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#1F2937' }}>Escáner QR / Código de Barras</div>
+                  <div className="scanner-hint">
+                    <i className="fas fa-keyboard"></i>
+                    <span>Escanea o escribe el código + Enter</span>
+                  </div>
+                </div>
+                {currentCashRegister && (
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <div style={{ fontSize: '0.75rem', color: '#6B7280' }}>{currentCashRegister.name}</div>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#10B981' }}>{formatCurrency(currentCashRegister.currentAmount)}</div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          <div className="pos-qr-right">
-            <div className="cart-header">
+              {lastScannedProduct && showScanFeedback && (
+                <ScanFeedback show={showScanFeedback} productName={lastScannedProduct?.name} />
+              )}
+
+              <SearchDropdown
+                products={products}
+                onSelect={addToCart}
+                formatCurrency={formatCurrency}
+              />
+            </div>
+
+            <div className="cart-items" style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(135deg, #4F46E5 0%, #6366F1 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
@@ -731,61 +757,68 @@ const POSQR = () => {
                   {cart.length} {cart.length === 1 ? 'item' : 'items'}
                 </span>
               </div>
-
-              <PaymentMethods value={paymentMethod} onChange={setPaymentMethod} />
-
-              <ClientDropdown
-                clients={clients}
-                selectedClient={selectedClient}
-                onSelect={setSelectedClient}
-                onNewClient={() => setShowNewClientModal(true)}
+              <Cart
+                cart={cart}
+                onUpdateQuantity={updateQuantity}
+                onRemove={removeFromCart}
                 formatCurrency={formatCurrency}
               />
-
-              {paymentMethod === 'CREDIT' && selectedClient && (
-                <div className="form-group" style={{ marginTop: '12px' }}>
-                  <label style={{ fontSize: '0.9rem', display: 'block', marginBottom: '6px' }}>
-                    <i className="fas fa-calendar"></i> Fecha de Pago
-                  </label>
-                  <input
-                    type="date"
-                    className="form-control"
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
-                    max={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-                    style={{ padding: '10px', fontSize: '0.95rem', borderRadius: '8px' }}
-                  />
-                </div>
-              )}
             </div>
+          </div>
 
-            <Cart
-              cart={cart}
-              onUpdateQuantity={updateQuantity}
-              onRemove={removeFromCart}
-              formatCurrency={formatCurrency}
-            />
+          <div className="pos-qr-right">
+            <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+              <div style={{ padding: '20px', paddingBottom: '0' }}>
+                <PaymentMethods value={paymentMethod} onChange={setPaymentMethod} />
 
-            <CartSummary
-              cart={cart}
-              paymentMethod={paymentMethod}
-              selectedClient={selectedClient}
-              paidAmount={paidAmount}
-              setPaidAmount={setPaidAmount}
-            discountPercent={discountPercent}
-            setDiscountPercent={setDiscountPercent}
-            shippingCost={shippingCost}
-            setShippingCost={setShippingCost}
-            subtotal={subtotal}
-              totalTax={totalTax}
-              discountAmount={discountAmount}
-              total={total}
-              onProcessSale={handleProcessSale}
-              formatCurrency={formatCurrency}
-              settings={settings}
-              isProcessing={isProcessingSale}
-            />
+                <ClientDropdown
+                  clients={clients}
+                  selectedClient={selectedClient}
+                  onSelect={setSelectedClient}
+                  onNewClient={() => setShowNewClientModal(true)}
+                  formatCurrency={formatCurrency}
+                />
+
+                {paymentMethod === 'CREDIT' && selectedClient && (
+                  <div className="form-group" style={{ marginTop: '12px' }}>
+                    <label style={{ fontSize: '0.9rem', display: 'block', marginBottom: '6px' }}>
+                      <i className="fas fa-calendar"></i> Fecha de Pago
+                    </label>
+                    <input
+                      type="date"
+                      className="form-control"
+                      value={dueDate}
+                      onChange={(e) => setDueDate(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      max={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                      style={{ padding: '10px', fontSize: '0.95rem', borderRadius: '8px' }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div style={{ position: 'sticky', bottom: 0, zIndex: 10, background: 'rgba(255,255,255,0.95)', padding: '20px', borderTop: '1px solid #E5E7EB' }}>
+                <CartSummary
+                  cart={cart}
+                  paymentMethod={paymentMethod}
+                  selectedClient={selectedClient}
+                  paidAmount={paidAmount}
+                  setPaidAmount={setPaidAmount}
+                  discountPercent={discountPercent}
+                  setDiscountPercent={setDiscountPercent}
+                  shippingCost={shippingCost}
+                  setShippingCost={setShippingCost}
+                  subtotal={subtotal}
+                  totalTax={totalTax}
+                  discountAmount={discountAmount}
+                  total={total}
+                  onProcessSale={handleProcessSale}
+                  formatCurrency={formatCurrency}
+                  settings={settings}
+                  isProcessing={isProcessingSale}
+                />
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -808,6 +841,15 @@ const POSQR = () => {
         onSubmit={handleAddNewClient}
         newClientData={newClientData}
         setNewClientData={setNewClientData}
+      />
+
+      <WarrantyModal
+        isOpen={showWarrantyModal}
+        onClose={() => { setShowWarrantyModal(false); setPendingWarrantySaleData(null); }}
+        onConfirm={handleWarrantyConfirm}
+        settings={settings}
+        total={total}
+        formatCurrency={formatCurrency}
       />
     </div>
   );

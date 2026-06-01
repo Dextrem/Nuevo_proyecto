@@ -19,6 +19,17 @@ export const generateInvoicePDF = (invoice, settings) => {
 
   const primary = settings.primaryColor || '#4F46E5';
 
+  // Watermark for warranty
+  if (invoice.hasWarranty) {
+    doc.saveGraphicsState();
+    doc.setGState(new doc.GState({ opacity: 0.12 }));
+    doc.setTextColor(180, 180, 180);
+    doc.setFontSize(50);
+    doc.setFont('Helvetica', 'bold');
+    doc.text('CON GARANTÍA', pageW / 2, doc.internal.pageSize.getHeight() / 2, { angle: -45, align: 'center' });
+    doc.restoreGraphicsState();
+  }
+
   // Header background
   doc.setFillColor(247, 250, 252);
   doc.rect(0, 0, pageW, 55, 'F');
@@ -168,6 +179,25 @@ export const generateInvoicePDF = (invoice, settings) => {
     if (invoice.status === 'PENDING' || invoice.status === 'PARTIAL') {
       doc.text(`Pendiente: ${formatCurrency(invoice.total - invoice.paidAmount)}`, margin, y + 8);
     }
+  }
+
+  // Warranty section
+  if (invoice.hasWarranty && invoice.warrantyData) {
+    const wd = invoice.warrantyData;
+    y = Math.max(y + 10, 185);
+    doc.setFillColor(243, 244, 246);
+    doc.roundedRect(margin, y, contentW, 32, 2, 2, 'F');
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(50, 50, 50);
+    doc.text('CERTIFICADO DE GARANTÍA', margin + 3, y + 6);
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(80, 80, 80);
+    doc.text(`Vigencia: ${wd.days} días (vence ${new Date(wd.expiryDate).toLocaleDateString('es-DO')})`, margin + 3, y + 13);
+    if (wd.coverage) doc.text(`Cobertura: ${wd.coverage}`, margin + 3, y + 19);
+    if (wd.exclusions) doc.text(`Excluye: ${wd.exclusions}`, margin + 3, y + 25);
+    y += 38;
   }
 
   // Footer

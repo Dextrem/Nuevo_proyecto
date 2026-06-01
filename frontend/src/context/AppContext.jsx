@@ -33,6 +33,12 @@ const DEFAULT_SETTINGS = {
   // Fiscal
   fiscalEnabled: false,
   defaultNcfType: '02',
+  // Warranty
+  warrantyEnabled: true,
+  warrantyMinAmount: 2000,
+  warrantyDefaultDays: 90,
+  warrantyCoverageText: '',
+  warrantyExclusionText: '',
 };
 
 const AppContext = createContext();

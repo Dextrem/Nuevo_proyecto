@@ -259,6 +259,149 @@ const Cart = memo(({ cart, onUpdateQuantity, onRemove, formatCurrency }) => (
 
 Cart.displayName = 'Cart';
 
+const SearchDropdown = memo(({ products, onAddToCart, formatCurrency }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const inputRef = useRef(null);
+  const dropdownRef = useRef(null);
+
+  const filtered = useMemo(() => {
+    if (!searchTerm.trim()) return [];
+    const term = searchTerm.toLowerCase().trim();
+    return products
+      .filter(p =>
+        p.name?.toLowerCase().includes(term) ||
+        p.sku?.toLowerCase().includes(term) ||
+        p.barcode?.toLowerCase().includes(term)
+      );
+  }, [products, searchTerm]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSelect = (product) => {
+    if (product.stock > 0) {
+      onAddToCart(product);
+    }
+    setSearchTerm('');
+    setShowDropdown(false);
+    inputRef.current?.focus();
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && filtered.length > 0) {
+      handleSelect(filtered[0]);
+    }
+    if (e.key === 'Escape') {
+      setShowDropdown(false);
+      inputRef.current?.blur();
+    }
+  };
+
+  return (
+    <div ref={dropdownRef} style={{ position: 'relative', marginBottom: '12px' }}>
+      <div style={{
+        display: 'flex', alignItems: 'center',
+        background: 'var(--bg-surface)',
+        border: '2px solid var(--primary)',
+        borderRadius: '10px',
+        padding: '0 14px',
+        boxShadow: '0 2px 8px rgba(79,70,229,0.15)',
+      }}>
+        <i className="fas fa-search" style={{ color: 'var(--primary)', fontSize: '1rem' }}></i>
+        <input
+          ref={inputRef}
+          type="text"
+          className="form-control"
+          placeholder="Buscar producto por nombre, SKU o código de barras..."
+          value={searchTerm}
+          onChange={(e) => { setSearchTerm(e.target.value); setShowDropdown(true); }}
+          onFocus={() => searchTerm.trim() && setShowDropdown(true)}
+          onKeyDown={handleKeyDown}
+          autoComplete="off"
+          style={{
+            border: 'none', padding: '12px 10px',
+            fontSize: '0.95rem', boxShadow: 'none',
+          }}
+        />
+        {searchTerm && (
+          <button onClick={() => { setSearchTerm(''); setShowDropdown(false); inputRef.current?.focus(); }}
+            type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '8px' }}>
+            <i className="fas fa-times"></i>
+          </button>
+        )}
+      </div>
+
+      {showDropdown && searchTerm.trim() && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, right: 0,
+          backgroundColor: 'var(--bg-surface)',
+          border: '1px solid var(--border-color)',
+          borderRadius: '0 0 10px 10px',
+          marginTop: '2px',
+          maxHeight: '420px', overflowY: 'auto',
+          zIndex: 2000,
+          boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+        }}>
+          {filtered.length === 0 ? (
+            <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+              <i className="fas fa-search" style={{ fontSize: '1.5rem', marginBottom: '8px', display: 'block' }}></i>
+              No se encontraron productos para "<strong>{searchTerm}</strong>"
+            </div>
+          ) : (
+            filtered.map((product) => (
+              <div key={product.id} onClick={() => handleSelect(product)}
+                style={{
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  padding: '10px 14px', cursor: product.stock > 0 ? 'pointer' : 'not-allowed',
+                  opacity: product.stock === 0 ? 0.5 : 1,
+                  borderBottom: '1px solid var(--border-color)',
+                  background: product.stock === 0 ? 'rgba(239,68,68,0.05)' : 'transparent',
+                  transition: 'background 0.15s',
+                }}
+                onMouseOver={(e) => product.stock > 0 && (e.currentTarget.style.background = 'var(--bg-surface-hover)')}
+                onMouseOut={(e) => e.currentTarget.style.background = product.stock === 0 ? 'rgba(239,68,68,0.05)' : 'transparent'}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden', flex: 1 }}>
+                  <div style={{
+                    width: '36px', height: '36px', borderRadius: '6px',
+                    background: 'rgba(79,70,229,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  }}>
+                    {product.imageUrl ? (
+                      <img src={product.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '6px' }} />
+                    ) : (
+                      <i className="fas fa-box" style={{ color: 'var(--primary)', fontSize: '0.9rem' }}></i>
+                    )}
+                  </div>
+                  <div style={{ overflow: 'hidden' }}>
+                    <div style={{ fontWeight: 500, fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.name}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{product.sku || product.barcode || ''}</div>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div style={{ fontWeight: 600, color: 'var(--primary)', fontSize: '0.9rem' }}>{formatCurrency(product.price)}</div>
+                  <div style={{ fontSize: '0.7rem', color: product.stock === 0 ? 'var(--danger)' : product.stock <= (product.minStock || 0) ? 'var(--accent)' : 'var(--text-muted)' }}>
+                    {product.stock === 0 ? 'Sin stock' : `Stock: ${product.stock}`}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+});
+
+SearchDropdown.displayName = 'SearchDropdown';
+
 const ClientDropdown = memo(({ clients, selectedClient, onSelect, onNewClient, formatCurrency }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
@@ -444,4 +587,4 @@ const PaymentMethods = memo(({ value, onChange }) => (
 
 PaymentMethods.displayName = 'PaymentMethods';
 
-export { ProductGrid, Cart, ClientDropdown, PaymentMethods, ClientCreditInfo };
+export { ProductGrid, Cart, ClientDropdown, PaymentMethods, ClientCreditInfo, SearchDropdown };

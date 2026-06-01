@@ -545,6 +545,42 @@ const Settings = () => {
           </div>
 
           <div className="settings-section">
+            <h3><i className="fas fa-shield-alt"></i> Garantía</h3>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>
+              Configura la emisión automática de certificados de garantía para ventas que superen el monto mínimo.
+            </p>
+            <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <input type="checkbox" id="warrantyEnabled" checked={formData.warrantyEnabled !== false} onChange={(e) => handleChange('warrantyEnabled', e.target.checked)} style={{ width: '20px', height: '20px' }} />
+              <div>
+                <label htmlFor="warrantyEnabled" style={{ cursor: 'pointer', marginBottom: 0 }}>Activar Certificado de Garantía</label>
+                <small style={{ color: 'var(--text-muted)', display: 'block' }}>Mostrar opción de garantía en ventas que superen el monto mínimo</small>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="form-group">
+                <label>Monto Mínimo (RD$)</label>
+                <input type="number" min="0" step="100" className="form-control" value={formData.warrantyMinAmount || 2000} onChange={(e) => handleChange('warrantyMinAmount', parseFloat(e.target.value) || 0)} />
+                <small style={{ color: 'var(--text-muted)' }}>Ventas desde este monto podrán incluir garantía</small>
+              </div>
+              <div className="form-group">
+                <label>Días de Garantía por Defecto</label>
+                <input type="number" min="1" max="3650" className="form-control" value={formData.warrantyDefaultDays || 90} onChange={(e) => handleChange('warrantyDefaultDays', parseInt(e.target.value) || 90)} />
+                <small style={{ color: 'var(--text-muted)' }}>Período de cobertura predeterminado</small>
+              </div>
+            </div>
+            <div className="form-group">
+              <label>Texto de Cobertura</label>
+              <textarea className="form-control" value={formData.warrantyCoverageText || ''} onChange={(e) => handleChange('warrantyCoverageText', e.target.value)} rows="3" placeholder="Ej: Defectos de fábrica en materiales y mano de obra" />
+              <small style={{ color: 'var(--text-muted)' }}>Lo que cubre la garantía (editable por venta)</small>
+            </div>
+            <div className="form-group">
+              <label>Texto de Exclusiones</label>
+              <textarea className="form-control" value={formData.warrantyExclusionText || ''} onChange={(e) => handleChange('warrantyExclusionText', e.target.value)} rows="3" placeholder="Ej: Daños por mal uso, golpes, humedad, sobrecargas eléctricas" />
+              <small style={{ color: 'var(--text-muted)' }}>Lo que NO cubre la garantía (editable por venta)</small>
+            </div>
+          </div>
+
+          <div className="settings-section">
             <h3>
               <i className="fas fa-palette"></i>
               Apariencia

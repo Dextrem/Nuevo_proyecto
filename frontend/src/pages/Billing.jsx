@@ -214,6 +214,11 @@ const Billing = () => {
                   <span>TOTAL:</span><span>${formatCurrency(invoice.total)}</span>
                 </div>
               </div>
+              ${invoice.hasWarranty && invoice.warrantyData ? `
+              <div style="margin-top:4px;border-top:1px dashed #000;padding-top:3px">
+                <strong>GARANTÍA:</strong> ${invoice.warrantyData.days} días
+                <div>Vence: ${new Date(invoice.warrantyData.expiryDate).toLocaleDateString('es-DO')}</div>
+              </div>` : ''}
               <div class="center" style="margin-top:5px">========================<br />¡GRACIAS!</div>
             </div>
           </body>
@@ -272,6 +277,14 @@ const Billing = () => {
                 <div style="display:flex;justify-content:space-between"><span>Pagado:</span><span>${formatCurrency(invoice.paidAmount)}</span></div>
                 ${invoice.change > 0 ? `<div><span>Cambio:</span><span>${formatCurrency(invoice.change)}</span></div>` : ''}
               </div>
+              ${invoice.hasWarranty && invoice.warrantyData ? `
+              <div style="margin-top:6px;border-top:1px dashed #000;padding-top:4px">
+                <strong>CERTIFICADO DE GARANTÍA</strong>
+                <div>Vigencia: ${invoice.warrantyData.days} días</div>
+                <div>Vence: ${new Date(invoice.warrantyData.expiryDate).toLocaleDateString('es-DO')}</div>
+                ${invoice.warrantyData.coverage ? `<div>Cobertura: ${invoice.warrantyData.coverage}</div>` : ''}
+                ${invoice.warrantyData.exclusions ? `<div>Excluye: ${invoice.warrantyData.exclusions}</div>` : ''}
+              </div>` : ''}
               <div class="center" style="margin-top:8px">----------------------------<br />¡Gracias por su compra!</div>
             </div>
           </body>
@@ -334,6 +347,13 @@ const Billing = () => {
               ${invoice.shippingCost > 0 ? `<div><strong>Envío:</strong> ${formatCurrency(invoice.shippingCost)}</div>` : ''}
               <div class="total-final">TOTAL: ${formatCurrency(invoice.total)}</div>
             </div>
+            ${invoice.hasWarranty && invoice.warrantyData ? `
+            <div style="border:2px solid #4F46E5;border-radius:8px;padding:15px;margin-bottom:20px">
+              <h3 style="margin:0 0 10px;color:#4F46E5;font-size:14px">CERTIFICADO DE GARANTÍA</h3>
+              <p style="margin:3px 0"><strong>Vigencia:</strong> ${invoice.warrantyData.days} días (vence ${new Date(invoice.warrantyData.expiryDate).toLocaleDateString('es-DO')})</p>
+              ${invoice.warrantyData.coverage ? `<p style="margin:3px 0"><strong>Cobertura:</strong> ${invoice.warrantyData.coverage}</p>` : ''}
+              ${invoice.warrantyData.exclusions ? `<p style="margin:3px 0"><strong>Excluye:</strong> ${invoice.warrantyData.exclusions}</p>` : ''}
+            </div>` : ''}
             <div class="footer">
               <p>Gracias por su preferencia</p>
               <p>${settings.companyWebsite || 'www.finandex.com'}</p>
@@ -528,6 +548,7 @@ const Billing = () => {
               <th>Subtotal</th>
               <th>ITBIS</th>
               <th>Envío</th>
+              <th>Garantía</th>
               <th>Total</th>
               <th>Pagado</th>
               <th>Estado</th>
@@ -537,7 +558,7 @@ const Billing = () => {
           <tbody>
             {invoices.length === 0 ? (
               <tr>
-                <td colSpan="11" style={{ textAlign: 'center', padding: '40px' }}>
+                <td colSpan="12" style={{ textAlign: 'center', padding: '40px' }}>
                   No hay facturas registradas
                 </td>
               </tr>
@@ -559,6 +580,7 @@ const Billing = () => {
                 <td>{formatCurrency(invoice.subtotal)}</td>
                 <td>{formatCurrency(invoice.tax)}</td>
                 <td>{invoice.shippingCost > 0 ? formatCurrency(invoice.shippingCost) : '-'}</td>
+                <td>{invoice.hasWarranty ? <span className="badge badge-success" style={{ fontSize: '0.75rem' }}>Sí</span> : <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>No</span>}</td>
                 <td><strong>{formatCurrency(invoice.total)}</strong></td>
                 <td style={{ color: 'var(--secondary)' }}>{formatCurrency(invoice.paidAmount)}</td>
                 <td>

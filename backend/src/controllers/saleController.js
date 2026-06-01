@@ -247,7 +247,7 @@ export const getSaleById = async (req, res) => {
 
 export const createSale = async (req, res) => {
   try {
-    const { clientId, paymentMethod, paidAmount, discount = 0, shippingCost = 0, items, dueDate, ncfType } = req.body;
+    const { clientId, paymentMethod, paidAmount, discount = 0, shippingCost = 0, items, dueDate, ncfType, hasWarranty, warrantyData } = req.body;
 
     let ncf = null;
     if (ncfType) {
@@ -356,6 +356,8 @@ export const createSale = async (req, res) => {
           status: paymentMethod === 'CREDIT' ? 'PENDING' : 'COMPLETED',
           ncf,
           ncfType,
+          hasWarranty: hasWarranty || false,
+          warrantyData: warrantyData || undefined,
           items: {
             create: items.map(item => {
               const prod = products.find(p => p.id === item.productId);

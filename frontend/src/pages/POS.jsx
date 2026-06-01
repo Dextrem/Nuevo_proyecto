@@ -2,8 +2,8 @@ import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { productService, clientService, saleService, cashRegisterService } from '../services/api';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
-import { ProductGrid, Cart, ClientDropdown, PaymentMethods } from '../components/POSComponents';
-import { ReceiptModal, NewClientModal, DueDateModal } from '../components/POSModals';
+import { SearchDropdown, Cart, ClientDropdown, PaymentMethods, ClientCreditInfo } from '../components/POSComponents';
+import { ReceiptModal, NewClientModal, DueDateModal, WarrantyModal } from '../components/POSModals';
 import { notifyDataUpdate } from '../hooks/useDataSync';
 
 const BarcodeScanner = memo(({ inputRef, value, onChange, onScan, showVisible }) => {
@@ -218,7 +218,6 @@ const POS = () => {
   const [products, setProducts] = useState([]);
   const [clients, setClients] = useState([]);
   const [cart, setCart] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [selectedClient, setSelectedClient] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('CASH');
   const [paidAmount, setPaidAmount] = useState('');
@@ -249,6 +248,8 @@ const POS = () => {
   const [pendingSaleData, setPendingSaleData] = useState(null);
   const [cashChange, setCashChange] = useState(0);
   const [currentCashRegister, setCurrentCashRegister] = useState(null);
+  const [showWarrantyModal, setShowWarrantyModal] = useState(false);
+  const [pendingWarrantySaleData, setPendingWarrantySaleData] = useState(null);
 
   const barcodeInputRef = useRef(null);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
@@ -450,6 +451,27 @@ const POS = () => {
     }
   }, [loadData, notifyDataUpdate, showNotification]);
 
+  const handleSubmitWithWarranty = useCallback((saleData, saleTotal) => {
+    const shouldCheck = settings.warrantyEnabled !== false && saleTotal >= (settings.warrantyMinAmount || 2000);
+    if (shouldCheck) {
+      setPendingWarrantySaleData(saleData);
+      setShowWarrantyModal(true);
+    } else {
+      submitSale(saleData);
+    }
+  }, [settings, submitSale]);
+
+  const handleWarrantyConfirm = useCallback((warrantyResult) => {
+    setShowWarrantyModal(false);
+    const saleData = { ...pendingWarrantySaleData };
+    if (warrantyResult) {
+      saleData.hasWarranty = true;
+      saleData.warrantyData = warrantyResult;
+    }
+    setPendingWarrantySaleData(null);
+    submitSale(saleData);
+  }, [pendingWarrantySaleData, submitSale]);
+
   const handleProcessSale = useCallback(async () => {
     if (isProcessingSale) return;
     if (cart.length === 0) {
@@ -534,8 +556,8 @@ const POS = () => {
     }
 
     // Other payment methods: proceed directly
-    await submitSale(saleData);
-  }, [cart, paymentMethod, selectedClient, paidAmount, dueDate, verificationRnc, total, discountAmount, loadData, showNotification, isProcessingSale, submitSale]);
+    handleSubmitWithWarranty(saleData, total);
+  }, [cart, paymentMethod, selectedClient, paidAmount, dueDate, verificationRnc, total, discountAmount, loadData, showNotification, isProcessingSale, submitSale, handleSubmitWithWarranty]);
 
   const printReceipt = useCallback(() => {
     const printContent = document.getElementById('receipt-preview')?.innerHTML;
@@ -706,13 +728,93 @@ const POS = () => {
   }
 
   return (
-    <div>
+    <div ref={posContainerRef} onClick={handlePosClick} style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div className="view-header">
         <div>
           <h1>Punto de Venta</h1>
           <p>Procesa tus ventas</p>
         </div>
-        <ScanFeedback show={showScanFeedback} productName={lastScannedProduct?.name} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <ScanFeedback show={showScanFeedback} productName={lastScannedProduct?.name} />
+          <span className="badge badge-success" style={{ fontSize: '0.9rem', padding: '6px 14px' }}>{cart.length} {cart.length === 1 ? 'item' : 'items'}</span>
+        </div>
+      </div>
+
+      <div style={{ flex: 1, display: 'flex', gap: '20px', overflow: 'hidden', padding: '0 20px 20px' }}>
+        {/* Left panel: Search + Cart */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <SearchDropdown products={products} onAddToCart={addToCart} formatCurrency={formatCurrency} />
+          <div style={{ flex: 1, overflow: 'auto', background: 'var(--bg-surface)', borderRadius: '12px', padding: '16px' }}>
+            <Cart
+              cart={cart}
+              onUpdateQuantity={updateQuantity}
+              onRemove={removeFromCart}
+              formatCurrency={formatCurrency}
+            />
+          </div>
+        </div>
+
+        {/* Right panel: Payment, Client, Summary */}
+        <div style={{ width: '340px', flexShrink: 0, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, background: 'var(--bg-surface)', borderRadius: '12px' }}>
+            <div style={{ padding: '16px', paddingBottom: '0' }}>
+              <h4 style={{ margin: '0 0 10px', fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Forma de Pago</h4>
+              <PaymentMethods value={paymentMethod} onChange={setPaymentMethod} />
+
+              <ClientDropdown
+                clients={clients}
+                selectedClient={selectedClient}
+                onSelect={setSelectedClient}
+                onNewClient={() => setShowNewClientModal(true)}
+                formatCurrency={formatCurrency}
+              />
+
+              {paymentMethod === 'CREDIT' && selectedClient && (
+                <>
+                  <div className="form-group" style={{ marginTop: '12px' }}>
+                    <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
+                      Validar Cédula / RNC *
+                    </label>
+                    <input type="text" className="form-control" placeholder="Ingrese documento del cliente..." value={verificationRnc} onChange={(e) => setVerificationRnc(e.target.value)}
+                      style={{ borderColor: verificationRnc && selectedClient.rnc && verificationRnc.replace(/[^0-9]/g, '') === selectedClient.rnc.replace(/[^0-9]/g, '') ? 'var(--secondary)' : verificationRnc ? 'var(--danger)' : 'var(--border-color)' }} />
+                    {verificationRnc && selectedClient.rnc && verificationRnc.replace(/[^0-9]/g, '') === selectedClient.rnc.replace(/[^0-9]/g, '') && (
+                      <small style={{ color: 'var(--secondary)', display: 'block', marginTop: '4px' }}><i className="fas fa-check-circle"></i> Documento verificado</small>
+                    )}
+                  </div>
+                  <div className="form-group" style={{ marginTop: '12px' }}>
+                    <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Fecha de Pago</label>
+                    <button type="button" className="btn btn-outline btn-block" onClick={() => setShowDueDateModal(true)} style={{ justifyContent: 'space-between', padding: '12px' }}>
+                      <span><i className="fas fa-calendar-alt" style={{ marginRight: '8px', color: 'var(--warning)' }}></i>{dueDate ? new Date(dueDate + 'T00:00:00').toLocaleDateString() : 'Seleccionar fecha...'}</span>
+                      <i className="fas fa-edit"></i>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div style={{ position: 'sticky', bottom: 0, zIndex: 10, background: 'var(--bg-surface)', padding: '16px', borderTop: '1px solid var(--border-color)' }}>
+              <CartSummary
+                cart={cart}
+                paymentMethod={paymentMethod}
+                selectedClient={selectedClient}
+                paidAmount={paidAmount}
+                setPaidAmount={setPaidAmount}
+                discountPercent={discountPercent}
+                setDiscountPercent={setDiscountPercent}
+                shippingCost={shippingCost}
+                setShippingCost={setShippingCost}
+                subtotal={subtotal}
+                totalTax={totalTax}
+                discountAmount={discountAmount}
+                total={total}
+                onProcessSale={handleProcessSale}
+                formatCurrency={formatCurrency}
+                settings={settings}
+                isProcessing={isProcessingSale}
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       <BarcodeScanner
@@ -722,114 +824,6 @@ const POS = () => {
         onScan={handleBarcodeScan}
         showVisible={isTouchDevice}
       />
-
-      <div className="pos-container" ref={posContainerRef} onClick={handlePosClick}>
-        <ProductGrid
-          products={products}
-          searchTerm={searchTerm}
-          onSearch={setSearchTerm}
-          onAddToCart={addToCart}
-          formatCurrency={formatCurrency}
-        />
-
-        <div className="pos-cart">
-          <div className="cart-header">
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '16px',
-              }}
-            >
-              <h3>Carrito de Compras</h3>
-              <span className="badge badge-success">{cart.length} items</span>
-            </div>
-
-            <PaymentMethods value={paymentMethod} onChange={setPaymentMethod} />
-
-            <ClientDropdown
-              clients={clients}
-              selectedClient={selectedClient}
-              onSelect={setSelectedClient}
-              onNewClient={() => setShowNewClientModal(true)}
-              formatCurrency={formatCurrency}
-            />
-
-            {paymentMethod === 'CREDIT' && selectedClient && (
-              <>
-                <div className="form-group" style={{ marginTop: '12px' }}>
-                  <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
-                    Validar Cédula / RNC *
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Ingrese documento del cliente..."
-                    value={verificationRnc}
-                    onChange={(e) => setVerificationRnc(e.target.value)}
-                    style={{ 
-                      borderColor: verificationRnc && selectedClient.rnc && verificationRnc.replace(/[^0-9]/g, '') === selectedClient.rnc.replace(/[^0-9]/g, '') 
-                        ? 'var(--secondary)' 
-                        : verificationRnc ? 'var(--danger)' : 'var(--border-color)' 
-                    }}
-                  />
-                  {verificationRnc && selectedClient.rnc && verificationRnc.replace(/[^0-9]/g, '') === selectedClient.rnc.replace(/[^0-9]/g, '') && (
-                    <small style={{ color: 'var(--secondary)', display: 'block', marginTop: '4px' }}>
-                      <i className="fas fa-check-circle"></i> Documento verificado
-                    </small>
-                  )}
-                </div>
-
-                <div className="form-group" style={{ marginTop: '12px' }}>
-                  <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
-                     Fecha de Pago
-                  </label>
-                  <button 
-                    type="button"
-                    className="btn btn-outline btn-block"
-                    onClick={() => setShowDueDateModal(true)}
-                    style={{ justifyContent: 'space-between', padding: '12px' }}
-                  >
-                    <span>
-                      <i className="fas fa-calendar-alt" style={{ marginRight: '8px', color: 'var(--warning)' }}></i>
-                      {dueDate ? new Date(dueDate + 'T00:00:00').toLocaleDateString() : 'Seleccionar fecha...'}
-                    </span>
-                    <i className="fas fa-edit"></i>
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-
-          <Cart
-            cart={cart}
-            onUpdateQuantity={updateQuantity}
-            onRemove={removeFromCart}
-            formatCurrency={formatCurrency}
-          />
-
-          <CartSummary
-            cart={cart}
-            paymentMethod={paymentMethod}
-            selectedClient={selectedClient}
-            paidAmount={paidAmount}
-            setPaidAmount={setPaidAmount}
-            discountPercent={discountPercent}
-            setDiscountPercent={setDiscountPercent}
-            shippingCost={shippingCost}
-            setShippingCost={setShippingCost}
-            subtotal={subtotal}
-            totalTax={totalTax}
-            discountAmount={discountAmount}
-            total={total}
-            onProcessSale={handleProcessSale}
-            formatCurrency={formatCurrency}
-            settings={settings}
-            isProcessing={isProcessingSale}
-          />
-        </div>
-      </div>
 
       {showReceiptModal && lastSale && (
         <ReceiptModal
@@ -867,7 +861,7 @@ const POS = () => {
             </div>
 
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 18 }}>
-              <button className="btn btn-primary" onClick={() => submitSale(pendingSaleData)} disabled={isProcessingSale}>
+              <button className="btn btn-primary" onClick={() => handleSubmitWithWarranty(pendingSaleData, total)} disabled={isProcessingSale}>
                 {isProcessingSale ? 'Procesando...' : 'Confirmar y Guardar e Imprimir'}
               </button>
               <button className="btn btn-outline" onClick={() => setShowCashConfirm(false)} disabled={isProcessingSale}>
@@ -891,6 +885,15 @@ const POS = () => {
         onClose={() => setShowDueDateModal(false)}
         dueDate={dueDate}
         setDueDate={setDueDate}
+        total={total}
+        formatCurrency={formatCurrency}
+      />
+
+      <WarrantyModal
+        isOpen={showWarrantyModal}
+        onClose={() => { setShowWarrantyModal(false); setPendingWarrantySaleData(null); }}
+        onConfirm={handleWarrantyConfirm}
+        settings={settings}
         total={total}
         formatCurrency={formatCurrency}
       />

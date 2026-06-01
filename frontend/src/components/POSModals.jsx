@@ -65,6 +65,15 @@ const QuotationReceipt80 = memo(({ sale, settings, formatCurrency }) => {
         <div><strong>Validez:</strong> {sale.validityDays} días</div>
         {sale.deliveryTime && <div><strong>Entrega:</strong> {sale.deliveryTime}</div>}
         {sale.warranty && <div><strong>Garantía:</strong> {sale.warranty}</div>}
+        {sale.hasWarranty && sale.warrantyData && (
+          <div style={{ marginTop: '4px', borderTop: '1px dashed #000', paddingTop: '4px' }}>
+            <strong>Certificado de Garantía</strong>
+            <div>Vigencia: {sale.warrantyData.days} días</div>
+            <div>Vence: {new Date(sale.warrantyData.expiryDate).toLocaleDateString('es-DO')}</div>
+            {sale.warrantyData.coverage && <div>Cobertura: {sale.warrantyData.coverage}</div>}
+            {sale.warrantyData.exclusions && <div>Excluye: {sale.warrantyData.exclusions}</div>}
+          </div>
+        )}
       </div>
       {sale.notes && (
         <div style={{ marginTop: '8px', padding: '4px', border: '1px dashed #000', fontSize: '11px' }}>
@@ -143,6 +152,12 @@ const QuotationReceipt58 = memo(({ sale, settings, formatCurrency }) => {
       <div style={{ marginTop: '4px', fontSize: '10px' }}>
         <div><strong>Pago:</strong> {paymentMethodDisplay}</div>
         <div><strong>Vál:</strong> {sale.validityDays} días</div>
+        {sale.hasWarranty && sale.warrantyData && (
+          <div style={{ marginTop: '4px', borderTop: '1px dashed #000', paddingTop: '3px' }}>
+            <strong>Garantía:</strong> {sale.warrantyData.days} días
+            <div>Vence: {new Date(sale.warrantyData.expiryDate).toLocaleDateString('es-DO')}</div>
+          </div>
+        )}
       </div>
       {sale.notes && (
         <div style={{ marginTop: '4px', fontSize: '10px' }}>
@@ -317,6 +332,26 @@ const QuotationLetterReceipt = memo(({ sale, settings, formatCurrency }) => {
                         <td style={{ padding: '3px 0' }}>{sale.warranty}</td>
                       </tr>
                     )}
+                    {sale.hasWarranty && sale.warrantyData && (
+                      <>
+                        <tr>
+                          <td style={{ padding: '3px 0' }}><strong>Vigencia:</strong></td>
+                          <td style={{ padding: '3px 0' }}>{sale.warrantyData.days} días (vence {new Date(sale.warrantyData.expiryDate).toLocaleDateString('es-DO')})</td>
+                        </tr>
+                        {sale.warrantyData.coverage && (
+                          <tr>
+                            <td style={{ padding: '3px 0', verticalAlign: 'top' }}><strong>Cobertura:</strong></td>
+                            <td style={{ padding: '3px 0' }}>{sale.warrantyData.coverage}</td>
+                          </tr>
+                        )}
+                        {sale.warrantyData.exclusions && (
+                          <tr>
+                            <td style={{ padding: '3px 0', verticalAlign: 'top' }}><strong>Excluye:</strong></td>
+                            <td style={{ padding: '3px 0' }}>{sale.warrantyData.exclusions}</td>
+                          </tr>
+                        )}
+                      </>
+                    )}
                   </tbody>
                 </table>
                 {sale.notes && (
@@ -454,6 +489,15 @@ const ThermalReceipt80 = memo(({ sale, settings, formatCurrency }) => (
       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Pagado:</span><span>{formatCurrency(sale.paidAmount)}</span></div>
       {sale.change > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', color: 'green' }}><span>Cambio:</span><span>{formatCurrency(sale.change)}</span></div>}
     </div>
+    {sale.hasWarranty && sale.warrantyData && (
+      <div style={{ marginTop: '6px', borderTop: '1px dashed #000', paddingTop: '4px' }}>
+        <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>CERTIFICADO DE GARANTÍA</div>
+        <div>Vigencia: {sale.warrantyData.days} días</div>
+        <div>Vence: {new Date(sale.warrantyData.expiryDate).toLocaleDateString('es-DO')}</div>
+        {sale.warrantyData.coverage && <div>Cobertura: {sale.warrantyData.coverage}</div>}
+        {sale.warrantyData.exclusions && <div>Excluye: {sale.warrantyData.exclusions}</div>}
+      </div>
+    )}
     {settings.receiptFooterMessage && (
       <div className="center" style={{ marginTop: '4px', fontSize: '11px' }}>{settings.receiptFooterMessage}</div>
     )}
@@ -498,6 +542,15 @@ const ThermalReceipt58 = memo(({ sale, settings, formatCurrency }) => (
         <span>TOTAL:</span><span>{formatCurrency(sale.total)}</span>
       </div>
     </div>
+    {sale.hasWarranty && sale.warrantyData && (
+      <div style={{ marginTop: '4px', borderTop: '1px dashed #000', paddingTop: '3px', fontSize: '10px' }}>
+        <div style={{ fontWeight: 'bold' }}>CERTIFICADO DE GARANTÍA</div>
+        <div>Vigencia: {sale.warrantyData.days} días</div>
+        <div>Vence: {new Date(sale.warrantyData.expiryDate).toLocaleDateString('es-DO')}</div>
+        {sale.warrantyData.coverage && <div>Cobertura: {sale.warrantyData.coverage}</div>}
+        {sale.warrantyData.exclusions && <div>Excluye: {sale.warrantyData.exclusions}</div>}
+      </div>
+    )}
     {settings.receiptFooterMessage && (
       <div className="center" style={{ marginTop: '3px', fontSize: '10px' }}>{settings.receiptFooterMessage}</div>
     )}
@@ -561,6 +614,16 @@ const LetterReceipt = memo(({ sale, settings, formatCurrency }) => (
       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Pagado:</span><span>{formatCurrency(sale.paidAmount)}</span></div>
       {sale.change > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', color: 'green' }}><span>Cambio:</span><span>{formatCurrency(sale.change)}</span></div>}
     </div>
+    {sale.hasWarranty && sale.warrantyData && (
+      <div style={{ marginTop: '15px', borderTop: '1px solid #333', paddingTop: '10px' }}>
+        <strong style={{ fontSize: '11px' }}>CERTIFICADO DE GARANTÍA</strong>
+        <div style={{ fontSize: '10px', marginTop: '5px' }}>
+          <div>Vigencia: {sale.warrantyData.days} días (vence {new Date(sale.warrantyData.expiryDate).toLocaleDateString('es-DO')})</div>
+          {sale.warrantyData.coverage && <div><strong>Cobertura:</strong> {sale.warrantyData.coverage}</div>}
+          {sale.warrantyData.exclusions && <div><strong>Excluye:</strong> {sale.warrantyData.exclusions}</div>}
+        </div>
+      </div>
+    )}
     {settings.receiptFooterMessage && (
       <div className="center" style={{ marginTop: '10px', fontSize: '9pt', fontStyle: 'italic', color: '#666' }}>{settings.receiptFooterMessage}</div>
     )}
@@ -653,6 +716,18 @@ const A4Receipt = memo(({ sale, settings, formatCurrency }) => (
         </table>
       </div>
     </div>
+    {sale.hasWarranty && sale.warrantyData && (
+      <div style={{ marginTop: '15px', borderTop: '2px solid #333', paddingTop: '10px' }}>
+        <h3 style={{ margin: '0 0 8px', fontSize: '14px', color: '#333' }}>CERTIFICADO DE GARANTÍA</h3>
+        <table style={{ width: '100%', fontSize: '11px' }}>
+          <tbody>
+            <tr><td style={{ padding: '3px 5px', fontWeight: 'bold' }}>Vigencia:</td><td style={{ padding: '3px 5px' }}>{sale.warrantyData.days} días (vence {new Date(sale.warrantyData.expiryDate).toLocaleDateString('es-DO')})</td></tr>
+            {sale.warrantyData.coverage && <tr><td style={{ padding: '3px 5px', fontWeight: 'bold', verticalAlign: 'top' }}>Cobertura:</td><td style={{ padding: '3px 5px' }}>{sale.warrantyData.coverage}</td></tr>}
+            {sale.warrantyData.exclusions && <tr><td style={{ padding: '3px 5px', fontWeight: 'bold', verticalAlign: 'top' }}>Excluye:</td><td style={{ padding: '3px 5px' }}>{sale.warrantyData.exclusions}</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    )}
     {settings.receiptFooterMessage && (
       <div className="center" style={{ marginTop: '20px', fontSize: '10px', fontStyle: 'italic', color: '#666' }}>{settings.receiptFooterMessage}</div>
     )}
@@ -1027,4 +1102,93 @@ const DueDateModal = memo(({ isOpen, onClose, dueDate, setDueDate, total, format
 
 DueDateModal.displayName = 'DueDateModal';
 
-export { ReceiptModal, NewClientModal, ManualProductModal, DueDateModal, ThermalReceipt80, ThermalReceipt58, LetterReceipt, A4Receipt, QuotationReceipt80, QuotationReceipt58, QuotationLetterReceipt };
+const WarrantyModal = memo(({ isOpen, onClose, onConfirm, settings, total, formatCurrency }) => {
+  const [includeWarranty, setIncludeWarranty] = useState(true);
+  const [warrantyDays, setWarrantyDays] = useState(settings.warrantyDefaultDays || 90);
+  const [coverageText, setCoverageText] = useState(settings.warrantyCoverageText || '');
+  const [exclusionText, setExclusionText] = useState(settings.warrantyExclusionText || '');
+
+  if (!isOpen) return null;
+
+  const handleConfirm = () => {
+    if (!includeWarranty) {
+      onConfirm(null);
+      return;
+    }
+    const now = new Date();
+    const expiry = new Date(now);
+    expiry.setDate(expiry.getDate() + warrantyDays);
+    onConfirm({
+      hasWarranty: true,
+      days: warrantyDays,
+      coverage: coverageText,
+      exclusions: exclusionText,
+      issueDate: now.toISOString(),
+      expiryDate: expiry.toISOString(),
+    });
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '480px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+          <div style={{
+            width: '60px', height: '60px',
+            backgroundColor: 'rgba(16,185,129,0.15)',
+            borderRadius: '50%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 12px',
+          }}>
+            <i className="fas fa-shield-alt" style={{ fontSize: '30px', color: '#10B981' }}></i>
+          </div>
+          <h2 style={{ margin: 0, color: 'var(--text-main)' }}>Certificado de Garantía</h2>
+          <p style={{ margin: '8px 0 0', color: 'var(--text-muted)' }}>
+            Esta venta supera <strong>{formatCurrency(settings.warrantyMinAmount || 2000)}</strong>. ¿Deseas incluir un certificado de garantía?
+          </p>
+        </div>
+
+        <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', padding: '12px', background: 'var(--bg-surface-hover)', borderRadius: '8px' }}>
+          <input type="checkbox" id="includeWarranty" checked={includeWarranty} onChange={(e) => setIncludeWarranty(e.target.checked)} style={{ width: '20px', height: '20px' }} />
+          <label htmlFor="includeWarranty" style={{ cursor: 'pointer', marginBottom: 0, fontWeight: 500 }}>Incluir Certificado de Garantía</label>
+        </div>
+
+        {includeWarranty && (
+          <>
+            <div className="form-group">
+              <label>Días de Garantía</label>
+              <input type="number" min="1" max="3650" className="form-control" value={warrantyDays} onChange={(e) => setWarrantyDays(parseInt(e.target.value) || 90)} />
+            </div>
+            <div className="form-group">
+              <label>Cobertura</label>
+              <textarea className="form-control" value={coverageText} onChange={(e) => setCoverageText(e.target.value)} rows="2" placeholder="Defectos de fábrica en materiales y mano de obra" />
+            </div>
+            <div className="form-group">
+              <label>Exclusiones</label>
+              <textarea className="form-control" value={exclusionText} onChange={(e) => setExclusionText(e.target.value)} rows="2" placeholder="Daños por mal uso, golpes, humedad" />
+            </div>
+          </>
+        )}
+
+        <div style={{ padding: '12px', background: 'rgba(245, 158, 11, 0.1)', borderRadius: '8px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+            <span>Total de Venta:</span>
+            <strong>{formatCurrency(total)}</strong>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button className="btn btn-primary" onClick={handleConfirm} style={{ flex: 1 }}>
+            {includeWarranty ? 'Confirmar con Garantía' : 'Continuar sin Garantía'}
+          </button>
+          <button className="btn btn-outline" onClick={onClose} style={{ flex: 1 }}>
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+WarrantyModal.displayName = 'WarrantyModal';
+
+export { ReceiptModal, NewClientModal, ManualProductModal, DueDateModal, WarrantyModal, ThermalReceipt80, ThermalReceipt58, LetterReceipt, A4Receipt, QuotationReceipt80, QuotationReceipt58, QuotationLetterReceipt };
