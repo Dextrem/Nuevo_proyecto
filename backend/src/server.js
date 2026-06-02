@@ -36,6 +36,7 @@ import transactionsHistoryRoutes from './routes/transactionsHistory.js';
 import budgetRoutes from './routes/budgets.js';
 import purchaseRoutes from './routes/purchases.js';
 import fiscalRoutes from './routes/fiscal.js';
+import warrantyRoutes from './routes/warranties.js';
 
 dotenv.config();
 
@@ -167,6 +168,7 @@ app.use('/api/transactions-history', transactionsHistoryRoutes);
 app.use('/api/budgets', budgetRoutes);
 app.use('/api/purchases', purchaseRoutes);
 app.use('/api/fiscal', fiscalRoutes);
+app.use('/api/warranties', warrantyRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });

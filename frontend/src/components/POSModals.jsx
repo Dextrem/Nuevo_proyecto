@@ -1,4 +1,4 @@
-import { memo, useCallback, useState, useMemo } from 'react';
+import { memo, useCallback, useState, useMemo, useEffect } from 'react';
 
 const QuotationReceipt80 = memo(({ sale, settings, formatCurrency }) => {
   const issueDate = sale.createdAt ? new Date(sale.createdAt) : new Date();
@@ -1102,11 +1102,25 @@ const DueDateModal = memo(({ isOpen, onClose, dueDate, setDueDate, total, format
 
 DueDateModal.displayName = 'DueDateModal';
 
-const WarrantyModal = memo(({ isOpen, onClose, onConfirm, settings, total, formatCurrency }) => {
-  const [includeWarranty, setIncludeWarranty] = useState(true);
+const WarrantyModal = memo(({ isOpen, onClose, onConfirm, settings, initialData }) => {
+  const [includeWarranty, setIncludeWarranty] = useState(false);
   const [warrantyDays, setWarrantyDays] = useState(settings.warrantyDefaultDays || 90);
   const [coverageText, setCoverageText] = useState(settings.warrantyCoverageText || '');
   const [exclusionText, setExclusionText] = useState(settings.warrantyExclusionText || '');
+
+  useEffect(() => {
+    if (initialData) {
+      setIncludeWarranty(true);
+      setWarrantyDays(initialData.days || settings.warrantyDefaultDays || 90);
+      setCoverageText(initialData.coverage || settings.warrantyCoverageText || '');
+      setExclusionText(initialData.exclusions || settings.warrantyExclusionText || '');
+    } else {
+      setIncludeWarranty(false);
+      setWarrantyDays(settings.warrantyDefaultDays || 90);
+      setCoverageText(settings.warrantyCoverageText || '');
+      setExclusionText(settings.warrantyExclusionText || '');
+    }
+  }, [isOpen, initialData, settings]);
 
   if (!isOpen) return null;
 
@@ -1134,16 +1148,16 @@ const WarrantyModal = memo(({ isOpen, onClose, onConfirm, settings, total, forma
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
           <div style={{
             width: '60px', height: '60px',
-            backgroundColor: 'rgba(16,185,129,0.15)',
+            background: 'rgba(16,185,129,0.15)',
             borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 12px',
           }}>
-            <i className="fas fa-shield-alt" style={{ fontSize: '30px', color: '#10B981' }}></i>
+            <i className="fas fa-certificate" style={{ fontSize: '30px', color: '#10B981' }}></i>
           </div>
           <h2 style={{ margin: 0, color: 'var(--text-main)' }}>Certificado de Garantía</h2>
           <p style={{ margin: '8px 0 0', color: 'var(--text-muted)' }}>
-            Esta venta supera <strong>{formatCurrency(settings.warrantyMinAmount || 2000)}</strong>. ¿Deseas incluir un certificado de garantía?
+            Configura el certificado de garantía para esta venta
           </p>
         </div>
 
@@ -1169,16 +1183,9 @@ const WarrantyModal = memo(({ isOpen, onClose, onConfirm, settings, total, forma
           </>
         )}
 
-        <div style={{ padding: '12px', background: 'rgba(245, 158, 11, 0.1)', borderRadius: '8px', marginBottom: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
-            <span>Total de Venta:</span>
-            <strong>{formatCurrency(total)}</strong>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
           <button className="btn btn-primary" onClick={handleConfirm} style={{ flex: 1 }}>
-            {includeWarranty ? 'Confirmar con Garantía' : 'Continuar sin Garantía'}
+            {includeWarranty ? 'Guardar Garantía' : 'Quitar Garantía'}
           </button>
           <button className="btn btn-outline" onClick={onClose} style={{ flex: 1 }}>
             Cancelar

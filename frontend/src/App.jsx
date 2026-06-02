@@ -28,6 +28,7 @@ const POSQR = lazy(() => import('./pages/POSQR'));
 const MonthlyClosing = lazy(() => import('./pages/MonthlyClosing'));
 const Commissions = lazy(() => import('./pages/Commissions'));
 const FiscalReports = lazy(() => import('./pages/FiscalReports'));
+const Warranties = lazy(() => import('./pages/Warranties'));
 
 const LoadingFallback = () => (
   <div className="loading-fallback">
@@ -89,6 +90,7 @@ function App() {
                       <Route path="/reports" element={<Reports />} />
                       <Route path="/users" element={<Users />} />
                       <Route path="/fiscal" element={<FiscalReports />} />
+                      <Route path="/warranties" element={<Warranties />} />
                       <Route path="/settings" element={<Settings />} />
                       <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>

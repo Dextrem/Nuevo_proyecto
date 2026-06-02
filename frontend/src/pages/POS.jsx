@@ -249,7 +249,8 @@ const POS = () => {
   const [cashChange, setCashChange] = useState(0);
   const [currentCashRegister, setCurrentCashRegister] = useState(null);
   const [showWarrantyModal, setShowWarrantyModal] = useState(false);
-  const [pendingWarrantySaleData, setPendingWarrantySaleData] = useState(null);
+  const [warrantyActive, setWarrantyActive] = useState(false);
+  const [warrantyData, setWarrantyData] = useState(null);
 
   const barcodeInputRef = useRef(null);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
@@ -441,6 +442,8 @@ const POS = () => {
       setDueDate('');
       setPendingSaleData(null);
       setShowCashConfirm(false);
+      setWarrantyActive(false);
+      setWarrantyData(null);
       loadData();
       notifyDataUpdate('sales');
       showNotification('Venta procesada exitosamente', 'success');
@@ -451,26 +454,16 @@ const POS = () => {
     }
   }, [loadData, notifyDataUpdate, showNotification]);
 
-  const handleSubmitWithWarranty = useCallback((saleData, saleTotal) => {
-    const shouldCheck = settings.warrantyEnabled !== false && saleTotal >= (settings.warrantyMinAmount || 2000);
-    if (shouldCheck) {
-      setPendingWarrantySaleData(saleData);
-      setShowWarrantyModal(true);
-    } else {
-      submitSale(saleData);
-    }
-  }, [settings, submitSale]);
-
-  const handleWarrantyConfirm = useCallback((warrantyResult) => {
+  const handleWarrantyConfirm = useCallback((result) => {
     setShowWarrantyModal(false);
-    const saleData = { ...pendingWarrantySaleData };
-    if (warrantyResult) {
-      saleData.hasWarranty = true;
-      saleData.warrantyData = warrantyResult;
+    if (result) {
+      setWarrantyActive(true);
+      setWarrantyData(result);
+    } else {
+      setWarrantyActive(false);
+      setWarrantyData(null);
     }
-    setPendingWarrantySaleData(null);
-    submitSale(saleData);
-  }, [pendingWarrantySaleData, submitSale]);
+  }, []);
 
   const handleProcessSale = useCallback(async () => {
     if (isProcessingSale) return;
@@ -556,8 +549,12 @@ const POS = () => {
     }
 
     // Other payment methods: proceed directly
-    handleSubmitWithWarranty(saleData, total);
-  }, [cart, paymentMethod, selectedClient, paidAmount, dueDate, verificationRnc, total, discountAmount, loadData, showNotification, isProcessingSale, submitSale, handleSubmitWithWarranty]);
+    if (warrantyActive && warrantyData) {
+      saleData.hasWarranty = true;
+      saleData.warrantyData = warrantyData;
+    }
+    submitSale(saleData);
+  }, [cart, paymentMethod, selectedClient, paidAmount, dueDate, verificationRnc, total, discountAmount, loadData, showNotification, isProcessingSale, submitSale, warrantyActive, warrantyData]);
 
   const printReceipt = useCallback(() => {
     const printContent = document.getElementById('receipt-preview')?.innerHTML;
@@ -737,6 +734,12 @@ const POS = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <ScanFeedback show={showScanFeedback} productName={lastScannedProduct?.name} />
           <span className="badge badge-success" style={{ fontSize: '0.9rem', padding: '6px 14px' }}>{cart.length} {cart.length === 1 ? 'item' : 'items'}</span>
+          <button onClick={() => setShowWarrantyModal(true)}
+            style={{ background: warrantyActive ? 'rgba(16,185,129,0.15)' : 'transparent', border: `1px solid ${warrantyActive ? '#10B981' : '#D1D5DB'}`, color: warrantyActive ? '#10B981' : '#6B7280', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}
+            title="Configurar garantía">
+            <i className="fas fa-certificate"></i>
+            {warrantyActive ? 'Garantía ✓' : 'Garantía'}
+          </button>
         </div>
       </div>
 
@@ -861,7 +864,14 @@ const POS = () => {
             </div>
 
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 18 }}>
-              <button className="btn btn-primary" onClick={() => handleSubmitWithWarranty(pendingSaleData, total)} disabled={isProcessingSale}>
+              <button className="btn btn-primary" onClick={() => {
+                const data = { ...pendingSaleData };
+                if (warrantyActive && warrantyData) {
+                  data.hasWarranty = true;
+                  data.warrantyData = warrantyData;
+                }
+                submitSale(data);
+              }} disabled={isProcessingSale}>
                 {isProcessingSale ? 'Procesando...' : 'Confirmar y Guardar e Imprimir'}
               </button>
               <button className="btn btn-outline" onClick={() => setShowCashConfirm(false)} disabled={isProcessingSale}>
@@ -891,11 +901,10 @@ const POS = () => {
 
       <WarrantyModal
         isOpen={showWarrantyModal}
-        onClose={() => { setShowWarrantyModal(false); setPendingWarrantySaleData(null); }}
+        onClose={() => setShowWarrantyModal(false)}
         onConfirm={handleWarrantyConfirm}
         settings={settings}
-        total={total}
-        formatCurrency={formatCurrency}
+        initialData={warrantyActive ? warrantyData : null}
       />
     </div>
   );

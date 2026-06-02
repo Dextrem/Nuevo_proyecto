@@ -61,6 +61,7 @@ model User {
   commissions        Commission[]
   purchaseOrders     PurchaseOrder[]
   inventoryMovements InventoryMovement[]
+  warranties         Warranty[]
 
   @@map("users")
 }
@@ -124,6 +125,7 @@ model Client {
   quotations        Quotation[]
   AccountReceivable AccountReceivable[]
   PendingPayment    PendingPayment[]
+  warranties        Warranty[]
 
   @@index([name])
   @@index([active])
@@ -207,6 +209,7 @@ model Sale {
   // Warranty fields
   hasWarranty  Boolean @default(false)
   warrantyData Json?
+  warranty     Warranty?
 
   // DGII Fiscal fields
   ncf     String?
@@ -662,4 +665,30 @@ model PendingPayment {
   @@index([clientId])
   @@index([status])
   @@map("pending_payments")
+}
+
+model Warranty {
+  id          String   @id @default(uuid())
+  saleId      String?  @unique
+  clientId    String?
+  clientName  String
+  clientRnc   String?
+  clientPhone String?
+  days        Int
+  coverage    String?
+  exclusions  String?
+  issueDate   DateTime @default(now())
+  expiryDate  DateTime
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sale      Sale?   @relation(fields: [saleId], references: [id], onDelete: SetNull)
+  client    Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  createdBy User    @relation(fields: [createdById], references: [id])
+
+  @@index([clientId])
+  @@index([issueDate])
+  @@index([createdById])
+  @@map("warranties")
 }

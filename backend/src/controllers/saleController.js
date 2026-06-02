@@ -528,6 +528,38 @@ export const createSale = async (req, res) => {
         }
       });
 
+      // Crear registro de garantía si aplica
+      if (hasWarranty && warrantyData) {
+        let clientName = '';
+        let clientRnc = null;
+        let clientPhone = null;
+        if (clientId) {
+          const saleClient = await tx.client.findUnique({ where: { id: clientId } });
+          if (saleClient) {
+            clientName = saleClient.name;
+            clientRnc = saleClient.rnc || null;
+            clientPhone = saleClient.phone || null;
+          }
+        }
+        const iDate = warrantyData.issueDate ? new Date(warrantyData.issueDate) : new Date();
+        const eDate = warrantyData.expiryDate ? new Date(warrantyData.expiryDate) : new Date(iDate.getTime() + warrantyData.days * 24 * 60 * 60 * 1000);
+        await tx.warranty.create({
+          data: {
+            saleId: newSale.id,
+            clientId: clientId || null,
+            clientName: clientName || `Cliente #${newSale.invoiceNumber}`,
+            clientRnc,
+            clientPhone,
+            days: warrantyData.days || 90,
+            coverage: warrantyData.coverage || null,
+            exclusions: warrantyData.exclusions || null,
+            issueDate: iDate,
+            expiryDate: eDate,
+            createdById: req.user.id,
+          },
+        });
+      }
+
       return newSale;
     });
 

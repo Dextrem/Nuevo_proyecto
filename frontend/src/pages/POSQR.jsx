@@ -255,7 +255,8 @@ const POSQR = () => {
   const [currentCashRegister, setCurrentCashRegister] = useState(null);
   const [isProcessingSale, setIsProcessingSale] = useState(false);
   const [showWarrantyModal, setShowWarrantyModal] = useState(false);
-  const [pendingWarrantySaleData, setPendingWarrantySaleData] = useState(null);
+  const [warrantyActive, setWarrantyActive] = useState(false);
+  const [warrantyData, setWarrantyData] = useState(null);
 
   const barcodeInputRef = useRef(null);
   const { formatCurrency, settings, showNotification } = useApp();
@@ -443,16 +444,13 @@ const POSQR = () => {
       })),
     };
 
-    // Check if warranty should be offered
-    if (settings.warrantyEnabled !== false && total >= (settings.warrantyMinAmount || 2000)) {
-      setPendingWarrantySaleData(saleData);
-      setShowWarrantyModal(true);
-      setIsProcessingSale(false);
-      return;
+    if (warrantyActive && warrantyData) {
+      saleData.hasWarranty = true;
+      saleData.warrantyData = warrantyData;
     }
 
     await submitSale(saleData);
-  }, [cart, paymentMethod, selectedClient, paidAmount, total, discountAmount, dueDate, loadData, loadCashRegister, showNotification, isProcessingSale, settings]);
+  }, [cart, paymentMethod, selectedClient, paidAmount, total, discountAmount, dueDate, loadData, loadCashRegister, showNotification, isProcessingSale, warrantyActive, warrantyData]);
 
   const submitSale = useCallback(async (saleData) => {
     setIsProcessingSale(true);
@@ -479,6 +477,8 @@ const POSQR = () => {
       setShippingCost(0);
       setSelectedClient(null);
       setDueDate('');
+      setWarrantyActive(false);
+      setWarrantyData(null);
       loadData();
       loadCashRegister();
       notifyDataUpdate('sales');
@@ -490,16 +490,16 @@ const POSQR = () => {
     }
   }, [selectedClient, showNotification, saleService, loadData, loadCashRegister]);
 
-  const handleWarrantyConfirm = useCallback((warrantyResult) => {
+  const handleWarrantyConfirm = useCallback((result) => {
     setShowWarrantyModal(false);
-    const saleData = { ...pendingWarrantySaleData };
-    if (warrantyResult) {
-      saleData.hasWarranty = true;
-      saleData.warrantyData = warrantyResult;
+    if (result) {
+      setWarrantyActive(true);
+      setWarrantyData(result);
+    } else {
+      setWarrantyActive(false);
+      setWarrantyData(null);
     }
-    setPendingWarrantySaleData(null);
-    submitSale(saleData);
-  }, [pendingWarrantySaleData, submitSale]);
+  }, []);
 
   const printReceipt = useCallback(() => {
     const printContent = document.getElementById('receipt-preview')?.innerHTML;
@@ -753,9 +753,17 @@ const POSQR = () => {
                   </div>
                   <h3 style={{ margin: 0, fontSize: '1.2rem' }}>Carrito de Ventas</h3>
                 </div>
-                <span style={{ background: cart.length > 0 ? 'rgba(16,185,129,0.15)' : 'rgba(107,114,128,0.1)', color: cart.length > 0 ? '#10B981' : '#6B7280', padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600 }}>
-                  {cart.length} {cart.length === 1 ? 'item' : 'items'}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ background: cart.length > 0 ? 'rgba(16,185,129,0.15)' : 'rgba(107,114,128,0.1)', color: cart.length > 0 ? '#10B981' : '#6B7280', padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600 }}>
+                    {cart.length} {cart.length === 1 ? 'item' : 'items'}
+                  </span>
+                  <button onClick={() => setShowWarrantyModal(true)}
+                    style={{ background: warrantyActive ? 'rgba(16,185,129,0.15)' : 'transparent', border: `1px solid ${warrantyActive ? '#10B981' : '#D1D5DB'}`, color: warrantyActive ? '#10B981' : '#6B7280', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}
+                    title="Configurar garantía">
+                    <i className="fas fa-certificate"></i>
+                    {warrantyActive ? 'Garantía ✓' : 'Garantía'}
+                  </button>
+                </div>
               </div>
               <Cart
                 cart={cart}
@@ -845,11 +853,10 @@ const POSQR = () => {
 
       <WarrantyModal
         isOpen={showWarrantyModal}
-        onClose={() => { setShowWarrantyModal(false); setPendingWarrantySaleData(null); }}
+        onClose={() => setShowWarrantyModal(false)}
         onConfirm={handleWarrantyConfirm}
         settings={settings}
-        total={total}
-        formatCurrency={formatCurrency}
+        initialData={warrantyActive ? warrantyData : null}
       />
     </div>
   );

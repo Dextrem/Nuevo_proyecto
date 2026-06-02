@@ -308,4 +308,10 @@ export const purchaseService = {
   create: (data) => api.post('/purchases', data),
 };
 
+export const warrantyService = {
+  getAll: (params) => api.get('/warranties', { params }),
+  create: (data) => api.post('/warranties', data),
+  delete: (id, data) => api.delete(`/warranties/${id}`, { data }),
+};
+
 export default api;
