@@ -59,7 +59,7 @@ if errorlevel 1 (
     where psql >nul 2>&1
     if not errorlevel 1 (
         "%PG_DIR%\pg_isready.exe" -h 127.0.0.1 -p 5432 >nul 2>&1 || (
-            echo  %A% >>%N% PostgreSQL del sistema detectado, intentando arrancar...
+            echo  %A% PostgreSQL del sistema detectado, intentando arrancar...%N%
             net start postgresql-x64-16 >nul 2>&1 || net start postgresql-x64-15 >nul 2>&1 || net start postgresql-x64-14 >nul 2>&1 || net start postgresql-x64-13 >nul 2>&1
             "%PG_DIR%\pg_isready.exe" -h 127.0.0.1 -p 5432 >nul 2>&1
         )
@@ -70,7 +70,7 @@ if errorlevel 1 (
 "%PG_DIR%\pg_isready.exe" -h 127.0.0.1 -p 5432 >nul 2>&1
 if errorlevel 1 (
     :: Intentar con el bundled
-    echo  %A% >>%N% Iniciando PostgreSQL portatil...
+    echo  %A% Iniciando PostgreSQL portatil...%N%
     if not exist "%DATA_DIR%\PG_VERSION" (
         echo %R%  ERROR: Base de datos no inicializada.%N%
         echo %A%  Ejecute INSTALAR.bat primero.%N%
@@ -183,10 +183,6 @@ if "!ACTUAL_PORT!"=="80" (
         echo  %C% Acceso móvil (IP):%N% http://%%i:!ACTUAL_PORT!
     )
 )
-echo  %C% Usuario:%N%  admin
-echo  %C% Clave:%N%    admin
-echo  %R%  ⚠  DEBE CAMBIAR LA CONTRASEÑA EN EL PRIMER INICIO%N%
-echo.
 echo  %A% Abriendo navegador...%N%
 
 ping -n 4 127.0.0.1 >nul

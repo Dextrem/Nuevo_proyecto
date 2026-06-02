@@ -1,4 +1,5 @@
 import prisma from '../config/database.js';
+import { logger } from '../utils/logger.js';
 
 export const getCostsReport = async (req, res) => {
   try {
@@ -169,7 +170,7 @@ export const getCostsReport = async (req, res) => {
       lowMarginProducts,
     });
   } catch (error) {
-    console.error('Error al generar reporte de costos:', error);
+    logger.error('Error al generar reporte de costos:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -274,7 +275,7 @@ export const getProductCostAnalysis = async (req, res) => {
       })),
     });
   } catch (error) {
-    console.error('Error al analizar costos del producto:', error);
+    logger.error('Error al analizar costos del producto:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -403,7 +404,7 @@ export const getProfitAndLoss = async (req, res) => {
       } : null,
     });
   } catch (error) {
-    console.error('Error al generar Estado de Resultados:', error);
+    logger.error('Error al generar Estado de Resultados:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -486,7 +487,7 @@ export const getCostsByCategory = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error al obtener costos por categoría:', error);
+    logger.error('Error al obtener costos por categoría:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -585,7 +586,7 @@ export const getCostTrend = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error al obtener tendencia de costos:', error);
+    logger.error('Error al obtener tendencia de costos:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };

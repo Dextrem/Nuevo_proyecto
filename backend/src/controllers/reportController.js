@@ -1,5 +1,6 @@
 import prisma from '../config/database.js';
 import { parsePaginationParams } from '../utils/pagination.js';
+import { logger } from '../utils/logger.js';
 
 const getLowStockProducts = async (limit = 5) => {
   const products = await prisma.product.findMany({
@@ -110,7 +111,7 @@ export const getDashboardStats = async (req, res) => {
       recentTransactions,
     });
   } catch (error) {
-    console.error('Error al obtener estadísticas:', error);
+    logger.error('Error al obtener estadísticas:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -194,7 +195,7 @@ export const getSalesReport = async (req, res) => {
       groupedData: report,
     });
   } catch (error) {
-    console.error('Error al generar reporte de ventas:', error);
+    logger.error('Error al generar reporte de ventas:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -239,7 +240,7 @@ export const getInventoryReport = async (req, res) => {
       products,
     });
   } catch (error) {
-    console.error('Error al generar reporte de inventario:', error);
+    logger.error('Error al generar reporte de inventario:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -331,7 +332,7 @@ export const getSalesByProductReport = async (req, res) => {
       products,
     });
   } catch (error) {
-    console.error('Error al generar reporte de ventas por producto:', error);
+    logger.error('Error al generar reporte de ventas por producto:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -396,7 +397,7 @@ export const getFinancialReport = async (req, res) => {
       })),
     });
   } catch (error) {
-    console.error('Error al generar reporte financiero:', error);
+    logger.error('Error al generar reporte financiero:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };

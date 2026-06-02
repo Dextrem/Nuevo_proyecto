@@ -1,4 +1,5 @@
 import prisma from '../config/database.js';
+import { logger } from '../utils/logger.js';
 
 const NCF_TYPES = {
   '01': 'Crédito Fiscal',
@@ -99,7 +100,7 @@ export const getFiscalStatus = async (req, res) => {
       salesWithoutNCF,
     });
   } catch (error) {
-    console.error('Error al obtener estado fiscal:', error);
+    logger.error('Error al obtener estado fiscal:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -179,7 +180,7 @@ export const getSalesFiscalReport = async (req, res) => {
       salesCount: sales.length,
     });
   } catch (error) {
-    console.error('Error al generar reporte fiscal de ventas:', error);
+    logger.error('Error al generar reporte fiscal de ventas:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -237,7 +238,7 @@ export const getPurchasesFiscalReport = async (req, res) => {
       bySupplier: Object.values(groupedByRnc),
     });
   } catch (error) {
-    console.error('Error al generar reporte fiscal de compras:', error);
+    logger.error('Error al generar reporte fiscal de compras:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };

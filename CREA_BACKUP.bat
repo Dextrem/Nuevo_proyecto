@@ -3,8 +3,8 @@ setlocal enabledelayedexpansion
 title Dextremix Finance - Respaldo de Seguridad
 
 :: Colors ANSI
-set "V= [92m"  & set "A= [93m"  & set "R= [91m"
-set "C= [96m"  & set "M= [95m"  & set "N= [0m"
+set "V=[92m"  & set "A=[93m"  & set "R=[91m"
+set "C=[96m"  & set "M=[95m"  & set "N=[0m"
 
 echo.
 echo %M%  ╔══════════════════════════════════════════════╗%N%
@@ -24,8 +24,8 @@ if not exist "%BACKUP_DIR%" mkdir "%BACKUP_DIR%"
 for /f %%a in ('powershell -Command "Get-Date -Format 'yyyyMMdd_HHmmss'"') do set "TIMESTAMP=%%a"
 set "FILENAME=respaldo_!TIMESTAMP!.sql"
 
-echo  %A% >>%N% Exportando base de datos finandex...
-set "PGPASSWORD=postgres"
+echo  %A% Exportando base de datos finandex...
+if "%PGPASSWORD%"=="" set "PGPASSWORD=postgres"
 
 "%PG_DUMP%" -U postgres -h 127.0.0.1 -p 5432 finandex > "%BACKUP_DIR%\%FILENAME%"
 

@@ -1,5 +1,6 @@
 import prisma from '../config/database.js';
 import { parsePaginationParams } from '../utils/pagination.js';
+import { logger } from '../utils/logger.js';
 
 export const getAllSuppliers = async (req, res) => {
   try {
@@ -68,7 +69,7 @@ export const getAllSuppliers = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error al obtener proveedores:', error);
+    logger.error('Error al obtener proveedores:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -92,7 +93,7 @@ export const getSupplierById = async (req, res) => {
 
     res.json(supplier);
   } catch (error) {
-    console.error('Error al obtener proveedor:', error);
+    logger.error('Error al obtener proveedor:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -127,7 +128,7 @@ export const createSupplier = async (req, res) => {
        supplier 
      });
   } catch (error) {
-    console.error('Error al crear proveedor:', error);
+    logger.error('Error al crear proveedor:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -163,7 +164,7 @@ export const updateSupplier = async (req, res) => {
        supplier 
      });
   } catch (error) {
-    console.error('Error al actualizar proveedor:', error);
+    logger.error('Error al actualizar proveedor:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -210,7 +211,7 @@ export const deleteSupplier = async (req, res) => {
 
      res.json({ message: 'Proveedor desactivado exitosamente' });
   } catch (error) {
-    console.error('Error al eliminar proveedor:', error);
+    logger.error('Error al eliminar proveedor:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -235,7 +236,7 @@ export const getSupplierInvoices = async (req, res) => {
 
     res.json(invoices);
   } catch (error) {
-    console.error('Error al obtener facturas:', error);
+    logger.error('Error al obtener facturas:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -294,7 +295,7 @@ export const createSupplierInvoice = async (req, res) => {
       message: 'Factura creada exitosamente'
     });
   } catch (error) {
-    console.error('Error al crear factura:', error);
+    logger.error('Error al crear factura:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -318,7 +319,7 @@ export const updateSupplierInvoice = async (req, res) => {
       invoice 
     });
   } catch (error) {
-    console.error('Error al actualizar factura:', error);
+    logger.error('Error al actualizar factura:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -354,7 +355,7 @@ export const deleteSupplierInvoice = async (req, res) => {
 
     res.json({ message: 'Factura eliminada exitosamente' });
   } catch (error) {
-    console.error('Error al eliminar factura:', error);
+    logger.error('Error al eliminar factura:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -469,7 +470,7 @@ export const recordSupplierPayment = async (req, res) => {
       isPaid
     });
   } catch (error) {
-    console.error('Error al registrar pago:', error);
+    logger.error('Error al registrar pago:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };

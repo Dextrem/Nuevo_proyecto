@@ -1,4 +1,5 @@
 import prisma from '../config/database.js';
+import { logger } from '../utils/logger.js';
 
 const getMonthDateRange = (year, month) => {
   const startDate = new Date(year, month - 1, 1, 0, 0, 0);
@@ -456,7 +457,7 @@ export const createMonthlyClosing = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error al crear cierre mensual:', error);
+    logger.error('Error al crear cierre mensual:', { error });
     if (error.code === 'P2021') {
       return res.status(500).json({ error: 'La tabla de cierres no existe. Ejecuta: npx prisma db push' });
     }
@@ -482,7 +483,7 @@ export const getAllClosings = async (req, res) => {
 
     res.json(closings);
   } catch (error) {
-    console.error('Error al obtener cierres:', error);
+    logger.error('Error al obtener cierres:', { error });
     if (error.code === 'P2021') {
       return res.json([]);
     }
@@ -504,7 +505,7 @@ export const getClosingById = async (req, res) => {
 
     res.json(closing);
   } catch (error) {
-    console.error('Error al obtener cierre:', error);
+    logger.error('Error al obtener cierre:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -528,7 +529,7 @@ export const getClosingByMonth = async (req, res) => {
 
     res.json(closing);
   } catch (error) {
-    console.error('Error al obtener cierre:', error);
+    logger.error('Error al obtener cierre:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -591,7 +592,7 @@ export const getCurrentMonthStatus = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error al obtener estado del mes:', error);
+    logger.error('Error al obtener estado del mes:', { error });
     if (error.code === 'P2021') {
       return res.json({
         isClosed: false,
@@ -621,7 +622,7 @@ export const deleteClosing = async (req, res) => {
 
     res.json({ message: 'Cierre eliminado exitosamente' });
   } catch (error) {
-    console.error('Error al eliminar cierre:', error);
+    logger.error('Error al eliminar cierre:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -712,7 +713,7 @@ export const getClosingReport = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error al obtener reporte:', error);
+    logger.error('Error al obtener reporte:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -833,7 +834,7 @@ export const getCompanyStatus = async (req, res) => {
       lastClosedPeriod: lastClosing ? { year: lastClosing.year, month: lastClosing.month } : null,
     });
   } catch (error) {
-    console.error('Error al obtener estado de la empresa:', error);
+    logger.error('Error al obtener estado de la empresa:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -922,7 +923,7 @@ export const getOpeningBalances = async (req, res) => {
       isCurrentMonth,
     });
   } catch (error) {
-    console.error('Error al obtener balances de apertura:', error);
+    logger.error('Error al obtener balances de apertura:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };

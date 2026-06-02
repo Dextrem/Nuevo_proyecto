@@ -3,9 +3,9 @@ setlocal enabledelayedexpansion
 title Configurar Inicio Automático - Dextremix Finance
 
 :: Colors ANSI
-set "V= [92m"  & set "A= [93m"  & set "R= [91m"
-set "C= [96m"  & set "M= [95m"  & set "N= [0m"
-set "B= [1m"
+set "V=[92m"  & set "A=[93m"  & set "R=[91m"
+set "C=[96m"  & set "M=[95m"  & set "N=[0m"
+set "B=[1m"
 
 :menu
 cls

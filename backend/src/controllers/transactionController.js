@@ -1,5 +1,6 @@
 import prisma from '../config/database.js';
 import { parsePaginationParams } from '../utils/pagination.js';
+import { logger } from '../utils/logger.js';
 
 export const getAllTransactions = async (req, res) => {
   try {
@@ -53,7 +54,7 @@ export const getAllTransactions = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error al obtener transacciones:', error);
+    logger.error('Error al obtener transacciones:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -111,7 +112,7 @@ export const createTransaction = async (req, res) => {
       transaction 
     });
   } catch (error) {
-    console.error('Error al crear transacción:', error);
+    logger.error('Error al crear transacción:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -158,7 +159,7 @@ export const updateTransaction = async (req, res) => {
       transaction 
     });
   } catch (error) {
-    console.error('Error al actualizar transacción:', error);
+    logger.error('Error al actualizar transacción:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -195,7 +196,7 @@ export const deleteTransaction = async (req, res) => {
 
     res.json({ message: 'Transacción eliminada exitosamente' });
   } catch (error) {
-    console.error('Error al eliminar transacción:', error);
+    logger.error('Error al eliminar transacción:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -257,7 +258,7 @@ export const getTransactionSummary = async (req, res) => {
       expenseCount: expense._count,
     });
   } catch (error) {
-    console.error('Error al obtener resumen:', error);
+    logger.error('Error al obtener resumen:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };

@@ -1,5 +1,6 @@
 import prisma from '../config/database.js';
 import { parsePaginationParams } from '../utils/pagination.js';
+import { logger } from '../utils/logger.js';
 
 export const getAllTransactionsHistory = async (req, res) => {
   try {
@@ -58,7 +59,7 @@ export const getAllTransactionsHistory = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error al obtener historial global:', error);
+    logger.error('Error al obtener historial global:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };

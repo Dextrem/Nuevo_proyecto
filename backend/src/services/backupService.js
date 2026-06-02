@@ -221,7 +221,7 @@ export const restoreBackup = async (backupData) => {
               permissions: user.permissions || {},
               active: user.active !== false,
               createdAt: user.createdAt,
-              password: await bcrypt.hash('temp_password_123', 10),
+              password: user.password,
             },
           });
         }

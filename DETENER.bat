@@ -3,8 +3,8 @@ setlocal enabledelayedexpansion
 title Detener Dextremix Finance
 
 :: Colors ANSI
-set "V= [92m"  & set "A= [93m"  & set "R= [91m"
-set "C= [96m"  & set "M= [95m"  & set "N= [0m"
+set "V=[92m"  & set "A=[93m"  & set "R=[91m"
+set "C=[96m"  & set "M=[95m"  & set "N=[0m"
 
 echo.
 echo %M%  ╔══════════════════════════════════════════════╗%N%

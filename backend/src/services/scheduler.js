@@ -51,8 +51,8 @@ const checkLowStock = async () => {
     const lowStock = await prisma.product.findMany({
       where: {
         active: true,
-        stock: { lte: 0 }, // stock en cero
-        NOT: { minStock: 0 }, // excluir productos sin mínimo configurado
+        stock: { lte: 0 },
+        minStock: { gt: 0 },
       },
       select: { name: true, sku: true, stock: true, minStock: true },
     });
@@ -76,6 +76,8 @@ const checkLowStock = async () => {
   }
 };
 
+let schedulerTimer = null;
+
 export const startScheduler = () => {
   logger.info('Iniciando tareas programadas...');
 
@@ -85,7 +87,16 @@ export const startScheduler = () => {
   };
 
   runTasks();
-  setInterval(runTasks, 60 * 60 * 1000);
+  schedulerTimer = setInterval(runTasks, 60 * 60 * 1000);
 
   logger.info('Tareas programadas activas (intervalo: 60 min)');
+  return schedulerTimer;
+};
+
+export const stopScheduler = () => {
+  if (schedulerTimer) {
+    clearInterval(schedulerTimer);
+    schedulerTimer = null;
+    logger.info('Tareas programadas detenidas');
+  }
 };

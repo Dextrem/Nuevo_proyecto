@@ -1,7 +1,9 @@
 import prisma from '../config/database.js';
 import { parsePaginationParams } from '../utils/pagination.js';
 import { generateInvoiceNumber } from '../utils/invoice.js';
+import { gteMoney } from '../utils/money.js';
 import bcrypt from 'bcryptjs';
+import { logger } from '../utils/logger.js';
 
 const findOpenRegister = async (db, userId) => {
   let register = await db.cashRegister.findFirst({
@@ -59,7 +61,7 @@ const recordSaleInCashRegister = async (tx, saleData, userId) => {
 
     return { registerId: openRegister.id, amountAdded: saleData.paidAmount, registerName: openRegister.name };
   } catch (error) {
-    console.error('Error recording sale in cash register:', error);
+    logger.error('Error recording sale in cash register:', { error });
     return null;
   }
 };
@@ -210,7 +212,7 @@ export const getAllSales = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error al obtener ventas:', error);
+    logger.error('Error al obtener ventas:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -240,7 +242,7 @@ export const getSaleById = async (req, res) => {
 
     res.json(sale);
   } catch (error) {
-    console.error('Error al obtener venta:', error);
+    logger.error('Error al obtener venta:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -579,7 +581,7 @@ export const createSale = async (req, res) => {
       sale 
     });
   } catch (error) {
-    console.error('Error al crear venta:', error);
+    logger.error('Error al crear venta:', { error });
     res.status(500).json({ 
       error: 'Error interno del servidor',
       details: process.env.NODE_ENV !== 'production' ? error.message : undefined,
@@ -791,7 +793,7 @@ export const cancelSale = async (req, res) => {
 
     res.json({ message: 'Venta cancelada exitosamente y stock devuelto' });
   } catch (error) {
-    console.error('Error al cancelar venta:', error);
+    logger.error('Error al cancelar venta:', { error });
     res.status(500).json({ 
       error: 'Error interno al procesar anulación',
       message: error.message,
@@ -833,7 +835,7 @@ export const getDailySales = async (req, res) => {
       sales,
     });
   } catch (error) {
-    console.error('Error al obtener ventas del día:', error);
+    logger.error('Error al obtener ventas del día:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -917,7 +919,7 @@ export const getAccountsReceivable = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error al obtener cuentas por cobrar:', error);
+    logger.error('Error al obtener cuentas por cobrar:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -951,7 +953,7 @@ export const updateSalePayment = async (req, res) => {
     }
 
     const newPaidAmount = sale.paidAmount + paidAmount;
-    const newStatus = newPaidAmount >= sale.total - 0.01 ? 'COMPLETED' : 'PARTIAL';
+    const newStatus = gteMoney(newPaidAmount, sale.total) ? 'COMPLETED' : 'PARTIAL';
 
     const updatedSale = await prisma.$transaction(async (tx) => {
       const updated = await tx.sale.update({
@@ -1021,7 +1023,7 @@ export const updateSalePayment = async (req, res) => {
 
     res.json({ message: 'Pago registrado', sale: updatedSale });
   } catch (error) {
-    console.error('Error al registrar pago:', error);
+    logger.error('Error al registrar pago:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -1039,7 +1041,7 @@ export const getPendingPayments = async (req, res) => {
     });
     res.json(pending);
   } catch (error) {
-    console.error('Error al obtener abonos pendientes:', error);
+    logger.error('Error al obtener abonos pendientes:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -1099,7 +1101,7 @@ export const approvePendingPayment = async (req, res) => {
 
         if (amountToApply > 0) {
           const newPaidAmount = sale.paidAmount + amountToApply;
-          const newStatus = newPaidAmount >= sale.total - 0.01 ? 'COMPLETED' : 'PARTIAL';
+          const newStatus = gteMoney(newPaidAmount, sale.total) ? 'COMPLETED' : 'PARTIAL';
 
           await tx.sale.update({
             where: { id: sale.id },
@@ -1166,7 +1168,7 @@ export const approvePendingPayment = async (req, res) => {
 
     res.json({ message: 'Abono aprobado y registrado en contabilidad' });
   } catch (error) {
-    console.error('Error al aprobar abono:', error);
+    logger.error('Error al aprobar abono:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -1203,7 +1205,7 @@ export const rejectPendingPayment = async (req, res) => {
 
     res.json({ message: 'Abono rechazado' });
   } catch (error) {
-    console.error('Error al rechazar abono:', error);
+    logger.error('Error al rechazar abono:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -1256,7 +1258,7 @@ export const getCreditSalesSummary = async (req, res) => {
 
     res.json({ sales, summary });
   } catch (error) {
-    console.error('Error al obtener resumen ventas crédito:', error);
+    logger.error('Error al obtener resumen ventas crédito:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -1285,7 +1287,7 @@ export const incrementPrintCount = async (req, res) => {
       printCount: updatedSale.printCount 
     });
   } catch (error) {
-    console.error('Error al incrementar contador:', error);
+    logger.error('Error al incrementar contador:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };

@@ -3,6 +3,7 @@ import { parsePaginationParams } from '../utils/pagination.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import { logger } from '../utils/logger.js';
 
 // Get the current file URL and convert to path
 const __filename = fileURLToPath(import.meta.url);
@@ -95,7 +96,7 @@ export const getAllProducts = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error al obtener productos:', error);
+    logger.error('Error al obtener productos:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -117,7 +118,7 @@ export const getProductById = async (req, res) => {
 
     res.json(product);
   } catch (error) {
-    console.error('Error al obtener producto:', error);
+    logger.error('Error al obtener producto:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -215,7 +216,7 @@ export const createProduct = async (req, res) => {
         product 
       });
   } catch (error) {
-    console.error('Error al crear producto:', error);
+    logger.error('Error al crear producto:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -286,7 +287,7 @@ export const updateProduct = async (req, res) => {
       product 
     });
   } catch (error) {
-    console.error('Error al actualizar producto:', error);
+    logger.error('Error al actualizar producto:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -321,7 +322,7 @@ export const deleteProduct = async (req, res) => {
 
     res.json({ message: 'Producto desactivado exitosamente' });
   } catch (error) {
-    console.error('Error al eliminar producto:', error);
+    logger.error('Error al eliminar producto:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -420,7 +421,7 @@ export const updateStock = async (req, res) => {
       product: updatedProduct 
     });
   } catch (error) {
-    console.error('Error al actualizar stock:', error);
+    logger.error('Error al actualizar stock:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -453,7 +454,7 @@ export const getProductSummary = async (req, res) => {
       lowStockCount
     });
   } catch (error) {
-    console.error('Error al obtener el resumen de inventario:', error);
+    logger.error('Error al obtener el resumen de inventario:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -507,7 +508,7 @@ export const uploadImage = async (req, res) => {
         try {
           fs.unlinkSync(oldImagePath);
         } catch (unlinkError) {
-          console.error('Error al eliminar imagen antigua:', unlinkError);
+          logger.error('Error al eliminar imagen antigua:', { error: unlinkError });
         }
       }
     }
@@ -532,7 +533,7 @@ export const uploadImage = async (req, res) => {
       product: updatedProduct
     });
   } catch (error) {
-    console.error('Error al subir imagen:', error);
+    logger.error('Error al subir imagen:', { error });
     res.status(500).json({ 
       error: 'Error interno del servidor',
       message: error.message,

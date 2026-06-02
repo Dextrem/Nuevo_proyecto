@@ -2,6 +2,7 @@ import prisma from '../config/database.js';
 import { parsePaginationParams } from '../utils/pagination.js';
 import { generateInvoiceNumber } from '../utils/invoice.js';
 import { saveToHistory } from './saleController.js';
+import { logger } from '../utils/logger.js';
 
 const recordSaleInCashRegister = async (tx, saleData, userId, paymentMethod) => {
   try {
@@ -38,7 +39,7 @@ const recordSaleInCashRegister = async (tx, saleData, userId, paymentMethod) => 
 
     return openRegister.id;
   } catch (error) {
-    console.error('Error recording sale in register:', error);
+    logger.error('Error recording sale in register:', { error });
     return null;
   }
 };
@@ -176,7 +177,7 @@ export const getAllQuotations = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error al obtener cotizaciones:', error);
+    logger.error('Error al obtener cotizaciones:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -206,7 +207,7 @@ export const getQuotationById = async (req, res) => {
 
     res.json(quotation);
   } catch (error) {
-    console.error('Error al obtener cotización:', error);
+    logger.error('Error al obtener cotización:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -287,7 +288,7 @@ export const createQuotation = async (req, res) => {
       quotation 
     });
   } catch (error) {
-    console.error('Error al crear cotización:', error);
+    logger.error('Error al crear cotización:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -413,7 +414,7 @@ export const updateQuotation = async (req, res) => {
       quotation 
     });
   } catch (error) {
-    console.error('Error al actualizar cotización:', error);
+    logger.error('Error al actualizar cotización:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -436,7 +437,7 @@ export const deleteQuotation = async (req, res) => {
 
     res.json({ message: 'Cotización eliminada exitosamente' });
   } catch (error) {
-    console.error('Error al eliminar cotización:', error);
+    logger.error('Error al eliminar cotización:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -644,7 +645,7 @@ export const convertToSale = async (req, res) => {
       sale 
     });
   } catch (error) {
-    console.error('Error al convertir cotización:', error);
+    logger.error('Error al convertir cotización:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };

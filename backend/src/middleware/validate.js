@@ -156,6 +156,61 @@ export const schemas = {
     })).min(1),
   }),
 
+  quotation: z.object({
+    clientId: z.preprocess(val => val === '' ? null : val, z.string().optional().nullable()),
+    clientName: sanitizedOptionalString(200).optional().nullable(),
+    clientRnc: sanitizedOptionalString(20).optional().nullable(),
+    clientPhone: sanitizedOptionalString(20).optional().nullable(),
+    clientAddress: sanitizedOptionalString(500).optional().nullable(),
+    clientEmail: z.preprocess(val => val === '' ? null : val, z.string().email().optional().nullable()),
+    paymentMethod: sanitizedOptionalString(20).optional().nullable(),
+    deliveryTime: sanitizedOptionalString(100).optional().nullable(),
+    warranty: sanitizedOptionalString(500).optional().nullable(),
+    notes: sanitizedOptionalString(1000).optional().nullable(),
+    validityDays: z.number().int().min(1).max(365).optional(),
+    discount: z.number().min(0).optional(),
+    items: z.array(z.object({
+      productId: z.string(),
+      quantity: z.number().int().positive(),
+      price: z.number().positive(),
+      tax: z.number().min(0),
+      discount: z.number().min(0).optional(),
+      total: z.number().positive().optional(),
+    })).min(1),
+  }),
+
+  budget: z.object({
+    category: sanitizedString(1, 100),
+    type: z.enum(['income', 'expense']).optional(),
+    plannedAmount: z.number().positive(),
+    year: z.number().int().min(2000).max(2100),
+    month: z.number().int().min(1).max(12),
+  }),
+
+  warranty: z.object({
+    clientId: z.preprocess(val => val === '' ? null : val, z.string().optional().nullable()),
+    clientName: sanitizedString(1, 200),
+    clientRnc: sanitizedOptionalString(20).optional().nullable(),
+    clientPhone: sanitizedOptionalString(20).optional().nullable(),
+    days: z.number().int().positive(),
+    coverage: sanitizedOptionalString(2000).optional().nullable(),
+    exclusions: sanitizedOptionalString(2000).optional().nullable(),
+    saleId: z.preprocess(val => val === '' ? null : val, z.string().optional().nullable()),
+    issueDate: z.string().optional().nullable(),
+    expiryDate: z.string().optional(),
+  }),
+
+  purchaseOrder: z.object({
+    supplierId: z.string(),
+    notes: sanitizedOptionalString(1000).optional().nullable(),
+    items: z.array(z.object({
+      productId: z.string(),
+      quantity: z.number().int().positive(),
+      unitCost: z.number().positive(),
+      total: z.number().positive().optional(),
+    })).min(1),
+  }),
+
   settings: z.object({
     companyName: sanitizedOptionalString(200).optional(),
     companyRnc: sanitizedOptionalString(20).optional().nullable(),

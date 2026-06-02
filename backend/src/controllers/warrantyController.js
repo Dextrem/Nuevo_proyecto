@@ -1,6 +1,7 @@
 import prisma from '../config/database.js';
 import bcrypt from 'bcryptjs';
 import { parsePaginationParams } from '../utils/pagination.js';
+import { logger } from '../utils/logger.js';
 
 export const getAllWarranties = async (req, res) => {
   try {
@@ -51,7 +52,7 @@ export const getAllWarranties = async (req, res) => {
       pagination: { page, limit, total, totalPages: Math.ceil(total / limit), hasNext: page * limit < total, hasPrev: page > 1 },
     });
   } catch (error) {
-    console.error('Error al obtener garantías:', error);
+    logger.error('Error al obtener garantías:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -108,7 +109,7 @@ export const createWarranty = async (req, res) => {
 
     res.status(201).json({ message: 'Garantía creada exitosamente', warranty });
   } catch (error) {
-    console.error('Error al crear garantía:', error);
+    logger.error('Error al crear garantía:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -157,7 +158,7 @@ export const deleteWarranty = async (req, res) => {
 
     res.json({ message: 'Garantía eliminada exitosamente' });
   } catch (error) {
-    console.error('Error al eliminar garantía:', error);
+    logger.error('Error al eliminar garantía:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };

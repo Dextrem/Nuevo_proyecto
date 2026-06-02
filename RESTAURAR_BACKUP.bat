@@ -3,9 +3,9 @@ setlocal enabledelayedexpansion
 title Dextremix Finance - Restauracion de Datos
 
 :: Colors ANSI
-set "V= [92m"  & set "A= [93m"  & set "R= [91m"
-set "C= [96m"  & set "M= [95m"  & set "N= [0m"
-set "B= [1m"
+set "V=[92m"  & set "A=[93m"  & set "R=[91m"
+set "C=[96m"  & set "M=[95m"  & set "N=[0m"
+set "B=[1m"
 
 echo.
 echo %R%  ╔══════════════════════════════════════════════╗%N%
@@ -65,8 +65,8 @@ if /i "%confirm%" neq "SI" (
 )
 
 echo.
-echo  %A% >>%N% Limpiando base de datos actual y restaurando...
-set "PGPASSWORD=postgres"
+echo  %A% Limpiando base de datos actual y restaurando...
+if "%PGPASSWORD%"=="" set "PGPASSWORD=postgres"
 
 :: Borrar y recrear para asegurar limpieza total
 "%ROOT%\bin\pgsql\bin\psql.exe" -U postgres -h 127.0.0.1 -p 5432 -c "DROP DATABASE IF EXISTS finandex WITH (FORCE);" >nul 2>&1

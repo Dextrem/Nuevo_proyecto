@@ -1,5 +1,6 @@
 import prisma from '../config/database.js';
 import { parsePaginationParams } from '../utils/pagination.js';
+import { logger } from '../utils/logger.js';
 
 export const getAllClients = async (req, res) => {
   try {
@@ -46,7 +47,7 @@ export const getAllClients = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error al obtener clientes:', error);
+    logger.error('Error al obtener clientes:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -81,7 +82,7 @@ export const getClientById = async (req, res) => {
 
     res.json(client);
   } catch (error) {
-    console.error('Error al obtener cliente:', error);
+    logger.error('Error al obtener cliente:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -120,7 +121,7 @@ export const createClient = async (req, res) => {
        client 
      });
   } catch (error) {
-    console.error('Error al crear cliente:', error);
+    logger.error('Error al crear cliente:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -164,7 +165,7 @@ export const updateClient = async (req, res) => {
        client 
      });
   } catch (error) {
-    console.error('Error al actualizar cliente:', error);
+    logger.error('Error al actualizar cliente:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -212,7 +213,7 @@ export const deleteClient = async (req, res) => {
 
      res.json({ message: 'Cliente desactivado exitosamente' });
   } catch (error) {
-    console.error('Error al eliminar cliente:', error);
+    logger.error('Error al eliminar cliente:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -281,7 +282,7 @@ export const recordPayment = async (req, res) => {
       paymentAmount: amount,
     });
   } catch (error) {
-    console.error('Error al registrar pago:', error);
+    logger.error('Error al registrar pago:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };

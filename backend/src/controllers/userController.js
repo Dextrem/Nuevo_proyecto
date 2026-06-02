@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import prisma from '../config/database.js';
 import { sanitizeString } from '../middleware/validation.js';
 import { parsePaginationParams } from '../utils/pagination.js';
+import { logger } from '../utils/logger.js';
 export const getAllUsers = async (req, res) => {
   try {
     const { page, limit, skip } = parsePaginationParams(req.query);
@@ -35,7 +36,7 @@ export const getAllUsers = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error al obtener usuarios:', error);
+    logger.error('Error al obtener usuarios:', { error });
     res.status(500).json({ error: "Error interno del servidor", message: error.message });
   }
 };
@@ -56,7 +57,7 @@ export const getUserById = async (req, res) => {
     }
     res.json(user);
   } catch (error) {
-    console.error('Error al obtener usuario:', error);
+    logger.error('Error al obtener usuario:', { error });
     res.status(500).json({ error: "Error interno del servidor", message: error.message });
   }
 };
@@ -119,7 +120,7 @@ export const createUser = async (req, res) => {
          },
        });
      } catch (createError) {
-       console.error('Error in prisma.user.create:', createError);
+       logger.error('Error in prisma.user.create:', { error: createError });
        throw new Error(`Error al crear base del usuario: ${createError.message}`);
      }
      // Registrar en historial de transacciones
@@ -142,7 +143,7 @@ export const createUser = async (req, res) => {
        user 
      });
   } catch (error) {
-    console.error('Error al crear usuario:', error);
+    logger.error('Error al crear usuario:', { error });
     res.status(500).json({ error: "Error interno del servidor", message: error.message });
   }
 };
@@ -231,7 +232,7 @@ export const updateUser = async (req, res) => {
 
      res.json({ message: 'Usuario actualizado exitosamente' });
   } catch (error) {
-    console.error('Error al actualizar usuario:', error);
+    logger.error('Error al actualizar usuario:', { error });
     res.status(500).json({ error: "Error interno del servidor", message: error.message });
   }
 };
@@ -262,7 +263,7 @@ export const deleteUser = async (req, res) => {
      });
      res.json({ message: 'Usuario desactivado exitosamente' });
   } catch (error) {
-    console.error('Error al eliminar usuario:', error);
+    logger.error('Error al eliminar usuario:', { error });
     res.status(500).json({ error: "Error interno del servidor", message: error.message });
   }
 };

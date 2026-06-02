@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import prisma from '../config/database.js';
+import { logger } from '../utils/logger.js';
 
 export const getCashRegisters = async (req, res) => {
   try {
@@ -113,7 +114,7 @@ export const openCashRegister = async (req, res) => {
         },
       });
     } catch (logError) {
-      console.error('Error registrando apertura de caja:', logError);
+      logger.error('Error registrando apertura de caja:', { error: logError });
     }
 
     res.status(201).json(register);
@@ -251,7 +252,7 @@ export const closeCashRegister = async (req, res) => {
         },
       });
     } catch (logError) {
-      console.error('Error registrando cierre de caja:', logError);
+      logger.error('Error registrando cierre de caja:', { error: logError });
     }
 
     res.json({

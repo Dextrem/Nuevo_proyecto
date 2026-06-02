@@ -25,8 +25,8 @@ router.put('/:id', requirePermission('manage_suppliers'), validate(schemas.suppl
 router.delete('/:id', requirePermission('manage_suppliers'), deleteSupplier);
 
 router.get('/:id/invoices', getSupplierInvoices);
-router.post('/:id/invoices', requirePermission('manage_suppliers'), createSupplierInvoice);
-router.put('/:id/invoices/:invoiceId', requirePermission('manage_suppliers'), updateSupplierInvoice);
+router.post('/:id/invoices', requirePermission('manage_suppliers'), validate(schemas.supplierInvoice), createSupplierInvoice);
+router.put('/:id/invoices/:invoiceId', requirePermission('manage_suppliers'), validate(schemas.supplierInvoice), updateSupplierInvoice);
 router.delete('/:id/invoices/:invoiceId', requirePermission('manage_suppliers'), deleteSupplierInvoice);
 router.post('/:id/payment', requirePermission('manage_accounting'), recordSupplierPayment);
 

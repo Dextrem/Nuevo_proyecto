@@ -1,4 +1,5 @@
 import prisma from '../config/database.js';
+import { logger } from '../utils/logger.js';
 
 export const getAllCategories = async (req, res) => {
   try {
@@ -13,7 +14,7 @@ export const getAllCategories = async (req, res) => {
 
     res.json(categories);
   } catch (error) {
-    console.error('Error al obtener categorías:', error);
+    logger.error('Error al obtener categorías:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -38,7 +39,7 @@ export const getCategoryById = async (req, res) => {
 
     res.json(category);
   } catch (error) {
-    console.error('Error al obtener categoría:', error);
+    logger.error('Error al obtener categoría:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -82,7 +83,7 @@ export const createCategory = async (req, res) => {
        category 
      });
   } catch (error) {
-    console.error('Error al crear categoría:', error);
+    logger.error('Error al crear categoría:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -136,7 +137,7 @@ export const updateCategory = async (req, res) => {
        category 
      });
   } catch (error) {
-    console.error('Error al actualizar categoría:', error);
+    logger.error('Error al actualizar categoría:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -175,7 +176,7 @@ export const deleteCategory = async (req, res) => {
 
      res.json({ message: 'Categoría eliminada exitosamente' });
   } catch (error) {
-    console.error('Error al eliminar categoría:', error);
+    logger.error('Error al eliminar categoría:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };

@@ -2,6 +2,7 @@ import { createBackup, restoreBackup } from '../services/backupService.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { logger } from '../utils/logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,7 +18,7 @@ export const exportBackup = async (req, res) => {
     
     res.json(backup);
   } catch (error) {
-    console.error('Error exporting backup:', error);
+    logger.error('Error exporting backup:', { error });
     res.status(500).json({ error: 'Error al exportar backup' });
   }
 };
@@ -43,7 +44,7 @@ export const importBackup = async (req, res) => {
       message: 'Backup restaurado exitosamente. Por favor, inicia sesión nuevamente.' 
     });
   } catch (error) {
-    console.error('Error importing backup:', error);
+    logger.error('Error importing backup:', { error });
     res.status(500).json({ 
       error: error.message || 'Error al importar backup' 
     });
@@ -88,7 +89,7 @@ export const scheduleBackup = async (req, res) => {
       filename 
     });
   } catch (error) {
-    console.error('Error in scheduled backup:', error);
+    logger.error('Error in scheduled backup:', { error });
     res.status(500).json({ error: 'Error en backup automático' });
   }
 };

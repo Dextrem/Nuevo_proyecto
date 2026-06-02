@@ -1,4 +1,5 @@
 import prisma from '../config/database.js';
+import { logger } from '../utils/logger.js';
 
 export const getSettings = async (req, res) => {
   try {
@@ -12,7 +13,7 @@ export const getSettings = async (req, res) => {
 
     res.json(settings);
   } catch (error) {
-    console.error('Error al obtener configuración:', error);
+    logger.error('Error al obtener configuración:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -37,7 +38,7 @@ export const updateSettings = async (req, res) => {
       settings 
     });
   } catch (error) {
-    console.error('Error al actualizar configuración:', error);
+    logger.error('Error al actualizar configuración:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -55,7 +56,7 @@ export const resetSettings = async (req, res) => {
       settings 
     });
   } catch (error) {
-    console.error('Error al reiniciar configuración:', error);
+    logger.error('Error al reiniciar configuración:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };

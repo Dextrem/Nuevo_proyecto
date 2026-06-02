@@ -1,5 +1,6 @@
 import prisma from '../config/database.js';
 import { parsePaginationParams } from '../utils/pagination.js';
+import { logger } from '../utils/logger.js';
 
 export const getAllBudgets = async (req, res) => {
   try {
@@ -18,7 +19,7 @@ export const getAllBudgets = async (req, res) => {
 
     res.json(budgets);
   } catch (error) {
-    console.error('Error al obtener presupuestos:', error);
+    logger.error('Error al obtener presupuestos:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -32,7 +33,7 @@ export const getBudgetById = async (req, res) => {
     }
     res.json(budget);
   } catch (error) {
-    console.error('Error al obtener presupuesto:', error);
+    logger.error('Error al obtener presupuesto:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -60,7 +61,7 @@ export const createBudget = async (req, res) => {
     if (error.code === 'P2002') {
       return res.status(400).json({ error: 'Ya existe un presupuesto para esta categoría en este período' });
     }
-    console.error('Error al crear presupuesto:', error);
+    logger.error('Error al crear presupuesto:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -90,7 +91,7 @@ export const updateBudget = async (req, res) => {
     if (error.code === 'P2025') {
       return res.status(404).json({ error: 'Presupuesto no encontrado' });
     }
-    console.error('Error al actualizar presupuesto:', error);
+    logger.error('Error al actualizar presupuesto:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -104,7 +105,7 @@ export const deleteBudget = async (req, res) => {
     if (error.code === 'P2025') {
       return res.status(404).json({ error: 'Presupuesto no encontrado' });
     }
-    console.error('Error al eliminar presupuesto:', error);
+    logger.error('Error al eliminar presupuesto:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -131,7 +132,7 @@ export const getBudgetSummary = async (req, res) => {
 
     res.json({ budgetByCategory, totalIncome, totalExpense });
   } catch (error) {
-    console.error('Error al obtener resumen de presupuestos:', error);
+    logger.error('Error al obtener resumen de presupuestos:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -212,7 +213,7 @@ export const getBudgetExecution = async (req, res) => {
       transactionCount: transactions.length,
     });
   } catch (error) {
-    console.error('Error al obtener ejecución presupuestaria:', error);
+    logger.error('Error al obtener ejecución presupuestaria:', { error });
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };

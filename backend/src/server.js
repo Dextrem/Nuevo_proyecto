@@ -1,3 +1,5 @@
+process.env.TZ = 'America/Santo_Domingo';
+
 import express from 'express';
 import compression from 'compression';
 import cors from 'cors';
@@ -14,7 +16,7 @@ import prisma from './config/database.js';
 import { logger, requestLogger } from './utils/logger.js';
 
 import { generalLimiter } from './middleware/rateLimiter.js';
-import { startScheduler } from './services/scheduler.js';
+import { startScheduler, stopScheduler } from './services/scheduler.js';
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
 import categoryRoutes from './routes/categories.js';
@@ -306,6 +308,7 @@ const startServer = async () => {
 };
 
 const cleanup = async () => {
+  stopScheduler();
   const pidFile = path.join(process.env.TEMP || os.tmpdir(), 'dextremix_backend.pid');
   const portFile = path.join(process.env.TEMP || os.tmpdir(), 'dextremix_port.txt');
   try { fs.unlinkSync(pidFile); } catch {}
@@ -329,6 +332,13 @@ process.on('uncaughtException', async (err) => {
   logger.error('Error no capturado:', err.message);
   await cleanup();
   process.exit(1);
+});
+
+process.on('unhandledRejection', async (reason) => {
+  logger.error('Promesa rechazada sin capturar:', {
+    error: reason?.message || reason,
+    stack: reason?.stack,
+  });
 });
 
 startServer();
