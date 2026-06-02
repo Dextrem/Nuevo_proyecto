@@ -786,9 +786,9 @@ const Quotations = () => {
       const line = (yPos) => { pdf.setDrawColor(220, 220, 220); pdf.line(ml, yPos, pw - mr, yPos); };
 
       // ── HEADER ──
-      bold(22); color(clr.primary);
+      bold(18); color(clr.primary);
       pdf.text(settings.companyName || 'Nombre de la Empresa', ml, y);
-      y += 7;
+      y += 6;
       normal(9); color(clr.gray);
       if (settings.companyRnc) { pdf.text(`RNC: ${settings.companyRnc}`, ml, y); y += 4.5; }
       if (settings.companyAddress) { pdf.text(settings.companyAddress, ml, y); y += 4.5; }
@@ -800,13 +800,13 @@ const Quotations = () => {
 
       // ── TITLE ──
       pdf.setFillColor(clr.primary[0], clr.primary[1], clr.primary[2]);
-      pdf.rect(pw - mr - 60, 20, 60, 22, 'F');
+      pdf.rect(pw - mr - 60, 22, 60, 20, 'F');
       bold(16); pdf.setTextColor(255, 255, 255);
-      pdf.text('COTIZACIÓN', pw - mr - 30, 32, { align: 'center' });
+      pdf.text('COTIZACIÓN', pw - mr - 30, 33, { align: 'center' });
       normal(8); pdf.setTextColor(220, 220, 220);
-      pdf.text(`No. ${q.quotationNumber || 'COT-000'}`, pw - mr - 30, 39, { align: 'center' });
+      pdf.text(`No. ${q.quotationNumber || 'COT-000'}`, pw - mr - 30, 40, { align: 'center' });
 
-      y = Math.max(y + 5, 52);
+      y = Math.max(y + 5, 50);
       line(y); y += 6;
 
       // ── INFO BOX ──

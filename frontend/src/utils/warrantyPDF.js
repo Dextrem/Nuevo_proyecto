@@ -55,10 +55,10 @@ export const generateWarrantyPDF = (warranty, settings) => {
   doc.text(`CERTIFICADO: ${certId}`, margin + 3, 51);
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(8);
-  doc.text(`Emisi\u00f3n: ${formatDate(warranty.issueDate)}`, margin + 3, 51);
+  doc.text(`Emisi\u00f3n: ${formatDate(warranty.issueDate)}`, pageW - margin - 50, 51, { align: 'right' });
   doc.setFont('Helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.text(formatDate(warranty.expiryDate), pageW - margin - 3, 51, { align: 'right' });
+  doc.setFontSize(8);
+  doc.text(`Vence: ${formatDate(warranty.expiryDate)}`, pageW - margin - 3, 51, { align: 'right' });
 
   y = 62;
 
@@ -107,6 +107,8 @@ export const generateWarrantyPDF = (warranty, settings) => {
   y += 22;
 
   // Coverage section
+  const pageH = doc.internal.pageSize.getHeight();
+  if (y > pageH - 70) { doc.addPage(); y = margin; }
   doc.setFont('Helvetica', 'bold');
   doc.setFontSize(10);
   doc.setTextColor(50, 50, 50);
@@ -117,6 +119,7 @@ export const generateWarrantyPDF = (warranty, settings) => {
   doc.setTextColor(80, 80, 80);
   if (warranty.coverage) {
     const coverageLines = doc.splitTextToSize(warranty.coverage, contentW);
+    if (y + coverageLines.length * 5 > pageH - 40) { doc.addPage(); y = margin; }
     doc.text(coverageLines, margin, y);
     y += coverageLines.length * 5 + 4;
   } else {
@@ -125,6 +128,7 @@ export const generateWarrantyPDF = (warranty, settings) => {
   }
 
   // Exclusions section
+  if (y > pageH - 70) { doc.addPage(); y = margin; }
   doc.setFont('Helvetica', 'bold');
   doc.setFontSize(10);
   doc.setTextColor(50, 50, 50);
@@ -135,6 +139,7 @@ export const generateWarrantyPDF = (warranty, settings) => {
   doc.setTextColor(80, 80, 80);
   if (warranty.exclusions) {
     const exclusionLines = doc.splitTextToSize(warranty.exclusions, contentW);
+    if (y + exclusionLines.length * 5 > pageH - 40) { doc.addPage(); y = margin; }
     doc.text(exclusionLines, margin, y);
     y += exclusionLines.length * 5 + 4;
   } else {
@@ -143,7 +148,8 @@ export const generateWarrantyPDF = (warranty, settings) => {
   }
 
   // Created by
-  y = Math.max(y + 6, doc.internal.pageSize.getHeight() - 35);
+  if (y + 10 > pageH - 20) { doc.addPage(); y = margin; }
+  y = Math.max(y + 6, pageH - 35);
   doc.setFontSize(8);
   doc.setFont('Helvetica', 'normal');
   doc.setTextColor(130, 130, 130);
