@@ -880,7 +880,7 @@ const Inventory = () => {
       )}
 
       {showBarcodeWarning && (
-        <div className="modal-overlay" onClick={handleBarcodeCancel}>
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) handleBarcodeCancel(); }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
             <div style={{ textAlign: 'center', padding: '20px 0' }}>
               <div style={{ fontSize: '3rem', marginBottom: '16px', color: '#F59E0B' }}>
@@ -919,7 +919,7 @@ const Inventory = () => {
       />
 
       {showDeleteConfirm && (
-        <div className="modal-overlay" onClick={cancelDelete}>
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) cancelDelete(); }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
             <div style={{ textAlign: 'center', padding: '20px 0' }}>
               <div style={{ fontSize: '3rem', marginBottom: '16px', color: '#EF4444' }}>
@@ -943,7 +943,7 @@ const Inventory = () => {
       )}
 
       {showCategoryModal && (
-        <div className="modal-overlay" onClick={handleCloseCategoryModal}>
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) handleCloseCategoryModal(); }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <h2 style={{ margin: 0 }}>Gestionar Categorías</h2>
@@ -1091,7 +1091,7 @@ const Inventory = () => {
       )}
 
       {showImportModal && (
-        <div className="modal-overlay" onClick={() => { setShowImportModal(false); setImportPreview(null); setImportResults(null); }}>
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) { setShowImportModal(false); setImportPreview(null); setImportResults(null); } }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '700px' }}>
             <h2>Importar Inventario</h2>
             

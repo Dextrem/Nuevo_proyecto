@@ -231,7 +231,7 @@ const Suppliers = () => {
       <Pagination pagination={pagination} onPageChange={loadSuppliers} loading={loading} />
 
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>{editingSupplier ? 'Editar Proveedor' : 'Nuevo Proveedor'}</h2>
             <form onSubmit={handleSubmit}>

@@ -321,10 +321,11 @@ const POS = () => {
   const handlePosClick = useCallback((e) => {
     const tag = e.target.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    if (showNewClientModal || showWarrantyModal || showDueDateModal || showReceiptModal || showCashConfirm) return;
     if (barcodeInputRef.current && !isTouchDevice) {
       barcodeInputRef.current.focus();
     }
-  }, [isTouchDevice]);
+  }, [isTouchDevice, showNewClientModal, showWarrantyModal, showDueDateModal, showReceiptModal, showCashConfirm]);
 
   useEffect(() => {
     if (isTouchDevice) return;
@@ -332,8 +333,14 @@ const POS = () => {
     if (!el) return;
     const onBlur = () => {
       setTimeout(() => {
-        if (document.activeElement && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA' && document.activeElement.tagName !== 'SELECT') {
-          el.focus();
+        const active = document.activeElement;
+        if (!active) return;
+        const tag = active.tagName;
+        if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+          const isInModal = active.closest('.modal-overlay');
+          if (!isInModal) {
+            el.focus();
+          }
         }
       }, 100);
     };

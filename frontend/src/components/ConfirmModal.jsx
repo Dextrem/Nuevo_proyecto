@@ -13,7 +13,7 @@ const ConfirmModal = ({
   if (!show) return null;
 
   return (
-    <div className="modal-overlay" onClick={onCancel}>
+    <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
         <div style={{ textAlign: 'center', padding: '20px 0' }}>
           <div style={{ fontSize: '3rem', marginBottom: '16px', color: iconColor }}>

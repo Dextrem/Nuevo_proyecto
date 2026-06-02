@@ -325,7 +325,7 @@ const Clients = () => {
       <Pagination pagination={pagination} onPageChange={loadClients} loading={loading} />
 
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h2 style={{ margin: 0 }}>{editingClient ? 'Editar Cliente' : 'Nuevo Cliente'}</h2>
@@ -429,7 +429,7 @@ const Clients = () => {
       )}
 
       {showPaymentModal && selectedClient && (
-        <div className="modal-overlay" onClick={() => setShowPaymentModal(false)}>
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowPaymentModal(false); }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>Registrar Pago</h2>
             <div style={{ 

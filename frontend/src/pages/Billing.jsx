@@ -748,7 +748,7 @@ const Billing = () => {
       )}
 
       {showAuthModal && (
-        <div className="modal-overlay" onClick={() => setShowAuthModal(false)}>
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowAuthModal(false); }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
             <h2 style={{ color: 'var(--accent)', marginBottom: '16px' }}><i className="fas fa-lock"></i> Autorización Requerida</h2>
             <p style={{ marginBottom: '20px', color: 'var(--text-muted)' }}>Para reimprimir esta factura, se necesitan credenciales de un administrador.</p>
@@ -790,7 +790,7 @@ const Billing = () => {
       )}
 
       {showCancelModal && (
-        <div className="modal-overlay" onClick={() => setShowCancelModal(false)}>
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowCancelModal(false); }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
             <h2 style={{ color: 'var(--danger)', marginBottom: '16px' }}><i className="fas fa-exclamation-triangle"></i> Anular Factura</h2>
             <p style={{ marginBottom: '20px', color: 'var(--text-muted)' }}>

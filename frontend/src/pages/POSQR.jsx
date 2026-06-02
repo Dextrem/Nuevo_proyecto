@@ -38,8 +38,14 @@ const BarcodeScanner = memo(({ inputRef, value, onChange, onScan }) => {
     if (!el) return;
     const onBlur = () => {
       setTimeout(() => {
-        if (document.activeElement && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA' && document.activeElement.tagName !== 'SELECT') {
-          el.focus();
+        const active = document.activeElement;
+        if (!active) return;
+        const tag = active.tagName;
+        if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+          const isInModal = active.closest('.modal-overlay');
+          if (!isInModal) {
+            el.focus();
+          }
         }
       }, 100);
     };

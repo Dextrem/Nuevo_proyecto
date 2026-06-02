@@ -392,7 +392,7 @@ const Warranties = () => {
 
       {/* Create Modal */}
       {showCreateModal && (
-        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowCreateModal(false); }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px' }}>
             <div style={{ textAlign: 'center', marginBottom: '20px' }}>
               <div style={{ width: '50px', height: '50px', background: 'rgba(16,185,129,0.15)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
@@ -498,7 +498,7 @@ const Warranties = () => {
 
       {/* Auth Modal (Billing style) */}
       {showAuthModal && (
-        <div className="modal-overlay" onClick={() => setShowAuthModal(false)}>
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowAuthModal(false); }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
             <h2 style={{ color: '#EF4444', marginBottom: '16px' }}>
               <i className="fas fa-exclamation-triangle"></i> Eliminar Garantía

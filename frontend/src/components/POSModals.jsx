@@ -755,7 +755,7 @@ const ReceiptModal = memo(({ sale, settings, printType, onPrintTypeChange, onPri
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
           <div style={{
@@ -831,7 +831,7 @@ const NewClientModal = memo(({ isOpen, onClose, onSubmit, newClientData, setNewC
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
         <h2>➕ Nuevo Cliente para Crédito</h2>
         <form onSubmit={handleSubmit}>
@@ -1043,7 +1043,7 @@ const DueDateModal = memo(({ isOpen, onClose, dueDate, setDueDate, total, format
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
           <div style={{
@@ -1143,7 +1143,7 @@ const WarrantyModal = memo(({ isOpen, onClose, onConfirm, settings, initialData 
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '480px' }}>
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
           <div style={{

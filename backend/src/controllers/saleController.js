@@ -718,7 +718,20 @@ export const cancelSale = async (req, res) => {
         }
       }
 
-      // 4. Reversar efectivo en caja registradora
+      // 4. Registrar en contabilidad general (siempre: asiento negativo que cuadra)
+      if (sale.paidAmount > 0) {
+        await tx.transaction.create({
+          data: {
+            type: 'EXPENSE',
+            amount: sale.paidAmount,
+            description: `Anulación de Venta #${sale.invoiceNumber}`,
+            reference: sale.invoiceNumber,
+            userId: req.user.id
+          }
+        });
+      }
+
+      // 5. Reversar efectivo en caja registradora
       if (sale.paidAmount > 0) {
         let targetRegister = null;
 
@@ -748,27 +761,16 @@ export const cancelSale = async (req, res) => {
             where: { id: targetRegister.id },
             data: { currentAmount: { decrement: sale.paidAmount } }
           });
-        } else {
-          // Si no hay ninguna caja abierta, registramos el egreso en contabilidad general solamente
-          await tx.transaction.create({
-            data: {
-              type: 'EXPENSE',
-              amount: sale.paidAmount,
-              description: `Anulación Venta #${sale.invoiceNumber} (Sin caja abierta)`,
-              reference: sale.invoiceNumber,
-              userId: req.user.id
-            }
-          });
         }
       }
 
-      // 5. Actualizar estado de la venta
+      // 6. Actualizar estado de la venta
       await tx.sale.update({
         where: { id },
         data: { status: 'CANCELLED' },
       });
 
-      // 6. Registrar en historial global
+      // 7. Registrar en historial global
       await tx.transactionHistory.create({
         data: {
           type: 'SALE_CANCEL',
