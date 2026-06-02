@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { warrantyService, clientService } from '../services/api';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
+import { formatDate } from '../utils/helpers';
 import Pagination from '../components/Pagination';
 import ConfirmModal from '../components/ConfirmModal';
 import { generateWarrantyPDF } from '../utils/warrantyPDF';
@@ -28,7 +29,7 @@ const statusLabel = {
 };
 
 const Warranties = () => {
-  const { formatCurrency, formatDate, showNotification, settings } = useApp();
+  const { formatCurrency, showNotification, settings } = useApp();
   const { user } = useAuth();
 
   // Data state
