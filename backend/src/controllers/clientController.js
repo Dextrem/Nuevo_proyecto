@@ -21,25 +21,28 @@ export const getAllClients = async (req, res) => {
       where.active = active === 'true';
     }
 
+    const takeValue = limit === -1 ? undefined : limit;
     const [clients, total] = await Promise.all([
       prisma.client.findMany({
         where,
         orderBy: { name: 'asc' },
         skip,
-        take: limit,
+        take: takeValue,
       }),
       prisma.client.count({ where }),
     ]);
 
+    const totalPages = limit === -1 ? 1 : Math.ceil(total / limit);
+
     res.json({
       data: clients,
       pagination: {
-        page,
+        page: limit === -1 ? 1 : page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit),
-        hasNext: page * limit < total,
-        hasPrev: page > 1,
+        totalPages,
+        hasNext: limit === -1 ? false : page * limit < total,
+        hasPrev: limit === -1 ? false : page > 1,
       },
     });
   } catch (error) {
