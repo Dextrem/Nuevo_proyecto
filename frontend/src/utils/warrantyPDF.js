@@ -97,12 +97,12 @@ export const generateWarrantyPDF = (warranty, settings) => {
   doc.setFontSize(8);
   doc.setTextColor(50, 50, 50);
   doc.text(`Emisi\u00f3n: ${formatDate(warranty.issueDate)}`, margin + 3, y + 12);
-  doc.text(`Vence: ${formatDate(warranty.expiryDate)}`, margin + 60, y + 12);
-  doc.text(`D\u00edas: ${warranty.days}`, margin + 120, y + 12);
+  doc.text(`Vence: ${formatDate(warranty.expiryDate)}`, margin + 55, y + 12);
+  doc.text(`D\u00edas: ${warranty.days}`, margin + 108, y + 12);
 
-  // Sale reference if linked
+  // Sale reference if linked (right-aligned to avoid overflow)
   if (warranty.sale) {
-    doc.text(`Factura: #${warranty.sale.invoiceNumber}`, margin + 170, y + 12);
+    doc.text(`Factura: #${warranty.sale.invoiceNumber}`, margin + contentW - 3, y + 12, { align: 'right' });
   }
   y += 22;
 

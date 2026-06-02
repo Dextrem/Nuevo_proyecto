@@ -448,12 +448,12 @@ const ThermalReceipt80 = memo(({ sale, settings, formatCurrency }) => (
   <div className="thermal-80">
     <div className="center" style={{ marginBottom: '8px' }}>
       {settings.logo && <img src={settings.logo} alt="Logo" style={{ maxHeight: '40px', maxWidth: '100%', marginBottom: '4px' }} />}
-      <strong style={{ fontSize: '14px', display: 'block' }}>{settings.companyName}</strong>
-      {settings.companyRnc && <div>RNC: {settings.companyRnc}</div>}
-      {settings.companyAddress && <div>{settings.companyAddress}</div>}
-      <div style={{ marginTop: '4px' }}>----------------------------</div>
+      <strong style={{ fontSize: '14px', display: 'block', color: '#000' }}>{settings.companyName}</strong>
+      {settings.companyRnc && <div style={{ color: '#000' }}>RNC: {settings.companyRnc}</div>}
+      {settings.companyAddress && <div style={{ color: '#000' }}>{settings.companyAddress}</div>}
+      <div style={{ marginTop: '4px', color: '#000' }}>----------------------------</div>
     </div>
-    <div style={{ marginBottom: '8px' }}>
+    <div style={{ marginBottom: '8px', color: '#000', fontWeight: 600 }}>
       <div>Fecha: {new Date(sale.createdAt).toLocaleString()}</div>
       <div>Cajero: {sale.user?.name || 'N/A'}</div>
       {sale.client ? (
@@ -466,32 +466,32 @@ const ThermalReceipt80 = memo(({ sale, settings, formatCurrency }) => (
       {sale.ncf && <div>NCF: {sale.ncf}</div>}
     </div>
     <div style={{ borderTop: '1px dashed #000', borderBottom: '1px dashed #000', padding: '4px 0', marginBottom: '8px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#000', fontWeight: 600 }}>
         <span>Producto</span><span>Cant</span><span>Total</span>
       </div>
     </div>
       {sale.items.map((item, index) => (
-        <div key={index} style={{ marginBottom: '2px' }}>
+        <div key={index} style={{ marginBottom: '2px', color: '#000', fontWeight: 600 }}>
           <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.product?.name || 'Producto'}</div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <span>x{item.quantity}</span><span>{formatCurrency(item.total)}</span>
           </div>
         </div>
       ))}
-    <div style={{ marginTop: '8px', borderTop: '1px dashed #000', paddingTop: '4px' }}>
+    <div style={{ marginTop: '8px', borderTop: '1px dashed #000', paddingTop: '4px', color: '#000', fontWeight: 600 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Subtotal:</span><span>{formatCurrency(sale.subtotal)}</span></div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>ITBIS:</span><span>{formatCurrency(sale.tax)}</span></div>
-      {sale.discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', color: 'red' }}><span>Desc:</span><span>-{formatCurrency(sale.discount)}</span></div>}
+      {sale.discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', color: '#000' }}><span>Desc:</span><span>-{formatCurrency(sale.discount)}</span></div>}
       {sale.shippingCost > 0 && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Envío:</span><span>{formatCurrency(sale.shippingCost)}</span></div>}
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14px', borderTop: '1px solid #000', marginTop: '4px', paddingTop: '4px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14px', borderTop: '1px solid #000', marginTop: '4px', paddingTop: '4px', color: '#000' }}>
         <span>TOTAL:</span><span>{formatCurrency(sale.total)}</span>
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Pagado:</span><span>{formatCurrency(sale.paidAmount)}</span></div>
-      {sale.change > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', color: 'green' }}><span>Cambio:</span><span>{formatCurrency(sale.change)}</span></div>}
+      {sale.change > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', color: '#000' }}><span>Cambio:</span><span>{formatCurrency(sale.change)}</span></div>}
     </div>
     {sale.hasWarranty && sale.warrantyData && (
-      <div style={{ marginTop: '6px', borderTop: '1px dashed #000', paddingTop: '4px' }}>
-        <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>CERTIFICADO DE GARANTÍA</div>
+      <div style={{ marginTop: '6px', borderTop: '1px dashed #000', paddingTop: '4px', color: '#000', fontWeight: 600 }}>
+        <div style={{ fontWeight: 'bold', marginBottom: '2px', color: '#000' }}>CERTIFICADO DE GARANTÍA</div>
         <div>Vigencia: {sale.warrantyData.days} días</div>
         <div>Vence: {new Date(sale.warrantyData.expiryDate).toLocaleDateString('es-DO')}</div>
         {sale.warrantyData.coverage && <div>Cobertura: {sale.warrantyData.coverage}</div>}
@@ -499,9 +499,9 @@ const ThermalReceipt80 = memo(({ sale, settings, formatCurrency }) => (
       </div>
     )}
     {settings.receiptFooterMessage && (
-      <div className="center" style={{ marginTop: '4px', fontSize: '11px' }}>{settings.receiptFooterMessage}</div>
+      <div className="center" style={{ marginTop: '4px', fontSize: '11px', color: '#000', fontWeight: 600 }}>{settings.receiptFooterMessage}</div>
     )}
-    <div className="center" style={{ marginTop: '8px' }}>----------------------------<br />¡Gracias por su compra!</div>
+    <div className="center" style={{ marginTop: '8px', color: '#000', fontWeight: 600 }}>----------------------------<br />¡Gracias por su compra!</div>
   </div>
 ));
 
@@ -509,11 +509,11 @@ const ThermalReceipt58 = memo(({ sale, settings, formatCurrency }) => (
   <div className="thermal-58">
     <div className="center" style={{ marginBottom: '6px' }}>
       {settings.logo && <img src={settings.logo} alt="Logo" style={{ maxHeight: '30px', maxWidth: '80px', marginBottom: '2px' }} />}
-      <strong style={{ fontSize: '12px', display: 'block' }}>{settings.companyName}</strong>
-      {settings.companyRnc && <div>RNC: {settings.companyRnc}</div>}
-      <div style={{ marginTop: '2px' }}>========================</div>
+      <strong style={{ fontSize: '12px', display: 'block', color: '#000' }}>{settings.companyName}</strong>
+      {settings.companyRnc && <div style={{ color: '#000' }}>RNC: {settings.companyRnc}</div>}
+      <div style={{ marginTop: '2px', color: '#000' }}>========================</div>
     </div>
-    <div style={{ marginBottom: '6px' }}>
+    <div style={{ marginBottom: '6px', color: '#000', fontWeight: 600 }}>
       <div>F: {new Date(sale.createdAt).toLocaleDateString()}</div>
       <div>Cajero: {sale.user?.name || 'N/A'}</div>
       {sale.client ? (
@@ -526,25 +526,25 @@ const ThermalReceipt58 = memo(({ sale, settings, formatCurrency }) => (
       {sale.ncf && <div>NCF: {sale.ncf}</div>}
     </div>
     {sale.items.map((item, index) => (
-      <div key={index} style={{ marginBottom: '2px', fontSize: '10px' }}>
+      <div key={index} style={{ marginBottom: '2px', fontSize: '10px', color: '#000', fontWeight: 600 }}>
         <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.product?.name}</div>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <span>x{item.quantity}</span><span>{formatCurrency(item.total)}</span>
         </div>
       </div>
     ))}
-    <div style={{ marginTop: '6px', borderTop: '1px dashed #000', paddingTop: '3px' }}>
+    <div style={{ marginTop: '6px', borderTop: '1px dashed #000', paddingTop: '3px', color: '#000', fontWeight: 600 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Sub:</span><span>{formatCurrency(sale.subtotal)}</span></div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>ITBIS:</span><span>{formatCurrency(sale.tax)}</span></div>
       {sale.discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Des:</span><span>-{formatCurrency(sale.discount)}</span></div>}
       {sale.shippingCost > 0 && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Envío:</span><span>{formatCurrency(sale.shippingCost)}</span></div>}
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', borderTop: '1px solid #000', marginTop: '3px', paddingTop: '3px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', borderTop: '1px solid #000', marginTop: '3px', paddingTop: '3px', color: '#000' }}>
         <span>TOTAL:</span><span>{formatCurrency(sale.total)}</span>
       </div>
     </div>
     {sale.hasWarranty && sale.warrantyData && (
-      <div style={{ marginTop: '4px', borderTop: '1px dashed #000', paddingTop: '3px', fontSize: '10px' }}>
-        <div style={{ fontWeight: 'bold' }}>CERTIFICADO DE GARANTÍA</div>
+      <div style={{ marginTop: '4px', borderTop: '1px dashed #000', paddingTop: '3px', fontSize: '10px', color: '#000', fontWeight: 600 }}>
+        <div style={{ fontWeight: 'bold', color: '#000' }}>CERTIFICADO DE GARANTÍA</div>
         <div>Vigencia: {sale.warrantyData.days} días</div>
         <div>Vence: {new Date(sale.warrantyData.expiryDate).toLocaleDateString('es-DO')}</div>
         {sale.warrantyData.coverage && <div>Cobertura: {sale.warrantyData.coverage}</div>}
@@ -552,9 +552,9 @@ const ThermalReceipt58 = memo(({ sale, settings, formatCurrency }) => (
       </div>
     )}
     {settings.receiptFooterMessage && (
-      <div className="center" style={{ marginTop: '3px', fontSize: '10px' }}>{settings.receiptFooterMessage}</div>
+      <div className="center" style={{ marginTop: '3px', fontSize: '10px', color: '#000', fontWeight: 600 }}>{settings.receiptFooterMessage}</div>
     )}
-    <div className="center" style={{ marginTop: '6px' }}>========================<br />¡GRACIAS!</div>
+    <div className="center" style={{ marginTop: '6px', color: '#000', fontWeight: 600 }}>========================<br />¡GRACIAS!</div>
   </div>
 ));
 
