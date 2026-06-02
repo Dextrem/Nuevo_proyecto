@@ -380,6 +380,18 @@ model Settings {
   warrantyCoverageText String?
   warrantyExclusionText String?
 
+  // Financial Closing Settings
+  provisionOverduePercent        Float   @default(0.05)
+  provisionOver90Percent         Float   @default(0.20)
+  expenseKeywordsOperational     String  @default("material,insumo,transporte,flete,envío,envio")
+  expenseKeywordsAdministrative  String  @default("renta,luz,agua,teléfono,telefono,internet,sueldo,salario,nomina,limpieza,seguro")
+  expenseKeywordsFinancial       String  @default("banco,interés,interes,préstamo,prestamo,comisión,comision")
+  expenseKeywordsDepreciation    String  @default("depreciación,depreciacion,amortización,amortizacion")
+  statusThresholdAlertOver90     Float   @default(0.15)
+  statusThresholdPrecautionOver90 Float  @default(0.05)
+  statusThresholdPrecautionNetIncome Float @default(0.10)
+  statusThresholdCurrentRatio    Float   @default(0.5)
+
   updatedAt DateTime @updatedAt
 
   @@map("settings")

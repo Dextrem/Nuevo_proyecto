@@ -244,5 +244,16 @@ export const schemas = {
     // Fiscal
     fiscalEnabled: z.boolean().optional(),
     defaultNcfType: z.string().max(5).optional(),
+    // Financial Closing Settings
+    provisionOverduePercent: z.number().min(0).max(1).optional(),
+    provisionOver90Percent: z.number().min(0).max(1).optional(),
+    expenseKeywordsOperational: z.string().optional(),
+    expenseKeywordsAdministrative: z.string().optional(),
+    expenseKeywordsFinancial: z.string().optional(),
+    expenseKeywordsDepreciation: z.string().optional(),
+    statusThresholdAlertOver90: z.number().min(0).max(1).optional(),
+    statusThresholdPrecautionOver90: z.number().min(0).max(1).optional(),
+    statusThresholdPrecautionNetIncome: z.number().min(0).max(1).optional(),
+    statusThresholdCurrentRatio: z.number().min(0).max(10).optional(),
   }),
 };

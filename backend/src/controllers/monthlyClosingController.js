@@ -41,6 +41,9 @@ export const createMonthlyClosing = async (req, res) => {
     const { startDate, endDate } = getMonthDateRange(parseInt(year), parseInt(month));
     const previousMonthEnd = new Date(year, month - 1, 0, 23, 59, 59);
 
+    // 0. Load configurable settings
+    const finSettings = await prisma.settings.findFirst();
+
     // 1. Basic Financial Data Aggregations
     const [incomeResult, expenseResult, salesData, purchasesData, accountsReceivableData, accountsPayableData, cashRegisters, transactions, productsSold] = await Promise.all([
       prisma.transaction.aggregate({
@@ -122,8 +125,10 @@ export const createMonthlyClosing = async (req, res) => {
       }
     }
 
-    // Calculate provision for doubtful accounts (5% of overdue + 20% of 90+ days)
-    const cxcProvision = (cxcOverdue * 0.05) + (cxcOver90 * 0.20);
+    // Calculate provision for doubtful accounts (configurable via Settings)
+    const provOverduePct = finSettings?.provisionOverduePercent ?? 0.05;
+    const provOver90Pct = finSettings?.provisionOver90Percent ?? 0.20;
+    const cxcProvision = (cxcOverdue * provOverduePct) + (cxcOver90 * provOver90Pct);
 
     const accountsReceivableDetails = {
       current: cxcCurrent,
@@ -237,10 +242,11 @@ export const createMonthlyClosing = async (req, res) => {
 
     let expenseOperational = 0, expenseAdministrative = 0, expenseFinancial = 0, expenseDepreciation = 0;
 
-    const operationalKeywords = ['material', 'insumo', 'transporte', 'flete', 'envío', 'envio'];
-    const administrativeKeywords = ['renta', 'luz', 'agua', 'teléfono', 'telefono', 'internet', 'sueldo', 'salario', 'nomina', 'limpieza', 'seguro'];
-    const financialKeywords = ['banco', 'interés', 'interes', 'préstamo', 'prestamo', 'comisión', 'comision'];
-    const depreciationKeywords = ['depreciación', 'depreciacion', 'amortización', 'amortizacion'];
+    const splitKeywords = (val) => (val || '').split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
+    const operationalKeywords = splitKeywords(finSettings?.expenseKeywordsOperational);
+    const administrativeKeywords = splitKeywords(finSettings?.expenseKeywordsAdministrative);
+    const financialKeywords = splitKeywords(finSettings?.expenseKeywordsFinancial);
+    const depreciationKeywords = splitKeywords(finSettings?.expenseKeywordsDepreciation);
 
     for (const t of expenseTransactions) {
       const desc = (t.description || '').toLowerCase();
@@ -370,9 +376,14 @@ export const createMonthlyClosing = async (req, res) => {
     keyFindings.push(`Ingresos totales: ${totalIncome.toFixed(2)}, Gastos: ${totalExpense.toFixed(2)}`);
     keyFindings.push(`Cartera activa: ${totalAccountsReceivable.toFixed(2)}, Proveedores: ${totalAccountsPayable.toFixed(2)}`);
 
-    const generalStatus = cxcOver90 > (totalAccountsReceivable * 0.15) || netBalance < 0 || financialIndicators.liquidity.currentRatio < 0.5 
+    const thresholdAlertOver90 = finSettings?.statusThresholdAlertOver90 ?? 0.15;
+    const thresholdPrecautionOver90 = finSettings?.statusThresholdPrecautionOver90 ?? 0.05;
+    const thresholdPrecautionNetIncome = finSettings?.statusThresholdPrecautionNetIncome ?? 0.10;
+    const thresholdCurrentRatio = finSettings?.statusThresholdCurrentRatio ?? 0.5;
+
+    const generalStatus = cxcOver90 > (totalAccountsReceivable * thresholdAlertOver90) || netBalance < 0 || financialIndicators.liquidity.currentRatio < thresholdCurrentRatio
       ? 'ATENCIÓN' 
-      : cxcOver90 > (totalAccountsReceivable * 0.05) || netBalance < totalIncome * 0.1 
+      : cxcOver90 > (totalAccountsReceivable * thresholdPrecautionOver90) || netBalance < totalIncome * thresholdPrecautionNetIncome
         ? 'PRECAUCIÓN' 
         : 'SALUDABLE';
 

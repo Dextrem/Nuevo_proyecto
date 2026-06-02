@@ -111,23 +111,14 @@ export const restoreBackup = async (backupData) => {
       'products', 'categories', 'clients', 'suppliers', 'users', 'settings',
     ];
 
-    for (const t of tablesToTruncate) {
-      try {
-        await prisma.$executeRawUnsafe(`TRUNCATE TABLE "${t}" CASCADE`);
-      } catch (e) {
-        // ignore if table doesn't exist or truncate not allowed
-      }
-    }
-
     await prisma.$transaction(async (tx) => {
-      await tx.saleItem.deleteMany({});
-      await tx.sale.deleteMany({});
-      await tx.transaction.deleteMany({});
-      await tx.category.deleteMany({});
-      await tx.client.deleteMany({});
-      await tx.supplier.deleteMany({});
-      await tx.user.deleteMany({});
-      await tx.settings.deleteMany({});
+      for (const t of tablesToTruncate) {
+        try {
+          await tx.$executeRawUnsafe(`TRUNCATE TABLE "${t}" CASCADE`);
+        } catch (e) {
+          // ignore if table doesn't exist or truncate not allowed
+        }
+      }
 
       if (data.categories && data.categories.length > 0) {
         for (const category of data.categories) {

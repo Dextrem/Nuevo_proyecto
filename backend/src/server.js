@@ -56,9 +56,20 @@ const __dirname = path.dirname(__filename);
 app.use(requestLogger);
 app.use(compression());
 app.use(helmet({
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "blob:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      manifestSrc: ["'self'"],
+      formAction: ["'self'"],
+    },
+  },
   crossOriginEmbedderPolicy: false,
-  hsts: false, // Desactivar HSTS para evitar que fuerce HTTPS en IP local
+  hsts: false,
 }));
 // Helper to check if a hostname/IP is a local/private network address
 const isLocalIP = (hostname) => {
@@ -109,9 +120,7 @@ const corsOptions = {
 
     // Si está configurado expresamente en .env
     const corsOrigin = process.env.CORS_ORIGIN;
-    if (corsOrigin === '*' || corsOrigin === 'true') {
-      return callback(null, true);
-    } else if (corsOrigin) {
+    if (corsOrigin) {
       const allowed = corsOrigin.split(',').map(o => o.trim().toLowerCase());
       if (allowed.includes(origin.toLowerCase())) {
         return callback(null, true);

@@ -8,21 +8,23 @@ export const generateInvoiceNumber = async () => {
 
   const prefix = `INV-${year}${month}${day}-`;
 
-  const lastSale = await prisma.sale.findFirst({
-    where: {
-      invoiceNumber: {
-        startsWith: prefix,
+  return await prisma.$transaction(async (tx) => {
+    const lastSale = await tx.sale.findFirst({
+      where: {
+        invoiceNumber: {
+          startsWith: prefix,
+        },
       },
-    },
-    orderBy: { invoiceNumber: 'desc' },
-    select: { invoiceNumber: true },
+      orderBy: { invoiceNumber: 'desc' },
+      select: { invoiceNumber: true },
+    });
+
+    let sequence = 1;
+    if (lastSale) {
+      const lastSequence = parseInt(lastSale.invoiceNumber.split('-').pop());
+      sequence = lastSequence + 1;
+    }
+
+    return `${prefix}${String(sequence).padStart(4, '0')}`;
   });
-
-  let sequence = 1;
-  if (lastSale) {
-    const lastSequence = parseInt(lastSale.invoiceNumber.split('-').pop());
-    sequence = lastSequence + 1;
-  }
-
-  return `${prefix}${String(sequence).padStart(4, '0')}`;
 };

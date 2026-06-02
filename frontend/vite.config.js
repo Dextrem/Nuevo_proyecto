@@ -69,15 +69,19 @@ export default defineConfig({
             }
           },
           {
+            urlPattern: /\/api\/(?:sales|transactions|reports|clients|fiscal|monthly|backup).*/,
+            handler: 'NetworkOnly',
+          },
+          {
             urlPattern: /\/api\/(?!auth\/login).*/,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
               expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24
+                maxEntries: 30,
+                maxAgeSeconds: 60 * 30
               },
-              networkTimeoutSeconds: 10,
+              networkTimeoutSeconds: 5,
               cacheableResponse: {
                 statuses: [0, 200]
               }
