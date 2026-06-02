@@ -138,6 +138,14 @@ export const schemas = {
     discount: z.number().min(0).optional(),
     shippingCost: z.number().min(0).optional(),
     dueDate: z.string().optional().nullable(),
+    hasWarranty: z.boolean().optional(),
+    warrantyData: z.object({
+      days: z.number().int().positive().optional(),
+      coverage: z.string().optional().nullable(),
+      exclusions: z.string().optional().nullable(),
+      issueDate: z.string().optional().nullable(),
+      expiryDate: z.string().optional().nullable(),
+    }).optional().nullable(),
     items: z.array(z.object({
       productId: z.string(),
       quantity: z.number().int().positive(),

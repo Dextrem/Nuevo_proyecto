@@ -100,7 +100,7 @@ const Warranties = () => {
       });
       showNotification('Garantía creada exitosamente', 'success');
       setShowCreateModal(false);
-      loadWarranties();
+      setPage(1);
     } catch (error) {
       showNotification(error.response?.data?.error || 'Error al crear garantía', 'error');
     }
@@ -143,7 +143,6 @@ const Warranties = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     setPage(1);
-    loadWarranties();
   };
 
   return (
