@@ -1,0 +1,18 @@
+=== CAMBIOS MANUALES QUE SE PIERDEN AL ACTUALIZAR ===
+Ejecutar DESPUES de cada ACTUALIZAR.bat
+================================================
+
+1. INICIAR.bat - Líneas 62 y 73:
+   Buscar:   echo  %A% >>%N%
+   Cambiar:  echo  %A% %N%  (sacar el >>)
+   (el >> intenta redirigir a un archivo con nombre ANSI = error "sintaxis incorrecta")
+
+2. data\pg_data\postgresql.conf - Línea 130:
+   Buscar:   shared_buffers = 128MB
+   Cambiar:  shared_buffers = 32MB
+   (128MB fragmenta la memoria compartida en Windows = error 487, PostgreSQL no arranca)
+
+3. logs\ - Quitar atributo HIDDEN de los archivos:
+   En PowerShell:
+   Get-ChildItem "C:\financial_app\financial_app\logs" -Force | Where-Object { $_.Attributes -match "Hidden" } | ForEach-Object { $_.Attributes = $_.Attributes -band -bnot [System.IO.FileAttributes]::Hidden }
+   (el atributo hidden impide que INICIAR.bat sobrescriba postgres.log = "Access denied")
