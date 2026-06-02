@@ -4,7 +4,7 @@ import { parsePaginationParams } from '../utils/pagination.js';
 
 export const getAllWarranties = async (req, res) => {
   try {
-    const { startDate, endDate, clientId, createdById, search } = req.query;
+    const { startDate, endDate, clientId, createdById, search, status } = req.query;
     const { page, limit, skip } = parsePaginationParams(req.query);
 
     const where = {};
@@ -15,6 +15,16 @@ export const getAllWarranties = async (req, res) => {
     }
     if (clientId) where.clientId = clientId;
     if (createdById) where.createdById = createdById;
+    if (status === 'active') {
+      const future = new Date(); future.setDate(future.getDate() + 30);
+      where.expiryDate = { gt: future };
+    } else if (status === 'expiring') {
+      const now = new Date();
+      const future = new Date(); future.setDate(future.getDate() + 30);
+      where.expiryDate = { gt: now, lte: future };
+    } else if (status === 'expired') {
+      where.expiryDate = { lt: new Date() };
+    }
     if (search) {
       where.OR = [
         { clientName: { contains: search, mode: 'insensitive' } },
@@ -83,6 +93,19 @@ export const createWarranty = async (req, res) => {
       },
     });
 
+    await prisma.transactionHistory.create({
+      data: {
+        type: 'WARRANTY_CREATE',
+        description: `Garantía creada para ${clientName}`,
+        amount: 0,
+        categoryName: 'Garantías',
+        reference: warranty.id,
+        clientName,
+        userName: req.user.name || req.user.username,
+        details: { days, coverage, exclusions }
+      }
+    });
+
     res.status(201).json({ message: 'Garantía creada exitosamente', warranty });
   } catch (error) {
     console.error('Error al crear garantía:', error);
@@ -116,6 +139,19 @@ export const deleteWarranty = async (req, res) => {
     if (!warranty) {
       return res.status(404).json({ error: 'Garantía no encontrada' });
     }
+
+    await prisma.transactionHistory.create({
+      data: {
+        type: 'WARRANTY_DELETE',
+        description: `Garantía eliminada de ${warranty.clientName}`,
+        amount: 0,
+        categoryName: 'Garantías',
+        reference: warranty.id,
+        clientName: warranty.clientName,
+        userName: req.user.name || req.user.username,
+        details: { days: warranty.days, saleId: warranty.saleId, authorizedBy: authorizer.username }
+      }
+    });
 
     await prisma.warranty.delete({ where: { id } });
 

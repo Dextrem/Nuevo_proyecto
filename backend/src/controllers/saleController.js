@@ -558,6 +558,17 @@ export const createSale = async (req, res) => {
             createdById: req.user.id,
           },
         });
+
+        await saveToHistory(tx, {
+          type: 'WARRANTY_CREATE',
+          description: `Garantía creada para ${clientName || `Cliente #${newSale.invoiceNumber}`}`,
+          amount: 0,
+          categoryName: 'Garantías',
+          reference: `SALE-${newSale.invoiceNumber}`,
+          clientName: clientName || `Cliente #${newSale.invoiceNumber}`,
+          userName: req.user.name || req.user.username,
+          details: { saleId: newSale.id, days: warrantyData.days, coverage: warrantyData.coverage }
+        });
       }
 
       return newSale;
