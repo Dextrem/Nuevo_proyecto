@@ -1,38 +1,6 @@
 # Registro de Mejoras — Sistema FINANDEX
 
-> Documento que consolida todos los cambios realizados por fases para referencia futura.
-
----
-
-## Fase 0 — Garantías (Warranty Certificate System)
-
-### Descripción
-Sistema completo de certificados de garantía con modal manual en POS, página dedicada tipo Billing, PDF con marca de agua, y autorización de supervisor para eliminación.
-
-### Archivos creados
-| Archivo | Propósito |
-|---|---|
-| `backend/prisma/schema.prisma` (modelo `Warranty`) | Modelo con campos `clientId`, `clientName`, `clientRnc`, `clientPhone`, `days`, `coverage`, `exclusions`, `issueDate`, `expiryDate`, `saleId` (opcional), `createdById`. Opposite relations con `Sale`, `Client`, `User`. `@@map("warranties")` |
-| `backend/src/controllers/warrantyController.js` | `getAllWarranties` (filtro por status: active/expiring/expired), `createWarranty` (+ `saveToHistory`), `deleteWarranty` (autenticación supervisor + `saveToHistory`) |
-| `backend/src/routes/warranties.js` | `GET /`, `POST /` (con `validate(schemas.warranty)`), `DELETE /:id` |
-| `frontend/src/utils/warrantyPDF.js` | `generateWarrantyPDF` — certificado con marca de agua "GARANTÍA", encabezado empresa, datos cliente, período, factura (right-aligned), cobertura/exclusiones, emitido por, footer |
-| `docs/CHANGELOG_IMPROVEMENTS.md` | Este archivo |
-
-### Archivos modificados
-| Archivo | Cambio |
-|---|---|
-| `backend/src/controllers/saleController.js` | Creación de `Warranty` record + `saveToHistory` en `createSale` cuando `hasWarranty && warrantyData` |
-| `backend/src/middleware/validate.js` | Schema `sale`: added `hasWarranty` + `warrantyData`. Nuevos schemas: `warranty`, `quotation`, `budget`, `purchaseOrder` |
-| `backend/src/server.js` | Montada ruta `/api/warranties`, `TZ='America/Santo_Domingo'`, `unhandledRejection` handler, CSP headers, `stopScheduler` cleanup |
-| `backend/src/controllers/clientController.js` | Fix `limit=-1` → `take: undefined` (Prisma `take: -1` inválido) |
-| `frontend/src/services/api.js` | Added `warrantyService.getAll`, `.create`, `.delete` |
-| `frontend/src/pages/Warranties.jsx` | Rediseño completo estilo Billing: KPIs, data-table, filtros, badges, PDF, delete auth, create modal, paginación |
-| `frontend/src/components/WarrantyModal.jsx` | Refactor: no-bloqueante, soporte `initialData` |
-| `frontend/src/pages/POS.jsx` + `POSQR.jsx` | Botón garantía junto al contador de items, estado `warrantyActive`/`warrantyData` |
-| `frontend/src/App.jsx` | Lazy route `/warranties` |
-| `frontend/src/components/Layout.jsx` | Sidebar "Garantías" entre "Cuentas x Pagar" y "Caja General" |
-| `frontend/src/components/POSModals.jsx` | `ThermalReceipt80` + `ThermalReceipt58` — `color: '#000'` + `fontWeight: 600` |
-| `frontend/src/pages/Quotations.jsx` | Fix PDF: company name font 22→18, title rect `y=22, h=20` |
+> Documento que consolida los cambios de mejora y estabilidad del sistema realizados por fases. Para referencia futura.
 
 ---
 
@@ -102,68 +70,4 @@ Porcentajes de provisión, keywords de gastos, y umbrales de estado ahora config
 | `backend/src/utils/pagination.js` | `MAX_LIMIT = 200`; bypass de `limit=-1` eliminado |
 | `backend/src/services/backupService.js` | TRUNCATE movido dentro de `$transaction` (antes ejecutaba fuera, dejando DB vacía en caso de fallo) |
 
----
 
-## Fase 5 — Limpieza (Cleanup)
-
-### Descripción
-Reorganización de scripts debug, eliminación de escape hatch CORS, generación de baseline SQL para migración.
-
-### Archivos modificados
-| Archivo | Cambio |
-|---|---|
-| `backend/scripts/debug/` **(nuevo directorio)** | 17 scripts `.cjs` movidos de `backend/` a `backend/scripts/debug/` |
-| `backend/src/server.js` | CORS wildcard escape hatch (`corsOrigin === '*' || corsOrigin === 'true'`) eliminado |
-| `backend/prisma/` | Prisma migration baseline SQL generado via `migrate diff --from-empty --to-schema-datamodel` |
-
----
-
-## Fase 6 — Sesión por inactividad (Inactivity Session Timeout)
-
-### Descripción
-Sincronización del JWT con el setting `sessionTimeoutMinutes`, cambio de UI a horas, y tracking real de inactividad con logout automático.
-
-### Problema resuelto
-`sessionTimeoutMinutes` (configurable en Settings) **no tenía efecto real**:
-- Backend usaba `JWT_EXPIRES_IN=4h` fijo del `.env`
-- Frontend usaba 240 min hardcodeados
-- El setting se ignoraba completamente al firmar el JWT
-- El timeout era tiempo absoluto desde login, no por inactividad
-- El check periódico (cada 60s) no hacía logout real — solo limpiaba el timer local
-
-### Archivos modificados
-| Archivo | Cambio |
-|---|---|
-| `backend/src/controllers/authController.js` | `login()` ahora usa `sessionTimeoutMinutes` del DB como JWT `expiresIn`. `refreshToken()` igual. Cookies `accessToken` con `maxAge` dinámico. Refresh token extendido a 30d |
-| `frontend/src/pages/Settings.jsx` | Input numérico (5-480 min) reemplazado por `<select>` en horas: 1h, 2h, 4h, 8h, 12h, 24h. Se almacena como `sessionTimeoutMinutes = horas * 60` |
-| `frontend/src/context/AuthContext.jsx` | **Inactividad real**: event listeners (`mousemove`, `mousedown`, `keydown`, `click`, `scroll`, `touchstart`) con debounce 1s que llaman `resetSessionTimer()`. **Logout real**: check cada 10s → si expiró, llama `logout()` vía ref. Escucha evento `tokenRefreshed` para resetear timer |
-| `frontend/src/services/api.js` | Dispara `window.dispatchEvent(new CustomEvent('tokenRefreshed'))` tras refresh exitoso para que AuthContext resetee el timer |
-
-### Comportamiento final
-- Admin elige horas (1h-24h) en Settings → se guarda como minutos
-- Backend firma JWT con esa duración exacta
-- Frontend rastrea actividad del usuario (mouse, teclado, click, scroll, touch)
-- Si hay actividad antes del timeout, el timer se extiende (sesión deslizante)
-- Si el usuario está inactivo por el período configurado, el frontend hace logout automático
-- Si el JWT expira mientras hay actividad, el refresh token lo renueva transparentemente
-
----
-
-## Fase X — Windows Auto-start
-
-### Descripción
-Configuración de inicio automático del sistema al encender Windows.
-
-### Archivos creados
-| Archivo | Propósito |
-|---|---|
-| `CONFIGURA_ARRANQUE_AUTOMATICO.bat` | Script interactivo para activar/desactivar inicio automático. Crea `dextremix_startup.vbs` en `%APPDATA%\...\Startup\` |
-| `%APPDATA%\...\Startup\dextremix_startup.vbs` | Ejecuta `INICIAR.bat` silenciosamente en segundo plano (sin ventanas) al iniciar sesión |
-
----
-
-## Próximos Pasos (Pendientes)
-
-- [ ] Completar transición a Prisma migrations: eliminar `20260320185023_primer_migration`, aplicar baseline SQL via `prisma migrate resolve --applied`, cambiar ACTUALIZAR.bat a `migrate deploy`
-- [ ] En otra PC: `git fetch origin && git reset --hard origin/main`, luego `prisma generate` + `prisma db push --accept-data-loss`, luego `vite build`
-- [ ] Considerar modelo `InvoiceSequence` o advisory lock como alternativa a `$transaction` para concurrencia de facturas si surgen errores P2002
