@@ -444,9 +444,16 @@ const Settings = () => {
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div className="form-group">
-                <label>Tiempo de Sesión (minutos)</label>
-                <input type="number" min="5" max="480" className="form-control" value={formData.sessionTimeoutMinutes || 30} onChange={(e) => handleChange('sessionTimeoutMinutes', parseInt(e.target.value) || 30)} />
-                <small style={{ color: 'var(--text-muted)' }}>Tiempo de inactividad antes de cerrar sesión (5-480 min)</small>
+                <label>Tiempo de Sesión (horas)</label>
+                <select className="form-control" value={Math.round((formData.sessionTimeoutMinutes || 240) / 60)} onChange={(e) => handleChange('sessionTimeoutMinutes', parseInt(e.target.value) * 60)}>
+                  <option value={1}>1 hora</option>
+                  <option value={2}>2 horas</option>
+                  <option value={4}>4 horas</option>
+                  <option value={8}>8 horas</option>
+                  <option value={12}>12 horas</option>
+                  <option value={24}>24 horas</option>
+                </select>
+                <small style={{ color: 'var(--text-muted)' }}>Tiempo máximo de inactividad antes de cerrar sesión automáticamente</small>
               </div>
               <div className="form-group">
                 <label>Máx. Intentos de Login</label>

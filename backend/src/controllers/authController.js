@@ -209,6 +209,10 @@ export const login = async (req, res) => {
       });
     }
 
+    const sessionExpiresIn = secSettings.sessionTimeoutMinutes
+      ? `${secSettings.sessionTimeoutMinutes}m`
+      : (process.env.JWT_EXPIRES_IN || '4h');
+
     const accessToken = jwt.sign(
       {
         id: user.id,
@@ -219,25 +223,28 @@ export const login = async (req, res) => {
         tokenVersion: user.tokenVersion,
       },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '15m' }
+      { expiresIn: sessionExpiresIn }
     );
 
     const refreshToken = jwt.sign(
       { id: user.id, tokenVersion: user.tokenVersion },
       process.env.JWT_REFRESH_SECRET,
-      { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' }
+      { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d' }
     );
 
     const isProduction = process.env.NODE_ENV === 'production';
+    const sessionMs = secSettings.sessionTimeoutMinutes
+      ? secSettings.sessionTimeoutMinutes * 60 * 1000
+      : 4 * 60 * 60 * 1000;
     const cookieOptions = {
       httpOnly: true,
       secure: isProduction,
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     };
 
     res.cookie('refreshToken', refreshToken, cookieOptions);
-    res.cookie('accessToken', accessToken, { ...cookieOptions, maxAge: 15 * 60 * 1000 });
+    res.cookie('accessToken', accessToken, { ...cookieOptions, maxAge: sessionMs });
 
     // Registrar login en historial
     try {
@@ -306,6 +313,11 @@ export const refreshToken = async (req, res) => {
       data: { tokenVersion: { increment: 1 } },
     });
 
+    const secSettings = await getSecuritySettings();
+    const sessionExpiresIn = secSettings.sessionTimeoutMinutes
+      ? `${secSettings.sessionTimeoutMinutes}m`
+      : (process.env.JWT_EXPIRES_IN || '4h');
+
     const accessToken = jwt.sign(
       {
         id: user.id,
@@ -316,24 +328,27 @@ export const refreshToken = async (req, res) => {
         tokenVersion: user.tokenVersion + 1,
       },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '15m' }
+      { expiresIn: sessionExpiresIn }
     );
 
     const newRefreshToken = jwt.sign(
       { id: user.id, tokenVersion: user.tokenVersion + 1 },
       process.env.JWT_REFRESH_SECRET,
-      { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' }
+      { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d' }
     );
 
     const isProduction = process.env.NODE_ENV === 'production';
+    const sessionMs = secSettings.sessionTimeoutMinutes
+      ? secSettings.sessionTimeoutMinutes * 60 * 1000
+      : 4 * 60 * 60 * 1000;
     const cookieOptions = {
       httpOnly: true,
       secure: isProduction,
       sameSite: 'lax',
     };
 
-    res.cookie('accessToken', accessToken, { ...cookieOptions, maxAge: 15 * 60 * 1000 });
-    res.cookie('refreshToken', newRefreshToken, { ...cookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 });
+    res.cookie('accessToken', accessToken, { ...cookieOptions, maxAge: sessionMs });
+    res.cookie('refreshToken', newRefreshToken, { ...cookieOptions, maxAge: 30 * 24 * 60 * 60 * 1000 });
 
     res.json({ accessToken, refreshToken: newRefreshToken });
   } catch (error) {

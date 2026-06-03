@@ -92,6 +92,7 @@ api.interceptors.response.use(
         sessionStorage.setItem('accessToken', accessToken);
         onTokenRefreshed(accessToken);
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        window.dispatchEvent(new CustomEvent('tokenRefreshed'));
         return api(originalRequest);
       } catch (refreshError) {
         // Refresh failed – clear everything and redirect

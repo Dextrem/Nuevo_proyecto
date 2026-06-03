@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { authService } from '../services/api';
 
 const getAuthTimeout = () => {
@@ -19,6 +19,7 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [initialized, setInitialized] = useState(false);
   const [sessionExpiry, setSessionExpiry] = useState(null);
+  const logoutRef = useRef(null);
 
   useEffect(() => {
     if (initialized) return;
@@ -58,16 +59,48 @@ export const AuthProvider = ({ children }) => {
     sessionStorage.setItem('tokenExpiry', expiry.toISOString());
   }, []);
 
+  // Inactivity tracking: reset timer on any user activity
+  useEffect(() => {
+    if (!user) return;
+
+    const activityEvents = ['mousemove', 'mousedown', 'keydown', 'click', 'scroll', 'touchstart'];
+    let debounceTimer = null;
+
+    const handleActivity = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        resetSessionTimer();
+      }, 1000);
+    };
+
+    activityEvents.forEach((event) =>
+      window.addEventListener(event, handleActivity, { passive: true })
+    );
+
+    // Also reset on successful token refresh (API activity)
+    const handleTokenRefreshed = () => resetSessionTimer();
+    window.addEventListener('tokenRefreshed', handleTokenRefreshed);
+
+    return () => {
+      activityEvents.forEach((event) =>
+        window.removeEventListener(event, handleActivity)
+      );
+      window.removeEventListener('tokenRefreshed', handleTokenRefreshed);
+      if (debounceTimer) clearTimeout(debounceTimer);
+    };
+  }, [user, resetSessionTimer]);
+
+  // Periodic check: log out when session expires
   useEffect(() => {
     if (!user || !sessionExpiry) return;
 
     const checkExpiry = setInterval(() => {
       if (new Date() >= sessionExpiry) {
-        // Intentar renovar token vía refresh, o esperar a 401 del servidor
-        sessionStorage.removeItem('tokenExpiry');
-        setSessionExpiry(null);
+        if (logoutRef.current) {
+          logoutRef.current();
+        }
       }
-    }, 60000);
+    }, 10000);
 
     return () => clearInterval(checkExpiry);
   }, [user, sessionExpiry]);
@@ -123,14 +156,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     sessionStorage.removeItem('accessToken');
     sessionStorage.removeItem('refreshToken');
     sessionStorage.removeItem('user');
     sessionStorage.removeItem('tokenExpiry');
     setUser(null);
     setSessionExpiry(null);
-  };
+  }, []);
+
+  // Keep ref in sync for the expiry check interval
+  useEffect(() => { logoutRef.current = logout; }, [logout]);
 
   const hasPermission = (permission) => {
     if (!user) return false;
