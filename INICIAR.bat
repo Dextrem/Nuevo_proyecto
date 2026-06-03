@@ -154,9 +154,9 @@ for /l %%i in (1,1,12) do (
 
 if defined READY (
     if "!ACTUAL_PORT!"=="80" (
-        echo  %V% OK %N% Servidor listo en http://dextremix.local
+        echo  %V% OK %N% Servidor listo en http://localhost
     ) else (
-        echo  %V% OK %N% Servidor listo en http://dextremix.local:!ACTUAL_PORT!
+        echo  %V% OK %N% Servidor listo en http://localhost:!ACTUAL_PORT!
     )
 ) else (
     echo  %R% FAIL %N% Servidor no responde
@@ -171,13 +171,13 @@ echo %V%  ║       SISTEMA LISTO - DEXTREMIX FINANCE      ║%N%
 echo %V%  ╚══════════════════════════════════════════════╝%N%
 echo.
 if "!ACTUAL_PORT!"=="80" (
-    echo  %C% Acceso local:%N%   http://dextremix.local
+    echo  %C% Acceso local:%N%   http://localhost
     echo  %C% Acceso red/móvil:%N% http://%COMPUTERNAME%.local
     for /f "usebackq tokens=*" %%i in (`powershell -Command "(Get-NetIPAddress -AddressFamily IPv4 | Where-Object IPAddress -notlike '127.*' | Where-Object IPAddress -notlike '169.254.*').IPAddress" 2^>nul`) do (
         echo  %C% Acceso móvil (IP):%N% http://%%i
     )
 ) else (
-    echo  %C% Acceso local:%N%   http://dextremix.local:!ACTUAL_PORT!
+    echo  %C% Acceso local:%N%   http://localhost:!ACTUAL_PORT!
     echo  %C% Acceso red/móvil:%N% http://%COMPUTERNAME%.local:!ACTUAL_PORT!
     for /f "usebackq tokens=*" %%i in (`powershell -Command "(Get-NetIPAddress -AddressFamily IPv4 | Where-Object IPAddress -notlike '127.*' | Where-Object IPAddress -notlike '169.254.*').IPAddress" 2^>nul`) do (
         echo  %C% Acceso móvil (IP):%N% http://%%i:!ACTUAL_PORT!
@@ -187,9 +187,9 @@ echo  %A% Abriendo navegador...%N%
 
 ping -n 4 127.0.0.1 >nul
 if "!ACTUAL_PORT!"=="80" (
-    start http://dextremix.local
+    start http://localhost
 ) else (
-    start http://dextremix.local:!ACTUAL_PORT!
+    start http://localhost:!ACTUAL_PORT!
 )
 
 :: ─── MANTENER / APAGAR ────────────────────
