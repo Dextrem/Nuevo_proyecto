@@ -244,6 +244,12 @@ export const schemas = {
     // Fiscal
     fiscalEnabled: z.boolean().optional(),
     defaultNcfType: z.string().max(5).optional(),
+    // Warranty Settings
+    warrantyEnabled: z.boolean().optional(),
+    warrantyMinAmount: z.number().min(0).optional(),
+    warrantyDefaultDays: z.number().int().min(1).max(3650).optional(),
+    warrantyCoverageText: z.string().optional().nullable(),
+    warrantyExclusionText: z.string().optional().nullable(),
     // Financial Closing Settings
     provisionOverduePercent: z.number().min(0).max(1).optional(),
     provisionOver90Percent: z.number().min(0).max(1).optional(),

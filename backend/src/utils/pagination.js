@@ -3,6 +3,9 @@ const MAX_LIMIT = 200;
 export const parsePaginationParams = (query) => {
   const page = Math.max(1, parseInt(query.page) || 1);
   const parsedLimit = parseInt(query.limit);
+  if (parsedLimit === -1) {
+    return { page: 1, limit: -1, skip: 0 };
+  }
   const limit = Math.min(MAX_LIMIT, Math.max(1, parsedLimit || 20));
   const skip = (page - 1) * limit;
 

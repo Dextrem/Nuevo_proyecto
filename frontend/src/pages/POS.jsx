@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, memo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { productService, clientService, saleService, cashRegisterService } from '../services/api';
 import { useApp } from '../context/AppContext';
-import { useAuth } from '../context/AuthContext';
 import { SearchDropdown, Cart, ClientDropdown, PaymentMethods, ClientCreditInfo } from '../components/POSComponents';
 import { ReceiptModal, NewClientModal, DueDateModal, WarrantyModal } from '../components/POSModals';
 import { notifyDataUpdate } from '../hooks/useDataSync';
@@ -255,6 +255,7 @@ const POS = () => {
   const barcodeInputRef = useRef(null);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const { formatCurrency, settings, showNotification } = useApp();
+  const navigate = useNavigate();
   const posContainerRef = useRef(null);
 
   const loadCashRegister = useCallback(async () => {
@@ -397,20 +398,7 @@ const POS = () => {
     }
   }, [products, addToCart, showNotification]);
 
-  // ensure visible barcode input triggers scan on Enter for touch
-  useEffect(() => {
-    const el = barcodeInputRef.current;
-    if (!el) return;
-    const onKey = (e) => {
-      if (e.key === 'Enter' && el.value && el.value.length >= 3) {
-        handleBarcodeScan(el.value.trim());
-        el.value = '';
-        setBarcodeInput('');
-      }
-    };
-    el.addEventListener('keydown', onKey);
-    return () => el.removeEventListener('keydown', onKey);
-  }, [barcodeInputRef, handleBarcodeScan]);
+
 
   const updateQuantity = useCallback((productId, newQuantity) => {
     if (newQuantity <= 0) {
@@ -722,7 +710,7 @@ const POS = () => {
         </p>
         <button 
           className="btn btn-primary" 
-          onClick={() => window.location.href = '/cash-register'}
+          onClick={() => navigate('/cash-register')}
           style={{ padding: '12px 32px', fontSize: '1rem' }}
         >
           Ir a Apertura de Caja

@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { saleService, clientService, supplierService, productService } from '../services/api';
 import { useApp } from '../context/AppContext';
-import { useAuth } from '../context/AuthContext';
 import { ThermalReceipt58, ThermalReceipt80, LetterReceipt } from '../components/POSModals';
 import { notifyDataUpdate } from '../hooks/useDataSync';
 import { generateInvoicePDF } from '../utils/pdfGenerator';
@@ -10,6 +9,7 @@ import ConfirmModal from '../components/ConfirmModal';
 
 const Billing = () => {
   const [loading, setLoading] = useState(true);
+  const [cancelling, setCancelling] = useState(false);
   const [activeTab, setActiveTab] = useState('sales');
   const [invoices, setInvoices] = useState([]);
   const [clients, setClients] = useState([]);
@@ -37,9 +37,8 @@ const Billing = () => {
   const [showConfirmCancelInvoice, setShowConfirmCancelInvoice] = useState(false);
   const [printType, setPrintType] = useState('thermal-58');
   const { formatCurrency, settings, showNotification } = useApp();
-  const { hasPermission } = useAuth();
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       // Remover setLoading(true) para evitar parpadeo al buscar
       const [salesRes, clientsRes, suppliersRes] = await Promise.all([
@@ -63,17 +62,17 @@ const Billing = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, showNotification]);
 
   useEffect(() => {
     loadData();
-  }, [filters]);
+  }, [loadData]);
 
   useEffect(() => {
     const handleDataUpdate = () => loadData();
     window.addEventListener('DATA_UPDATED_EVENT', handleDataUpdate);
     return () => window.removeEventListener('DATA_UPDATED_EVENT', handleDataUpdate);
-  }, []);
+  }, [loadData]);
 
   const handleFilterChange = (field, value) => {
     setFilters(prev => ({ ...prev, [field]: value, page: 1 }));
@@ -133,7 +132,7 @@ const Billing = () => {
     if (!pendingInvoiceToCancel) return;
 
     try {
-      setLoading(true);
+      setCancelling(true);
       await saleService.cancel(pendingInvoiceToCancel.id, {
         authorizerUsername: cancelForm.username,
         authorizerPassword: cancelForm.password
@@ -147,7 +146,7 @@ const Billing = () => {
     } catch (error) {
       showNotification(error.response?.data?.error || 'Error al anular la venta', 'error');
     } finally {
-      setLoading(false);
+      setCancelling(false);
     }
   };
 
@@ -393,11 +392,11 @@ const Billing = () => {
 
   const stats = {
     total: pagination.total,
-    totalAmount: invoices.reduce((sum, inv) => sum + inv.total, 0),
-    cash: invoices.filter(i => i.paymentMethod === 'CASH').reduce((sum, inv) => sum + inv.total, 0),
-    card: invoices.filter(i => i.paymentMethod === 'CARD').reduce((sum, inv) => sum + inv.total, 0),
-    credit: invoices.filter(i => i.paymentMethod === 'CREDIT').reduce((sum, inv) => sum + inv.total, 0),
-    pending: invoices.filter(i => i.status !== 'COMPLETED').reduce((sum, inv) => sum + (inv.total - inv.paidAmount), 0),
+    totalAmount: invoices.reduce((sum, inv) => sum + (inv.total || 0), 0),
+    cash: invoices.filter(i => i.paymentMethod === 'CASH').reduce((sum, inv) => sum + (inv.total || 0), 0),
+    card: invoices.filter(i => i.paymentMethod === 'CARD').reduce((sum, inv) => sum + (inv.total || 0), 0),
+    credit: invoices.filter(i => i.paymentMethod === 'CREDIT').reduce((sum, inv) => sum + (inv.total || 0), 0),
+    pending: invoices.filter(i => i.status !== 'COMPLETED').reduce((sum, inv) => sum + ((inv.total || 0) - (inv.paidAmount || 0)), 0),
   };
 
   if (loading) {
@@ -821,8 +820,8 @@ const Billing = () => {
                 />
               </div>
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button type="submit" className="btn btn-primary" style={{ flex: 1, backgroundColor: 'var(--danger)' }} disabled={loading}>
-                  {loading ? 'Procesando...' : 'Anular Venta'}
+                <button type="submit" className="btn btn-primary" style={{ flex: 1, backgroundColor: 'var(--danger)' }} disabled={cancelling}>
+                  {cancelling ? 'Procesando...' : 'Anular Venta'}
                 </button>
                 <button type="button" className="btn btn-outline" onClick={() => setShowCancelModal(false)} style={{ flex: 1 }}>
                   Cancelar
@@ -836,10 +835,10 @@ const Billing = () => {
       <ConfirmModal
         show={showConfirmCancelInvoice}
         title="Anular Factura"
-        message={pendingInvoiceToCancel ? `&iquest;Est&aacute; seguro que desea ANULAR la factura ${pendingInvoiceToCancel.invoiceNumber}? Esta acci&oacute;n devolver&aacute; el stock y reversar&aacute; los pagos.` : ''}
+        message={pendingInvoiceToCancel ? `¿Está seguro que desea ANULAR la factura ${pendingInvoiceToCancel.invoiceNumber}? Esta acción devolverá el stock y reversará los pagos.` : ''}
         icon="fa-ban"
         iconColor="#EF4444"
-        confirmText="S&iacute;, anular"
+        confirmText="Sí, anular"
         confirmButtonClass="btn btn-primary"
         onConfirm={executeCancelSale}
         onCancel={() => setShowConfirmCancelInvoice(false)}

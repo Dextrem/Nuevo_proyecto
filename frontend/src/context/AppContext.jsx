@@ -1,6 +1,5 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { settingsService } from '../services/api';
-import { dataPersistence } from '../hooks/useDataPersistence';
 
 const SETTINGS_KEY = 'finandex_settings';
 
@@ -58,9 +57,14 @@ export const AppProvider = ({ children }) => {
   
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState([]);
+  const notificationTimers = useRef({});
 
   useEffect(() => {
     loadSettings();
+    return () => {
+      Object.values(notificationTimers.current).forEach(clearTimeout);
+      notificationTimers.current = {};
+    };
   }, []);
 
   useEffect(() => {
@@ -89,9 +93,8 @@ export const AppProvider = ({ children }) => {
       setSettings(newSettings);
     } catch (error) {
       if (error.response?.status === 401) {
-        console.log('No autenticado, usando configuración guardada');
+        // No autenticado, usar configuración local
       } else {
-        console.log('Cargando configuración desde localStorage');
         const stored = localStorage.getItem(SETTINGS_KEY);
         if (stored) {
           try {
@@ -122,9 +125,11 @@ export const AppProvider = ({ children }) => {
   const showNotification = useCallback((message, type = 'info', duration = 3000) => {
     const id = Date.now();
     setNotifications(prev => [...prev, { id, message, type }]);
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setNotifications(prev => prev.filter(n => n.id !== id));
+      delete notificationTimers.current[id];
     }, duration);
+    notificationTimers.current[id] = timer;
   }, []);
 
   const formatCurrency = useCallback((amount) => {
