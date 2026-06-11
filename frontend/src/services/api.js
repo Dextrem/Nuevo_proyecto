@@ -61,7 +61,9 @@ api.interceptors.response.use(
         }
         // No refresh token — redirect to login without misleading "session expired" alert
         if (!refreshToken) {
-          sessionStorage.clear();
+          sessionStorage.removeItem('accessToken');
+          sessionStorage.removeItem('refreshToken');
+          sessionStorage.removeItem('user');
           window.location.replace('/login');
           return Promise.reject(error);
         }
@@ -97,12 +99,10 @@ api.interceptors.response.use(
       } catch (refreshError) {
         // Refresh failed – clear everything and redirect
         onTokenRefreshed(null);
-        sessionStorage.clear();
-        if (typeof window.showToast === 'function') {
-          window.showToast('Sesión expiró, por favor inicie sesión nuevamente.', 'error');
-        } else {
-          alert('Sesión expiró, por favor inicie sesión nuevamente.');
-        }
+        sessionStorage.removeItem('accessToken');
+        sessionStorage.removeItem('refreshToken');
+        sessionStorage.removeItem('user');
+        window.dispatchEvent(new CustomEvent('sessionExpired'));
         window.location.replace('/login');
         return Promise.reject(refreshError);
       } finally {
