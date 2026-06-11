@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { quotationService, clientService, productService, saleService } from '../services/api';
 import { useApp } from '../context/AppContext';
 import { QuotationReceipt80, QuotationReceipt58, QuotationLetterReceipt } from '../components/POSModals';
+import { sanitizeText } from '../utils/helpers';
+import DOMPurify from 'dompurify';
 import ConfirmModal from '../components/ConfirmModal';
 
 const QuotationModal = ({ products, clients, onSave, onClose, editingQuotation, formatCurrency, onCreateClient }) => {
@@ -1051,11 +1053,11 @@ const Quotations = () => {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Cotización ${selectedQuotation?.quotationNumber}</title>
+          <title>Cotización ${sanitizeText(selectedQuotation?.quotationNumber)}</title>
           ${getStyles()}
         </head>
         <body>
-          ${printContent}
+          ${DOMPurify.sanitize(printContent)}
           <script>
             window.onload = function() {
               window.print();

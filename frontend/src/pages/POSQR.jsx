@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { SearchDropdown, Cart, ClientDropdown, PaymentMethods } from '../components/POSComponents';
 import { ReceiptModal, NewClientModal, WarrantyModal } from '../components/POSModals';
+import DOMPurify from 'dompurify';
 import { notifyDataUpdate } from '../hooks/useDataSync';
 
 const BarcodeScanner = memo(({ inputRef, value, onChange, onScan }) => {
@@ -570,7 +571,7 @@ const POSQR = () => {
           ${getStyles()}
         </head>
         <body>
-          ${printContent}
+          ${DOMPurify.sanitize(printContent)}
         </body>
       </html>
     `);

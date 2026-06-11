@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
 import { monthlyClosingService } from '../services/api';
+import DOMPurify from 'dompurify';
 import ConfirmModal from '../components/ConfirmModal';
 
 const MonthlyClosing = () => {
@@ -164,7 +165,7 @@ const MonthlyClosing = () => {
           </style>
         </head>
         <body>
-          ${htmlContent}
+          ${DOMPurify.sanitize(htmlContent)}
           <script>
             window.onload = function() { window.print(); setTimeout(function() { window.close(); }, 500); };
           </script>

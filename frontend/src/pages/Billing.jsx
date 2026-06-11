@@ -3,6 +3,7 @@ import { saleService, clientService, supplierService, productService } from '../
 import { useApp } from '../context/AppContext';
 import { ThermalReceipt58, ThermalReceipt80, LetterReceipt } from '../components/POSModals';
 import { notifyDataUpdate } from '../hooks/useDataSync';
+import { sanitizeText } from '../utils/helpers';
 import { generateInvoicePDF } from '../utils/pdfGenerator';
 import { exportSalesToExcel } from '../utils/excelExporter';
 import ConfirmModal from '../components/ConfirmModal';
@@ -170,7 +171,7 @@ const Billing = () => {
     if (printType === 'thermal-58') {
       const itemsHTML = invoice.items?.map(item => `
         <div style="margin-bottom:2px;font-size:10px;font-weight:bold">
-          <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.product?.name || 'Producto'}</div>
+          <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${sanitizeText(item.product?.name || 'Producto')}</div>
           <div style="display:flex;justify-content:space-between">
             <span>x${item.quantity}</span><span>${formatCurrency(item.total)}</span>
           </div>
@@ -181,7 +182,7 @@ const Billing = () => {
         <!DOCTYPE html>
         <html>
           <head>
-            <title>Factura ${invoice.invoiceNumber}</title>
+            <title>Factura ${sanitizeText(invoice.invoiceNumber)}</title>
             <style>
               * { margin: 0; padding: 0; box-sizing: border-box; }
               body { font-family: 'Courier New', monospace; font-size: 10px; font-weight: bold; margin: 0; padding: 0; -webkit-font-smoothing: none; }
@@ -194,14 +195,14 @@ const Billing = () => {
           <body>
             <div class="thermal-58">
               <div class="center">
-                <strong style="font-size:12px">${settings.companyName}</strong>
-                ${settings.companyRnc ? `<div>RNC: ${settings.companyRnc}</div>` : ''}
-                ${settings.companyAddress ? `<div>${settings.companyAddress}</div>` : ''}
+                <strong style="font-size:12px">${sanitizeText(settings.companyName)}</strong>
+                ${settings.companyRnc ? `<div>RNC: ${sanitizeText(settings.companyRnc)}</div>` : ''}
+                ${settings.companyAddress ? `<div>${sanitizeText(settings.companyAddress)}</div>` : ''}
                 <div class="divider"></div>
               </div>
               <div style="margin-bottom:5px">
                 <div>F: ${new Date(invoice.createdAt).toLocaleDateString()}</div>
-                <div>#${invoice.invoiceNumber}</div>
+                <div>#${sanitizeText(invoice.invoiceNumber)}</div>
               </div>
               <div style="margin-bottom:5px">${itemsHTML}</div>
               <div style="border-top:1px dashed #000;padding-top:3px;margin-top:5px">
@@ -215,7 +216,7 @@ const Billing = () => {
               </div>
               ${invoice.hasWarranty && invoice.warrantyData ? `
               <div style="margin-top:4px;border-top:1px dashed #000;padding-top:3px">
-                <strong>GARANTÍA:</strong> ${invoice.warrantyData.days} días
+                <strong>GARANTÍA:</strong> ${sanitizeText(invoice.warrantyData.days)} días
                 <div>Vence: ${new Date(invoice.warrantyData.expiryDate).toLocaleDateString('es-DO')}</div>
               </div>` : ''}
               <div class="center" style="margin-top:5px">========================<br />¡GRACIAS!</div>
@@ -226,7 +227,7 @@ const Billing = () => {
     } else if (printType === 'thermal-80') {
       const itemsHTML = invoice.items?.map(item => `
         <div style="margin-bottom:2px;font-size:11px;font-weight:bold">
-          <div>${item.product?.name || 'Producto'}</div>
+          <div>${sanitizeText(item.product?.name || 'Producto')}</div>
           <div style="display:flex;justify-content:space-between">
             <span>x${item.quantity}</span><span>${formatCurrency(item.total)}</span>
           </div>
@@ -237,7 +238,7 @@ const Billing = () => {
         <!DOCTYPE html>
         <html>
           <head>
-            <title>Factura ${invoice.invoiceNumber}</title>
+            <title>Factura ${sanitizeText(invoice.invoiceNumber)}</title>
             <style>
               * { margin: 0; padding: 0; box-sizing: border-box; }
               body { font-family: 'Courier New', monospace; font-size: 11px; font-weight: bold; margin: 0; padding: 0; -webkit-font-smoothing: none; }
@@ -249,17 +250,17 @@ const Billing = () => {
           <body>
             <div class="thermal-80">
               <div class="center" style="margin-bottom:8px">
-                ${settings.logo ? `<img src="${settings.logo}" style="max-height:40px;max-width:100px" />` : ''}
-                <strong style="font-size:14px">${settings.companyName}</strong>
-                ${settings.companyRnc ? `<div>RNC: ${settings.companyRnc}</div>` : ''}
-                ${settings.companyAddress ? `<div>${settings.companyAddress}</div>` : ''}
+                ${settings.logo ? `<img src="${sanitizeText(settings.logo)}" style="max-height:40px;max-width:100px" />` : ''}
+                <strong style="font-size:14px">${sanitizeText(settings.companyName)}</strong>
+                ${settings.companyRnc ? `<div>RNC: ${sanitizeText(settings.companyRnc)}</div>` : ''}
+                ${settings.companyAddress ? `<div>${sanitizeText(settings.companyAddress)}</div>` : ''}
                 <div style="margin-top:4px">----------------------------</div>
               </div>
               <div style="margin-bottom:8px">
                 <div>Fecha: ${new Date(invoice.createdAt).toLocaleString()}</div>
-                <div>Cajero: ${invoice.user?.name || 'N/A'}</div>
-                ${invoice.client ? `<div>Cliente: ${invoice.client.name}</div>` : ''}
-                <div>Factura: ${invoice.invoiceNumber}</div>
+                <div>Cajero: ${sanitizeText(invoice.user?.name || 'N/A')}</div>
+                ${invoice.client ? `<div>Cliente: ${sanitizeText(invoice.client.name)}</div>` : ''}
+                <div>Factura: ${sanitizeText(invoice.invoiceNumber)}</div>
               </div>
               <div style="border-top:1px dashed #000;border-bottom:1px dashed #000;padding:4px 0;margin-bottom:8px">
                 <div style="display:flex;justify-content:space-between"><span>Producto</span><span>Cant</span><span>Total</span></div>
@@ -279,10 +280,10 @@ const Billing = () => {
               ${invoice.hasWarranty && invoice.warrantyData ? `
               <div style="margin-top:6px;border-top:1px dashed #000;padding-top:4px">
                 <strong>CERTIFICADO DE GARANTÍA</strong>
-                <div>Vigencia: ${invoice.warrantyData.days} días</div>
+                <div>Vigencia: ${sanitizeText(invoice.warrantyData.days)} días</div>
                 <div>Vence: ${new Date(invoice.warrantyData.expiryDate).toLocaleDateString('es-DO')}</div>
-                ${invoice.warrantyData.coverage ? `<div>Cobertura: ${invoice.warrantyData.coverage}</div>` : ''}
-                ${invoice.warrantyData.exclusions ? `<div>Excluye: ${invoice.warrantyData.exclusions}</div>` : ''}
+                ${invoice.warrantyData.coverage ? `<div>Cobertura: ${sanitizeText(invoice.warrantyData.coverage)}</div>` : ''}
+                ${invoice.warrantyData.exclusions ? `<div>Excluye: ${sanitizeText(invoice.warrantyData.exclusions)}</div>` : ''}
               </div>` : ''}
               <div class="center" style="margin-top:8px">----------------------------<br />¡Gracias por su compra!</div>
             </div>
@@ -292,7 +293,7 @@ const Billing = () => {
     } else {
       const itemsHTML = invoice.items?.map(item => `
         <tr>
-          <td style="padding:8px;border-bottom:1px solid #ddd">${item.product?.name || 'Producto'}</td>
+          <td style="padding:8px;border-bottom:1px solid #ddd">${sanitizeText(item.product?.name || 'Producto')}</td>
           <td style="padding:8px;border-bottom:1px solid #ddd;text-align:center">${item.quantity}</td>
           <td style="padding:8px;border-bottom:1px solid #ddd;text-align:right">${formatCurrency(item.price)}</td>
           <td style="padding:8px;border-bottom:1px solid #ddd;text-align:right">${formatCurrency(item.total)}</td>
@@ -303,7 +304,7 @@ const Billing = () => {
         <!DOCTYPE html>
         <html>
           <head>
-            <title>Factura ${invoice.invoiceNumber}</title>
+            <title>Factura ${sanitizeText(invoice.invoiceNumber)}</title>
             <style>
               * { margin: 0; padding: 0; box-sizing: border-box; }
               body { font-family: Arial, sans-serif; padding: 20px; }
@@ -319,20 +320,20 @@ const Billing = () => {
           </head>
           <body>
             <div class="header">
-              ${settings.logo ? `<img src="${settings.logo}" style="max-height:80px;max-width:200px;margin-bottom:10px" />` : ''}
-              <h2>${settings.companyName}</h2>
-              ${settings.companyRnc ? `<p>RNC: ${settings.companyRnc}</p>` : ''}
-              ${settings.companyAddress ? `<p>${settings.companyAddress}</p>` : ''}
-              ${settings.companyPhone ? `<p>Tel: ${settings.companyPhone}</p>` : ''}
+              ${settings.logo ? `<img src="${sanitizeText(settings.logo)}" style="max-height:80px;max-width:200px;margin-bottom:10px" />` : ''}
+              <h2>${sanitizeText(settings.companyName)}</h2>
+              ${settings.companyRnc ? `<p>RNC: ${sanitizeText(settings.companyRnc)}</p>` : ''}
+              ${settings.companyAddress ? `<p>${sanitizeText(settings.companyAddress)}</p>` : ''}
+              ${settings.companyPhone ? `<p>Tel: ${sanitizeText(settings.companyPhone)}</p>` : ''}
             </div>
             <div class="info-box">
               <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-                <span><strong>Factura:</strong> ${invoice.invoiceNumber}</span>
+                <span><strong>Factura:</strong> ${sanitizeText(invoice.invoiceNumber)}</span>
                 <span><strong>Fecha:</strong> ${new Date(invoice.createdAt).toLocaleString()}</span>
               </div>
               <div style="display:flex;justify-content:space-between">
-                <span><strong>Cajero:</strong> ${invoice.user?.name || 'N/A'}</span>
-                ${invoice.client ? `<span><strong>Cliente:</strong> ${invoice.client.name}</span>` : ''}
+                <span><strong>Cajero:</strong> ${sanitizeText(invoice.user?.name || 'N/A')}</span>
+                ${invoice.client ? `<span><strong>Cliente:</strong> ${sanitizeText(invoice.client.name)}</span>` : ''}
               </div>
             </div>
             <table>
@@ -349,13 +350,13 @@ const Billing = () => {
             ${invoice.hasWarranty && invoice.warrantyData ? `
             <div style="border:2px solid #4F46E5;border-radius:8px;padding:15px;margin-bottom:20px">
               <h3 style="margin:0 0 10px;color:#4F46E5;font-size:14px">CERTIFICADO DE GARANTÍA</h3>
-              <p style="margin:3px 0"><strong>Vigencia:</strong> ${invoice.warrantyData.days} días (vence ${new Date(invoice.warrantyData.expiryDate).toLocaleDateString('es-DO')})</p>
-              ${invoice.warrantyData.coverage ? `<p style="margin:3px 0"><strong>Cobertura:</strong> ${invoice.warrantyData.coverage}</p>` : ''}
-              ${invoice.warrantyData.exclusions ? `<p style="margin:3px 0"><strong>Excluye:</strong> ${invoice.warrantyData.exclusions}</p>` : ''}
+              <p style="margin:3px 0"><strong>Vigencia:</strong> ${sanitizeText(invoice.warrantyData.days)} días (vence ${new Date(invoice.warrantyData.expiryDate).toLocaleDateString('es-DO')})</p>
+              ${invoice.warrantyData.coverage ? `<p style="margin:3px 0"><strong>Cobertura:</strong> ${sanitizeText(invoice.warrantyData.coverage)}</p>` : ''}
+              ${invoice.warrantyData.exclusions ? `<p style="margin:3px 0"><strong>Excluye:</strong> ${sanitizeText(invoice.warrantyData.exclusions)}</p>` : ''}
             </div>` : ''}
             <div class="footer">
               <p>Gracias por su preferencia</p>
-              <p>${settings.companyWebsite || 'www.finandex.com'}</p>
+              <p>${sanitizeText(settings.companyWebsite || 'www.finandex.com')}</p>
             </div>
           </body>
         </html>

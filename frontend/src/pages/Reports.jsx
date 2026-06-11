@@ -12,6 +12,8 @@ import {
   cashRegisterService,
   clientService
 } from '../services/api';
+import { sanitizeText } from '../utils/helpers';
+import DOMPurify from 'dompurify';
 import { useApp } from '../context/AppContext';
 import { DATA_UPDATED_EVENT } from '../hooks/useDataSync';
 
@@ -549,15 +551,15 @@ const Reports = () => {
 
     printWindow.document.write(`
       <!DOCTYPE html><html>
-        <head><title>${tabName}</title>${getStyles()}</head>
+        <head><title>${sanitizeText(tabName)}</title>${getStyles()}</head>
         <body>
           <div class="${printType}" style="padding:10px">
-            <h2 style="text-align:center;margin-bottom:4px">${tabName}</h2>
+            <h2 style="text-align:center;margin-bottom:4px">${sanitizeText(tabName)}</h2>
             <p style="text-align:center;font-size:11px;color:#666;margin-top:0">
-              ${dateRange.startDate} al ${dateRange.endDate}
+              ${sanitizeText(dateRange.startDate)} al ${sanitizeText(dateRange.endDate)}
             </p>
             <hr style="border:1px dashed #ccc" />
-            ${printContent}
+            ${DOMPurify.sanitize(printContent)}
           </div>
           <script>
             window.onload = function() { window.print(); setTimeout(function() { window.close(); }, 500); };

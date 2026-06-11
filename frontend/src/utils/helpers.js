@@ -1,6 +1,18 @@
+import * as XLSX from 'xlsx';
+
 const TOKEN_KEY = 'finandex_access_token';
 const REFRESH_KEY = 'finandex_refresh_token';
 const USER_KEY = 'finandex_user';
+
+export const sanitizeText = (text) => {
+  if (!text) return '';
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
 
 export const storage = {
   getAccessToken: () => localStorage.getItem(TOKEN_KEY),
@@ -149,16 +161,34 @@ export const isToday = (date) => {
 };
 
 export const getDateRange = (range) => {
-  const now = new Date();
   const ranges = {
-    today: { start: new Date(now.setHours(0, 0, 0, 0)), end: new Date() },
-    yesterday: {
-      start: new Date(now.setDate(now.getDate() - 1)),
-      end: new Date(now.setHours(23, 59, 59, 999)),
+    today: () => {
+      const now = new Date();
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      return { start, end: now };
     },
-    week: { start: new Date(now.setDate(now.getDate() - 7)), end: new Date() },
-    month: { start: new Date(now.setMonth(now.getMonth() - 1)), end: new Date() },
-    year: { start: new Date(now.setFullYear(now.getFullYear() - 1)), end: new Date() },
+    yesterday: () => {
+      const now = new Date();
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+      const end = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 23, 59, 59, 999);
+      return { start, end };
+    },
+    week: () => {
+      const now = new Date();
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+      return { start, end: now };
+    },
+    month: () => {
+      const now = new Date();
+      const start = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+      return { start, end: now };
+    },
+    year: () => {
+      const now = new Date();
+      const start = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+      return { start, end: now };
+    },
   };
-  return ranges[range] || ranges.today;
+  const fn = ranges[range];
+  return fn ? fn() : ranges.today();
 };
