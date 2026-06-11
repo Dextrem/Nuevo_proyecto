@@ -6,14 +6,9 @@ import bcrypt from 'bcryptjs';
 import { logger } from '../utils/logger.js';
 
 const findOpenRegister = async (db, userId) => {
-  let register = await db.cashRegister.findFirst({
+  const register = await db.cashRegister.findFirst({
     where: { openedBy: userId, isOpen: true }
   });
-  if (!register) {
-    register = await db.cashRegister.findFirst({
-      where: { isOpen: true }
-    });
-  }
   return register;
 };
 
@@ -301,17 +296,6 @@ export const createSale = async (req, res) => {
 
     const invoiceNumber = await generateInvoiceNumber();
 
-    // VALIDACIÓN DE CAJA ABIERTA (Obligatoria para todas las ventas)
-    const openRegister = await findOpenRegister(prisma, req.user.id);
-
-    if (!openRegister) {
-      return res.status(400).json({ 
-        error: 'No hay cajas abiertas disponibles',
-        requiresCashRegister: true,
-        message: 'No hay cajas abiertas. Por favor, abre una caja desde el módulo de Cajas antes de realizar cualquier venta.'
-      });
-    }
-
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const totalTax = items.reduce((sum, item) => sum + (item.tax * item.quantity), 0);
     const totalDiscount = items.reduce((sum, item) => sum + (item.discount || 0), 0);
@@ -341,6 +325,28 @@ export const createSale = async (req, res) => {
     }
 
     const sale = await prisma.$transaction(async (tx) => {
+      // Re-fetch products con FOR UPDATE dentro de la transacción para evitar race conditions
+      const lockedProducts = await tx.$queryRawUnsafe(
+        'SELECT * FROM products WHERE id = ANY($1) FOR UPDATE',
+        items.map(item => item.productId)
+      );
+      const productMap = {};
+      for (const p of lockedProducts) {
+        productMap[p.id] = p;
+      }
+
+      // Validar stock contra datos frescos con lock
+      for (const item of items) {
+        const product = productMap[item.productId];
+        if (!product) {
+          throw new Error(`Producto no encontrado: ${item.productId}`);
+        }
+        if (Number(product.stock) < item.quantity) {
+          const name = product.name || item.productId;
+          throw new Error(`Stock insuficiente para: ${name}. Stock actual: ${product.stock}, requerido: ${item.quantity}`);
+        }
+      }
+
       const newSale = await tx.sale.create({
         data: {
           invoiceNumber,
@@ -392,27 +398,24 @@ export const createSale = async (req, res) => {
         },
       });
 
+      // Decrementar stock atómicamente con updateMany condicional
       for (const item of items) {
-        const product = products.find(p => p.id === item.productId);
-        if (!product) {
-          throw new Error(`Producto no encontrado: ${item.productId}`);
-        }
-        if (product.stock < item.quantity) {
-          throw new Error(`Stock insuficiente para: ${product.name}. Stock actual: ${product.stock}, requerido: ${item.quantity}`);
-        }
-
-        await tx.product.update({
-          where: { id: item.productId },
+        const product = productMap[item.productId];
+        const result = await tx.product.updateMany({
+          where: { id: item.productId, stock: { gte: item.quantity } },
           data: { stock: { decrement: item.quantity } },
         });
+        if (result.count === 0) {
+          throw new Error(`Stock insuficiente para: ${product.name}`);
+        }
 
         await tx.inventoryMovement.create({
           data: {
             productId: item.productId,
             type: 'OUT',
             quantity: item.quantity,
-            previousStock: product.stock,
-            newStock: product.stock - item.quantity,
+            previousStock: Number(product.stock),
+            newStock: Number(product.stock) - item.quantity,
             reference: invoiceNumber,
             description: `Salida por Venta`,
             userId: req.user.id,
@@ -450,6 +453,9 @@ export const createSale = async (req, res) => {
       // REGISTRO DE FLUJO DE DINERO (CAJA Y TRANSACCIONES)
       if (paidAmount > 0) {
         const openRegister = await findOpenRegister(tx, req.user.id);
+        if (!openRegister) {
+          throw new Error('No hay cajas abiertas disponibles. Debe abrir una caja antes de realizar una venta.');
+        }
 
         const incomeAmount = paymentMethod === 'CREDIT' ? Math.min(paidAmount, total) : total;
 
@@ -486,18 +492,17 @@ export const createSale = async (req, res) => {
           }
         });
 
-        // 2. Registro en el turno de Caja activo (si existe)
-        if (openRegister) {
-          await tx.cashTransaction.create({
-            data: {
-              type: 'INCOME',
-              amount: incomeAmount,
-              description: `Venta #${invoiceNumber} [${paymentMethod}]`,
-              reference: invoiceNumber,
-              cashRegisterId: openRegister.id,
-              userId: req.user.id
-            }
-          });
+        // 2. Registro en el turno de Caja activo
+        await tx.cashTransaction.create({
+          data: {
+            type: 'INCOME',
+            amount: incomeAmount,
+            description: `Venta #${invoiceNumber} [${paymentMethod}]`,
+            reference: invoiceNumber,
+            cashRegisterId: openRegister.id,
+            userId: req.user.id
+          }
+        });
 
           // Solo el EFECTIVO (CASH) o el abono inicial a crédito (que asumimos efectivo) alteran el monto FÍSICO de la caja
           if (paymentMethod === 'CASH' || paymentMethod === 'CREDIT') {
@@ -517,7 +522,6 @@ export const createSale = async (req, res) => {
             amountAdded: incomeAmount, 
             registerName: openRegister.name 
           };
-        }
       }
 
       // Actualizar estado final de la venta
@@ -941,21 +945,14 @@ export const updateSalePayment = async (req, res) => {
       return res.status(400).json({ error: 'Esta venta no es a crédito' });
     }
 
-    // VALIDACIÓN DE CAJA ABIERTA (Consistente con createSale)
-    const openRegister = await findOpenRegister(prisma, req.user.id);
-
-    if (!openRegister) {
-      return res.status(400).json({ 
-        error: 'No hay cajas abiertas disponibles',
-        requiresCashRegister: true,
-        message: 'Debes ABRIR CAJA antes de recibir abonos de clientes.' 
-      });
-    }
-
     const newPaidAmount = sale.paidAmount + paidAmount;
     const newStatus = gteMoney(newPaidAmount, sale.total) ? 'COMPLETED' : 'PARTIAL';
 
     const updatedSale = await prisma.$transaction(async (tx) => {
+      const openRegister = await findOpenRegister(tx, req.user.id);
+      if (!openRegister) {
+        throw new Error('No hay cajas abiertas disponibles. Debes abrir caja antes de recibir abonos.');
+      }
       const updated = await tx.sale.update({
         where: { id },
         data: {

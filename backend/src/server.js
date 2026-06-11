@@ -226,12 +226,24 @@ if (IS_PRODUCTION) {
   });
 }
 
+const generateRandomPassword = (length = 12) => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%&*';
+  let result = '';
+  const array = new Uint32Array(length);
+  require('crypto').randomFillSync(array);
+  for (let i = 0; i < length; i++) {
+    result += chars[array[i] % chars.length];
+  }
+  return result;
+};
+
 const ensureAdminUser = async () => {
   try {
-    const adminPassword = await bcrypt.hash('admin', 12);
     const existingAdmin = await prisma.user.findUnique({ where: { username: 'admin' } });
     
     if (!existingAdmin) {
+      const tempPassword = generateRandomPassword();
+      const adminPassword = await bcrypt.hash(tempPassword, 12);
       await prisma.user.create({
         data: {
           username: 'admin',
@@ -249,10 +261,13 @@ const ensureAdminUser = async () => {
           }
         }
       });
-      console.log('-------------------------------------------');
-      console.log('⚠️  USUARIO ADMIN CREADO. DEBE CAMBIAR LA CONTRASEÑA EN EL PRIMER INICIO.');
-      console.log('   Usuario: admin / Contraseña: admin');
-      console.log('-------------------------------------------');
+      console.log('============================================');
+      console.log('  USUARIO ADMIN CREADO');
+      console.log('  Usuario: admin');
+      console.log(`  Contraseña: ${tempPassword}`);
+      console.log('  GUARDA ESTA CONTRASEÑA EN UN LUGAR SEGURO.');
+      console.log('  Debes cambiarla en el primer inicio de sesión.');
+      console.log('============================================');
     } else {
       console.log('-------------------------------------------');
       console.log('✅ Usuario admin ya existe');

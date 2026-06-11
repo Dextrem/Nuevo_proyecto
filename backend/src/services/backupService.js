@@ -93,6 +93,15 @@ export const createBackup = async () => {
   }
 };
 
+const validateBackupData = (data) => {
+  const requiredCollections = ['users', 'categories', 'products', 'clients', 'suppliers', 'sales', 'settings'];
+  for (const key of requiredCollections) {
+    if (data[key] !== undefined && !Array.isArray(data[key]) && typeof data[key] !== 'object') {
+      throw new Error(`Formato de backup inválido: '${key}' debe ser un arreglo`);
+    }
+  }
+};
+
 export const restoreBackup = async (backupData) => {
   try {
     const { data } = backupData;
@@ -100,6 +109,8 @@ export const restoreBackup = async (backupData) => {
     if (!data) {
       throw new Error('Formato de backup inválido');
     }
+
+    validateBackupData(data);
 
     const tablesToTruncate = [
       'inventory_movements', 'sale_items', 'sales', 'cash_transactions', 'cash_registers',

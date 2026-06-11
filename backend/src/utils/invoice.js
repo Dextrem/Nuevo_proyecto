@@ -9,15 +9,10 @@ export const generateInvoiceNumber = async () => {
   const prefix = `INV-${year}${month}${day}-`;
 
   return await prisma.$transaction(async (tx) => {
-    const lastSale = await tx.sale.findFirst({
-      where: {
-        invoiceNumber: {
-          startsWith: prefix,
-        },
-      },
-      orderBy: { invoiceNumber: 'desc' },
-      select: { invoiceNumber: true },
-    });
+    const [lastSale] = await tx.$queryRawUnsafe(
+      'SELECT "invoiceNumber" FROM sales WHERE "invoiceNumber" LIKE $1 ORDER BY "invoiceNumber" DESC LIMIT 1 FOR UPDATE',
+      `${prefix}%`
+    );
 
     let sequence = 1;
     if (lastSale) {
